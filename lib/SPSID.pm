@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use Digest::MD5 qw(md5_hex);
-;
+
 
 
 sub new
@@ -15,11 +15,13 @@ sub new
     if( not defined($options->{'user'}) ) {
         die('SPSID::new requires a user ID');
     }
-    
+
     if( not defined($SPSID::Config::backend) ) {
         die('$SPSID::Config::backend is undefined');
     }
 
+    require $SPSID::Config::backend;
+    
     my $self = {};
     bless $self, $class;
 
@@ -46,6 +48,7 @@ sub object_exists
 sub create_object
 {
     my $self = shift;
+    my $objclass = shift;
     my $attr = shift;
 
     # random string to take md5 as the new object ID
@@ -54,16 +57,22 @@ sub create_object
         $id_seed .= $name . ':' . $value;
     }
 
-    $attr->{'spsid.object.id'} = md5_hex($id_seed);
-
+    my $id = md5_hex($id_seed);
+    
+    if( $self->object_exists($id) ) {
+        die('Something really wrong happened: object id ' . $id .
+            ' already exists in the database');
+    }
+    
+    $attr->{'spsid.object.id'} = $id;
+    $attr->{'spsid.object.class'} = $objclass;
     $self->validate_object($attr);
 
     $self->backend->create_object($attr);
 
-    $self->backend->log_object($attr->{'spsid.object.id'},
-                               'Object created');
+    $self->backend->log_object($id, 'Object created');
 
-    return $attr->{'spsid.object.id'};
+    return $id;
 }
 
 
@@ -83,15 +92,24 @@ sub modify_object
     my $old_attr = {};
 
     while(my ($name, $value) = each %{$mod_attr}) {
+        if( $name eq 'spsid.object.id' or
+            $name eq 'spsid.object.class' ) {
+
+            die('SPSID::modify_object cannot modify ' . $name);
+        }
+
         if( not defined($value) and defined($attr->{$name})) {
+
             $deleted_attr->{$name} = $attr->{$name};
             delete $attr->{$name};
         }
         elsif( not defined($attr->{$name}) ) {
+
             $added_attr->{$name} = $value;
             $attr->{$name} = $value;
         }
         elsif( $value ne $attr->{$name} ) {
+
             $old_attr->{$name} = $attr->{$name};
             $attr->{$name} = $value;
             $modified_attr->{$name} = $value;
@@ -106,6 +124,7 @@ sub modify_object
         $self->backend->delete_object_attributes($id, \@del_attrs);
 
         foreach my $name (@del_attrs) {
+
             $self->backend->log_object
                 ($id,
                  'Deleted attribute: ' . $name .
@@ -119,6 +138,7 @@ sub modify_object
         $self->backend->add_object_attributes($id, $added_attr);
 
         foreach my $name (@add_attrs) {
+
             $self->backend->log_object
                 ($id,
                  'Added attribute: ' . $name .
@@ -132,6 +152,7 @@ sub modify_object
         $self->backend->modify_object_attributes($id, $modified_attr);
 
         foreach my $name (@mod_attrs) {
+
             $self->backend->log_object
                 ($id,
                  'Modified attribute: ' . $name .
@@ -163,16 +184,47 @@ sub get_object
 }
 
 
-# input: attribute values for AND condition
+# input: attribute names and values for AND condition
 # output: arrayref of objects found
 
 sub search_objects
 {
     my $self = shift;
+    my $container = shift;
     my $objclass = shift;
-    my $attr = shift;
 
-    return $self->backend->search_objects($objclass, $attr);
+    if( scalar(@_) == 0 ) {
+        return $self->backend->contained_objects($container, $objclass);
+    }
+
+    if( scalar(@_) % 2 != 0 ) {
+        die('Odd number of attributes and values in search_objects()');
+    }
+    
+    my $results = [];
+    
+    while( scalar(@_) > 0 ) {
+        my $name = shift;
+        my $value = shift;
+
+        if( scalar(@{$results}) == 0 ) {
+            $results =
+                $self->backend->search_objects($container, $objclass,
+                                               $name, $value);
+        }
+        else {
+            my $old_results = $results;
+            $results = [];
+
+            foreach my $obj (@{$old_results}) {
+                if( defined($obj->{$name}) and $obj->{$name} eq $value ) {
+                    push(@{$results}, $obj);
+                }
+            }
+        }            
+    }
+    
+    return $results;
 }
 
 
@@ -190,10 +242,12 @@ sub validate_object
     $self->_verify_attributes($attr, $cfg);
 
     my $objclass = $attr->{'spsid.object.class'};
+
     if( defined($cfg->{$objclass}) ) {
         $self->_verify_attributes($attr, $cfg->{$objclass});
     }
 }
+
 
 
 sub _verify_attributes
@@ -202,7 +256,8 @@ sub _verify_attributes
     my $attr = shift;
     my $cfg = shift;
 
-    if( defined($cfg->{'_mandatory'}) ) {        
+    if( defined($cfg->{'_mandatory'}) ) {
+
         while( my ($name, $must) = each %{$cfg->{'_mandatory'}} ) {
             if( $must and not defined($attr->{$name}) ) {
                 die('Missing mandatory attribute ' . $name . ' in ' .
@@ -212,17 +267,19 @@ sub _verify_attributes
     }
 
     if( defined($cfg->{'_unique'}) ) {
+
         while( my ($name, $must) = each %{$cfg->{'_unique'}} ) {
-            
+
             if( defined($attr->{$name}) ) {
-                
+
                 my $found =
                     $self->search_objects($attr->{'spsid.object.class'},
                                           {$name => $attr->{$name}});
-                
+
                 if( scalar(@{$found}) > 0 and
                     ( $found->[0]->{'spsid.object.id'} ne
                       $attr->{'spsid.object.id'} ) ) {
+
                     die('Duplicate value "' . $attr->{$name} .
                         '" for a unique attribute ' . $name . ' in ' .
                         $attr->{'spsid.object.id'});
@@ -231,9 +288,9 @@ sub _verify_attributes
         }
     }
 }
-                
-    
-        
+
+
+
 
 
 
