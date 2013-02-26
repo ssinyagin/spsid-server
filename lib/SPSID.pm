@@ -1,37 +1,43 @@
 package SPSID;
 
-use warnings;
-use strict;
-
 use Digest::MD5 qw(md5_hex);
 
+use Moose;
+
+has 'user_id' =>
+    (
+     is  => 'ro',
+     isa => 'Str',
+     required => 1,
+    );
 
 
-sub new
+has '_backend' =>
+    (
+     is  => 'rw',
+     isa => 'Object',
+     init_arg => undef,
+     handles => {
+                 connect    => 'connect',
+                 disconnect => 'disconnect'},
+    );
+
+
+
+sub BUILD
 {
-    my $class = shift;
-    my $options = shift;
+    my $self = shift;
 
-    if( not defined($options->{'user'}) ) {
-        die('SPSID::new requires a user ID');
+    if( not defined($self->backend) ) {
+        if( not defined($SPSID::Config::backend) ) {
+            die('$SPSID::Config::backend is undefined');
+        }
+
+        require $SPSID::Config::backend;
+        $self->_backend($SPSID::Config::backend->new
+                        (user_id => $self->user_id));
     }
-
-    if( not defined($SPSID::Config::backend) ) {
-        die('$SPSID::Config::backend is undefined');
-    }
-
-    require $SPSID::Config::backend;
-    
-    my $self = {};
-    bless $self, $class;
-
-    $self->{'backend'} = $SPSID::Config::backend->new($options);
-
-    return $self;
 }
-
-
-sub backend {return shift->{'backend'}}
 
 
 
@@ -40,7 +46,7 @@ sub object_exists
     my $self = shift;
     my $id = shift;
 
-    return $self->backend->object_exists($id);
+    return $self->_backend->object_exists($id);
 }
 
 
@@ -58,19 +64,19 @@ sub create_object
     }
 
     my $id = md5_hex($id_seed);
-    
+
     if( $self->object_exists($id) ) {
         die('Something really wrong happened: object id ' . $id .
             ' already exists in the database');
     }
-    
+
     $attr->{'spsid.object.id'} = $id;
     $attr->{'spsid.object.class'} = $objclass;
     $self->validate_object($attr);
 
-    $self->backend->create_object($attr);
+    $self->_backend->create_object($attr);
 
-    $self->backend->log_object($id, 'Object created');
+    $self->_backend->log_object($id, 'Object created');
 
     return $id;
 }
@@ -85,7 +91,7 @@ sub modify_object
     my $id = shift;
     my $mod_attr = shift;
 
-    my $attr = $self->backend->fetch_object($id);
+    my $attr = $self->_backend->fetch_object($id);
     my $deleted_attr = {};
     my $added_attr = {};
     my $modified_attr = {};
@@ -121,11 +127,11 @@ sub modify_object
     my @del_attrs = sort keys %{$deleted_attr};
     if( scalar(@del_attrs) > 0 ) {
 
-        $self->backend->delete_object_attributes($id, \@del_attrs);
+        $self->_backend->delete_object_attributes($id, \@del_attrs);
 
         foreach my $name (@del_attrs) {
 
-            $self->backend->log_object
+            $self->_backend->log_object
                 ($id,
                  'Deleted attribute: ' . $name .
                  ', value: ' . $deleted_attr->{$name});
@@ -135,11 +141,11 @@ sub modify_object
     my @add_attrs = sort keys %{$added_attr};
     if( scalar(@add_attrs) > 0 ) {
 
-        $self->backend->add_object_attributes($id, $added_attr);
+        $self->_backend->add_object_attributes($id, $added_attr);
 
         foreach my $name (@add_attrs) {
 
-            $self->backend->log_object
+            $self->_backend->log_object
                 ($id,
                  'Added attribute: ' . $name .
                  ', value: ' . $added_attr->{$name});
@@ -149,11 +155,11 @@ sub modify_object
     my @mod_attrs = sort keys %{$modified_attr};
     if( scalar(@mod_attrs) > 0 ) {
 
-        $self->backend->modify_object_attributes($id, $modified_attr);
+        $self->_backend->modify_object_attributes($id, $modified_attr);
 
         foreach my $name (@mod_attrs) {
 
-            $self->backend->log_object
+            $self->_backend->log_object
                 ($id,
                  'Modified attribute: ' . $name .
                  ', old value: ' . $old_attr->{$name} .
@@ -170,8 +176,8 @@ sub delete_object
     my $self = shift;
     my $id = shift;
 
-    $self->backend->log_object($id, 'Object deleted');
-    $self->backend->delete_object($id);
+    $self->_backend->log_object($id, 'Object deleted');
+    $self->_backend->delete_object($id);
 }
 
 
@@ -180,7 +186,7 @@ sub get_object
     my $self = shift;
     my $id = shift;
 
-    return $self->backend->fetch_object($id);
+    return $self->_backend->fetch_object($id);
 }
 
 
@@ -194,23 +200,23 @@ sub search_objects
     my $objclass = shift;
 
     if( scalar(@_) == 0 ) {
-        return $self->backend->contained_objects($container, $objclass);
+        return $self->_backend->contained_objects($container, $objclass);
     }
 
     if( scalar(@_) % 2 != 0 ) {
         die('Odd number of attributes and values in search_objects()');
     }
-    
+
     my $results = [];
-    
+
     while( scalar(@_) > 0 ) {
         my $name = shift;
         my $value = shift;
 
         if( scalar(@{$results}) == 0 ) {
             $results =
-                $self->backend->search_objects($container, $objclass,
-                                               $name, $value);
+                $self->_backend->search_objects($container, $objclass,
+                                                $name, $value);
         }
         else {
             my $old_results = $results;
@@ -221,9 +227,9 @@ sub search_objects
                     push(@{$results}, $obj);
                 }
             }
-        }            
+        }
     }
-    
+
     return $results;
 }
 

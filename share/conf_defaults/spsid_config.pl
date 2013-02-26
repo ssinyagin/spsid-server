@@ -97,8 +97,14 @@ $SPSID::Config::object_attributes =
 
 
 
+if( defined($ENV{'SPSID_SITECONFIG'}) ) {
+    require $ENV{'SPSID_SITECONFIG'};
+}
+else {
+    require '@siteconfdir@/spsid_siteconfig.pl';
+}
 
-require '@siteconfdir@/spsid_siteconfig.pl';
+  
 
 1;
 
