@@ -6,11 +6,18 @@ use Moose;
 
 has 'user_id' =>
     (
-     is  => 'ro',
+     is  => 'rw',
      isa => 'Str',
-     required => 1,
+     default => 'nobody',
     );
 
+
+has 'logger' =>
+    (
+     is  => 'rw',
+     isa => 'Object',
+    );
+    
 
 has '_backend' =>
     (
@@ -37,6 +44,7 @@ sub BUILD
         $self->_backend($SPSID::Config::backend->new
                         (user_id => $self->user_id));
     }
+    return;
 }
 
 
@@ -76,7 +84,7 @@ sub create_object
 
     $self->_backend->create_object($attr);
 
-    $self->_backend->log_object($id, 'Object created');
+    $self->log_object($id, 'Object created');
 
     return $id;
 }
@@ -131,7 +139,7 @@ sub modify_object
 
         foreach my $name (@del_attrs) {
 
-            $self->_backend->log_object
+            $self->log_object
                 ($id,
                  'Deleted attribute: ' . $name .
                  ', value: ' . $deleted_attr->{$name});
@@ -145,7 +153,7 @@ sub modify_object
 
         foreach my $name (@add_attrs) {
 
-            $self->_backend->log_object
+            $self->log_object
                 ($id,
                  'Added attribute: ' . $name .
                  ', value: ' . $added_attr->{$name});
@@ -159,13 +167,14 @@ sub modify_object
 
         foreach my $name (@mod_attrs) {
 
-            $self->_backend->log_object
+            $self->log_object
                 ($id,
                  'Modified attribute: ' . $name .
                  ', old value: ' . $old_attr->{$name} .
                  ', new value: ' . $modified_attr->{$name});
         }
     }
+    return;
 }
 
 
@@ -176,8 +185,9 @@ sub delete_object
     my $self = shift;
     my $id = shift;
 
-    $self->_backend->log_object($id, 'Object deleted');
+    $self->log_object($id, 'Object deleted');
     $self->_backend->delete_object($id);
+    return;
 }
 
 
@@ -252,6 +262,8 @@ sub validate_object
     if( defined($cfg->{$objclass}) ) {
         $self->_verify_attributes($attr, $cfg->{$objclass});
     }
+    
+    return;
 }
 
 
@@ -293,6 +305,8 @@ sub _verify_attributes
             }
         }
     }
+    
+    return;
 }
 
 
@@ -300,6 +314,21 @@ sub _verify_attributes
 
 
 
+sub log_object
+{
+    my $self = shift;
+    my $id = shift;
+    my $msg = shift;
+
+    $self->_backend->log_object($id, $self->user_id, $msg);
+
+    my $logger = $self->logger;
+    if( defined($logger) ) {
+        $logger->info($id . ':' . $self->user_id . ': ' . $msg);
+    }
+
+    return;
+}
 
 
 

@@ -5,13 +5,6 @@ use Time::HiRes;
 use Moose;
 
 
-has 'user_id' =>
-    (
-     is  => 'ro',
-     isa => 'Str',
-     required => 1,
-    );
-
 
 has 'dbi_dsn' =>
     (
@@ -177,16 +170,17 @@ sub log_object
 {
     my $self = shift;
     my $id = shift;
+    my $user_id = shift;
     my $msg = shift;
 
     my $ts = Time::HiRes::time();
 
     $self->_dbh->do
         ('INSERT INTO SPSID_OBJECT_LOG ' .
-         '  (OBJECT_ID, LOG_TS, MESSAGE) ' .
-         'VALUES(?,?,?)',
+         '  (OBJECT_ID, LOG_TS, USER_ID, MESSAGE) ' .
+         'VALUES(?,?,?,?)',
          undef,
-         $id, $ts*1000, $msg);
+         $id, $ts*1000, $user_id, $msg);
 
     return;
 }
