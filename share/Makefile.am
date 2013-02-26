@@ -17,30 +17,37 @@
 #
 
 
-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	$(FIND) * -type d -print >list.tmp
-	for d in `cat list.tmp`; do \
-	  $(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/$$d; done
-	$(FIND) * \( -name '*.ini' -o -name '*.sql' \) -type f -print >list.tmp
-	for f in `cat list.tmp`; do \
-	  $(INSTALL_DATA) $$f $(DESTDIR)$(pkgdatadir)/$$f; done
-	$(RM) -f list.tmp
+SUBST = @abs_top_builddir@/setup_tools/substvars.sh
+
+defaultsdir = @pkgdatadir@/conf_defaults
+
+dist_defaults_DATA = \
+	conf_defaults/spsid_config.pl
 
 
-uninstall-local:
-	$(FIND) * -depth -type d -print >list.tmp
-	for d in `cat list.tmp`; do \
-	  $(RM) -r $(DESTDIR)$(pkgdatadir)/$$d; \
-	done
-	$(RM) -f list.tmp
+psgidir = @pkgdatadir@/psgi
+
+psgi_DATA = \
+	psgi/spsid_jsonrpc.psgi
 
 
-dist-hook:
-	$(FIND) * -type d -print >list.tmp
-	for d in `cat list.tmp`; do \
-	  mkdir $(distdir)/$$d; done
-	$(FIND) * \( -name '*.ini' \) -type f -print >list.tmp
-	for f in `cat list.tmp`; do \
-	  cp $$f $(distdir)/$$f; done
-	$(RM) -f list.tmp
+sqldir = @pkgdatadir@/sql
+
+dist_sql_DATA = \
+	sql/spsid_schema.ansi.sql
+
+
+EXTRA_DIST = \
+	conf_defaults/spsid_config.pl.in \
+	psgi/spsid_jsonrpc.psgi.in
+
+
+CLEANFILES = $(psgi_DATA)
+
+
+
+conf_defaults/spsid_config.pl: conf_defaults/spsid_config.pl.in
+	$(SUBST) conf_defaults/spsid_config.pl.in > conf_defaults/spsid_config.pl
+
+psgi/spsid_jsonrpc.psgi: psgi/spsid_jsonrpc.psgi.in
+	$(SUBST) psgi/spsid_jsonrpc.psgi.in > psgi/spsid_jsonrpc.psgi

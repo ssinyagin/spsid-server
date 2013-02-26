@@ -35,12 +35,17 @@ sub BUILD
 {
     my $self = shift;
 
-    if( not defined($self->backend) ) {
+    if( not defined($self->_backend) ) {
         if( not defined($SPSID::Config::backend) ) {
             die('$SPSID::Config::backend is undefined');
         }
-
-        require $SPSID::Config::backend;
+        
+        eval(sprintf('require %s', $SPSID::Config::backend));
+        if( $@ )
+        {
+            die($@);
+        }
+        
         $self->_backend($SPSID::Config::backend->new
                         (user_id => $self->user_id));
     }
@@ -331,11 +336,17 @@ sub log_object
 }
 
 
+sub clear_user_id
+{
+    my $self = shift;
+    $self->user_id('nobody');
+}
 
 
+    
 
 
-
+1;
 
 
 

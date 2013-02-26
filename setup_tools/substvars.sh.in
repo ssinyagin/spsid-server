@@ -45,7 +45,7 @@ spsid_config_pl=@pkgdatadir@/conf_defaults/spsid-config.pl
     -e "s,\@plugconfdir\@,@plugconfdir@,g" \
     -e "s,\@plugconfdir\@,@plugconfdir@,g" \
     -e "s,\@siteconfdir\@,@siteconfdir@,g" \
-    -e "s,\@spsid_config_pl\@,@spsid_config_pl@,g" \
+    -e "s,\@spsid_config_pl\@,${spsid_config_pl},g" \
     $1
 
 # Local Variables:

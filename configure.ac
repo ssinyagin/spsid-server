@@ -54,7 +54,7 @@ AC_SUBST(perllibdirs, [${perllibdirs}])
 
 if test "$enable_pkgonly" != yes; then
 
-   for module in 'JSON' 'DBI' 'Digest::MD5'
+   for module in 'JSON' 'DBI' 'Digest::MD5' 'Moose' 'JSON::RPC::Dispatcher'
    do
      AC_MSG_CHECKING([presence of $module])
      if ${PERL} ${PERLOPTS} -e 'use '$module 2>/dev/null; then

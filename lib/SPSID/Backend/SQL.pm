@@ -36,7 +36,8 @@ has 'dbi_attr' =>
     (
      is  => 'ro',
      isa => 'HashRef',
-     default => $SPSID::Config::Backend::SQL::dbi_attr,
+     default => sub { defined($SPSID::Config::Backend::SQL::dbi_attr) ?
+                          $SPSID::Config::Backend::SQL::dbi_attr : {}},
     );
 
 
@@ -286,7 +287,7 @@ sub contained_objects
     $sth->execute($container, $objclass);
 
     my %result;
-    while( $r = $sth->fetchrow_arrayref() ) {
+    while( my $r = $sth->fetchrow_arrayref() ) {
         $result{$r->[0]}{$r->[1]} = $r->[2];
     }
 
@@ -332,7 +333,7 @@ sub search_objects
     $sth->execute($container, $objclass, $attr_name, $attr_value);
 
     my %result;
-    while( $r = $sth->fetchrow_arrayref() ) {
+    while( my $r = $sth->fetchrow_arrayref() ) {
         $result{$r->[0]}{$r->[1]} = $r->[2];
     }
 
@@ -364,7 +365,7 @@ sub search_objects
 
 
 
-
+1;
 
 
 
