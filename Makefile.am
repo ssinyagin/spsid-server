@@ -31,3 +31,7 @@ dist-hook:
 	date >DIST_REVISION
 	git branch -vv >>DIST_REVISION
 	cp DIST_REVISION $(distdir)/
+
+
+test: all
+	TOP_BUILDDIR=@abs_top_builddir@ $(SHELL) t/run_tests.sh

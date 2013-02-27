@@ -22,17 +22,20 @@ $spsid->connect();
 sub create_object
 {
     my $plack_request = shift;
-    my $objclass = shift;
-    my $attr = shift;
+    my %arg = @_;
 
+    die('objclass required') unless defined $arg{'objclass'};
+    die('attr required') unless defined $arg{'attr'};
+    
     my $userid = $plack_request->user();
     if( defined($userid) ) {
         $spsid->user_id($userid);
     }
 
-    $spsid->create_object($objclass, $attr);
+    my $id = $spsid->create_object($arg{'objclass'}, $arg{'attr'});
     
     $spsid->clear_user_id;
+    return $id;
 }
 
 
@@ -40,17 +43,20 @@ sub create_object
 sub modify_object
 {
     my $plack_request = shift;
-    my $id = shift;
-    my $mod_attr = shift;
+    my %arg = @_;
+
+    die('id required') unless defined $arg{'id'};
+    die('mod_attr required') unless defined $arg{'mod_attr'};
 
     my $userid = $plack_request->user();
     if( defined($userid) ) {
         $spsid->user_id($userid);
     }
     
-    $spsid->modify_object($id, $mod_attr);
+    $spsid->modify_object($arg{'id'}, $arg{'mod_attr'});
     
     $spsid->clear_user_id;
+    return;
 }
 
 
@@ -58,33 +64,48 @@ sub modify_object
 sub delete_object
 {
     my $plack_request = shift;
-    my $id = shift;
+    my %arg = @_;
+
+    die('id required') unless defined $arg{'id'};
 
     my $userid = $plack_request->user();
     if( defined($userid) ) {
         $spsid->user_id($userid);
     }
     
-    $spsid->delete_object($id);
+    $spsid->delete_object($arg{'id'});
     
     $spsid->clear_user_id;
+    return;
 }
 
 
 sub get_object
 {
-    my $id = shift;
-
-    return $spsid->get_object($id);    
+    my %arg = @_;
+    die('id required') unless defined $arg{'id'};
+    return $spsid->get_object($arg{'id'});    
 }
 
 
 sub search_objects
 {
-    my $container = shift;
-    my $objclass = shift;
+    my %arg = @_;
+    
+    die('container required') unless defined $arg{'container'};
+    die('objclass required') unless defined $arg{'objclass'};
 
-    return $spsid->search_objects($container, $objclass, @_);    
+    my @search_attrs = ();
+    if( defined($arg{'search_attrs'}) ) {
+        die('search_attrs must be ARRAY') unless
+            ref($arg{'search_attrs'}) eq ARRAY;
+        
+        @search_attrs = @{$arg{'search_attrs'}};
+    }
+        
+    return $spsid->search_objects($arg{'container'},
+                                  $arg{'objclass'},
+                                  @search_attrs);
 }
 
 
@@ -97,7 +118,7 @@ $rpc->register('delete_object', \&delete_object, { with_plack_request => 1 });
 $rpc->register('get_object', \&get_object);
 $rpc->register('search_objects', \&search_objects);
 
-$rpc->register('ping', sub{return [@_]});
+$rpc->register('ping', sub{my %arg = @_; return \%arg});
 
 $rpc->to_app;
 

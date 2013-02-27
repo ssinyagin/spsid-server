@@ -47,7 +47,10 @@ ps -p $PLACK_PID
 echo "Checking if Plack server is reachable" 1>&2
 
 curl http://127.0.0.1:9099/ \
-    --data-binary '{"jsonrpc":"2.0","method":"ping","params":[],"id":"1"}'
+    --data-binary \
+    '{"jsonrpc":"2.0","method":"ping","params":["a","b"],"id":"1"}'
+
+echo
 
 if test $? -ne 0; then
     echo "Failed to connect to Plack server" 1>&2
@@ -59,6 +62,7 @@ fi
 
 
 kill $PLACK_PID
+rm -f ${SPSID_SQLITE_DB}
 
 
 
