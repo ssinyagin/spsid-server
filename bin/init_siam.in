@@ -3,6 +3,11 @@
 use strict;
 use warnings;
 
+use Getopt::Long;
+use Try::Tiny;
+use SPSID::Client;
+
+    
 BEGIN {
     if(defined($ENV{'SPSID_CONFIG'})) {
         require $ENV{'SPSID_CONFIG'};
@@ -10,14 +15,50 @@ BEGIN {
 }
 
 
+my $client;
+
+try {
+    $client = SPSID::Client->new_from_getopt();
+}
+    catch {
+        print STDERR "Error: " . $_ . "\n";
+        print STDERR 'Usage: ' . $0 . '--url [options...]' . "\n",
+            SPSID::Client->getopt_help_string();
+        exit(1);
+    };
+
+
+
 my $attr = {
-            'spsid.object.id' => 'SIAM.ROOT',
             'spsid.object.class' => 'SIAM',
             'spsid.object.container' => 'NIL',
+            'spsid.siam.root' => 1,
            };
 
 
+my $r = $client->search_objects('NIL', 'SIAM');
 
+if( scalar(@{$r}) > 0 ) {
+    print STDERR "The SIAM root object already exists\n";
+    exit(1);
+}
+
+
+try {
+    $client->create_object('SIAM', $attr);
+}
+    catch {
+        print STDERR "Error: " . $_ . "\n";
+        exit(1);
+    };
+
+
+
+print STDERR "Created SIAM root object\n";
+exit(0);
+
+
+    
 
 
 

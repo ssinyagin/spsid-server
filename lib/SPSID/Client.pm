@@ -5,6 +5,8 @@ package SPSID::Client;
 use JSON;
 use LWP::UserAgent;
 use HTTP::Request;
+use URI;
+use Getopt::Long;
 
 use Moose;
 
@@ -47,6 +49,57 @@ sub BUILD
     
     return;
 }
+
+
+sub new_from_getopt
+{
+    my $url;
+    my $realm;
+    my $username;
+    my $password;
+
+    my $p = new Getopt::Long::Parser;
+    $p->configure(pass_through => 1);
+    if( not $p->getoptions('url=s'   => \$url,
+                           'realm=s' => \$realm,
+                           'user=s'  => \$username,
+                           'pw=s'    => \$password) ) {
+        die('Cannot parse command-line options');
+    }
+
+    die('--url option is required') unless defined($url);
+    
+    my $uri = URI->new($url);
+    die('Cannot parse URL: ' . $url) unless defined $uri;
+
+    my $ua = LWP::UserAgent->new;
+    $ua->timeout(10);
+    $ua->env_proxy;
+
+    if( defined($realm) or defined($username) or defined($password) ) {
+        if( defined($realm) and defined($username) and defined($password) ) {
+            $ua->credentials($uri->host_port, $realm, $username, $password);
+        }
+        else {
+            die('Realm, user, and password are required at the same time');
+        }
+    }
+
+    return SPSID::Client->new('url' => $url, 'ua' => $ua);
+}
+
+
+sub getopt_help_string
+{
+    return join("\n",
+                "--url=URL      SPSID RPC location",
+                "--realm=X      HTTP authentication realm",
+                "--user=X       HTTP authentication user",
+                "--pw=X         HTTP authentication password");
+}
+            
+    
+    
 
 
 sub _call
