@@ -34,4 +34,4 @@ dist-hook:
 
 
 test: all
-	TOP_BUILDDIR=@abs_top_builddir@ $(SHELL) t/run_tests.sh
+	SPSID_TOP=@abs_top_builddir@ $(SHELL) t/run_tests.sh

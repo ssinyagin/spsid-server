@@ -18,14 +18,14 @@
 
 SUBST = @abs_top_builddir@/setup_tools/substvars.sh
 
-bin_SCRIPTS = 
+bin_SCRIPTS = \
+	init_siam
 
 CLEANFILES = $(bin_SCRIPTS)
 
-EXTRA_DIST = 
+EXTRA_DIST = \
+	init_siam.in
 
 
-# Result of:
-# ls -1 | egrep '^[a-z][^.]+$' | \
-# awk '{printf "%s: %s.in\n\t$(SUBST) %s.in > %s\n\n", $1, $1, $1, $1}'
-
+init_siam: init_siam.in
+	$(SUBST) init_siam.in > init_siam

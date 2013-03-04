@@ -98,7 +98,7 @@ sub search_objects
     my @search_attrs = ();
     if( defined($arg{'search_attrs'}) ) {
         die('search_attrs must be ARRAY') unless
-            ref($arg{'search_attrs'}) eq ARRAY;
+            ref($arg{'search_attrs'}) eq 'ARRAY';
         
         @search_attrs = @{$arg{'search_attrs'}};
     }
