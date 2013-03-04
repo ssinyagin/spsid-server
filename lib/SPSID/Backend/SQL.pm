@@ -352,6 +352,25 @@ sub search_objects
 
 
 
+sub contained_classes
+{
+    my $self = shift;
+    my $container = shift;
+
+    my $sth = $self->_dbh->prepare
+        ('SELECT DISTINCT OBJECT_CLASS ' .
+         'FROM SPSID_OBJECTS ' .
+         'WHERE OBJECT_CONTAINER=?');
+
+    $sth->execute($container);
+
+    my $ret = [];
+    while( my $r = $sth->fetchrow_arrayref() ) {
+        push(@{$ret}, $r->[0]);
+    }
+    
+    return $ret;
+}
 
 
 

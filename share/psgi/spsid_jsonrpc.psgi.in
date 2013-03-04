@@ -109,6 +109,14 @@ sub search_objects
 }
 
 
+sub contained_classes
+{
+    my %arg = @_;    
+    die('container required') unless defined $arg{'container'};
+    return $spsid->contained_classes($arg{'container'});
+}
+
+
     
 my $rpc = JSON::RPC::Dispatcher->new;
 
@@ -117,6 +125,7 @@ $rpc->register('modify_object', \&modify_object, { with_plack_request => 1 });
 $rpc->register('delete_object', \&delete_object, { with_plack_request => 1 });
 $rpc->register('get_object', \&get_object);
 $rpc->register('search_objects', \&search_objects);
+$rpc->register('contained_classes', \&contained_classes);
 
 $rpc->register('ping', sub{my %arg = @_; return \%arg});
 

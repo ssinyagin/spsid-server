@@ -250,6 +250,16 @@ sub search_objects
 
 
 
+sub contained_classes
+{
+    my $self = shift;
+    my $container = shift;
+
+    return $self->_backend->contained_classes($container);
+}
+
+
+
 sub validate_object
 {
     my $self = shift;
