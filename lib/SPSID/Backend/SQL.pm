@@ -145,7 +145,7 @@ sub fetch_object
     if( not defined($r) ) {
         die('Object does not exist: ' . $id);
     }
-    elsif( not $r->[0] ) {
+    elsif( $r->[0] ) {
         die('Object is deleted: ' . $id);
     }
 
@@ -255,10 +255,6 @@ sub delete_object
     my $self = shift;
     my $id = shift;
 
-    if( $self->object_exists($id) ) {
-        die('Trying to delete the opbect twice: ' . $id);
-    }
-
     $self->_dbh->do
         ('UPDATE SPSID_OBJECTS SET OBJECT_DELETED=1 WHERE OBJECT_ID=?',
          undef, $id);
@@ -316,6 +312,9 @@ sub search_objects
     my $attr_name = shift;
     my $attr_value = shift;
 
+    my $container_cond = defined($container) ?
+        ' OBJECT_CONTAINER=? AND ' : '';
+    
     my $sth = $self->_dbh->prepare
         ('SELECT OBJECT_ID, ATTR_NAME, ATTR_VALUE ' .
          'FROM SPSID_OBJECT_ATTR ' .
@@ -323,14 +322,19 @@ sub search_objects
          '  SELECT SPSID_OBJECT_ATTR.OBJECT_ID ' .
          '  FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
          '  WHERE ' .
-         '   OBJECT_CONTAINER=? AND ' .
+         $container_cond .
          '   OBJECT_CLASS=? AND ' .
          '   OBJECT_DELETED=0 AND ' .
          '   SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID AND ' .
-         '   ATTR_NAME=? ' .
+         '   ATTR_NAME=? AND ' .
          '   ATTR_VALUE=?)');
 
-    $sth->execute($container, $objclass, $attr_name, $attr_value);
+    if( defined($container) ) {
+        $sth->execute($container, $objclass, $attr_name, $attr_value);
+    }
+    else {
+        $sth->execute($objclass, $attr_name, $attr_value);
+    }    
 
     my %result;
     while( my $r = $sth->fetchrow_arrayref() ) {

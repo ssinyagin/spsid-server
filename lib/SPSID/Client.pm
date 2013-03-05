@@ -67,7 +67,7 @@ sub new_from_getopt
         die('Cannot parse command-line options');
     }
 
-    die('--url option is required') unless defined($url);
+    die("--url option is required\n") unless defined($url);
     
     my $uri = URI->new($url);
     die('Cannot parse URL: ' . $url) unless defined $uri;
@@ -95,7 +95,8 @@ sub getopt_help_string
                 "  --url=URL      SPSID RPC location",
                 "  --realm=X      HTTP authentication realm",
                 "  --user=X       HTTP authentication user",
-                "  --pw=X         HTTP authentication password");
+                "  --pw=X         HTTP authentication password",
+                "");
 }
             
     
@@ -197,7 +198,7 @@ sub get_object
     my $self = shift;
     my $id = shift;
 
-    return $self->_call('delete_object', {'id' => $id});
+    return $self->_call('get_object', {'id' => $id});
 }
 
 
@@ -229,6 +230,17 @@ sub contained_classes
 }
 
 
+sub get_siam_root
+{
+    my $self = shift;
+    my $r = $self->search_objects('NIL', 'SIAM');
+    if( defined($r) and scalar(@{$r}) > 0 ) {
+        return $r->[0];
+    }
+    else {
+        return;
+    }
+}
 
 
 sub ping

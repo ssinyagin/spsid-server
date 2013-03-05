@@ -5,7 +5,7 @@ use warnings;
 
 use Getopt::Long;
 use Try::Tiny;
-    
+
 BEGIN {
     if(defined($ENV{'SPSID_CONFIG'})) {
         require $ENV{'SPSID_CONFIG'};
@@ -14,15 +14,16 @@ BEGIN {
 
 use SPSID::Client;
 
+$| = 1;
 
 sub print_usage {
-    print STDERR ('Usage: ' . $0 . ' --url=URL [options...]' . "\n",
+    print STDERR ('Usage: ' . $0 . ' --url=URL --id=ID [options...]' . "\n",
                   SPSID::Client->getopt_help_string(),
+                  "  --id=ID      SPSID object identifier to delete\n",
                   "\n");
-    print STDERR ("This program initializes the SIAM root\n" .
-                  "object in SPSID database.\n");
+    print STDERR ("This program deletes SPSID objects recursively.\n");    
 }
-
+    
 
 my $client;
 
@@ -36,41 +37,29 @@ try {
     };
 
 
-my $ok =  GetOptions();
 
-if( not $ok or scalar(@ARGV) > 0 ) {
+my $id;
+
+my $ok =  GetOptions('id=s' => \$id);
+
+if( not $ok or not defined($id) or scalar(@ARGV) > 0 ) {
     print_usage();
     exit(1);
 };
 
 
-my $attr = {
-            'spsid.object.class' => 'SIAM',
-            'spsid.object.container' => 'NIL',
-            'spsid.siam.root' => 1,
-           };
+my $attr = $client->get_object($id);
+print STDERR "Deleting the following object and all its contained objects:\n";
 
-
-my $root = $client->get_siam_root();
-
-if( defined($root) ) {
-    print STDERR "The SIAM root object already exists\n";
-    exit(1);
+foreach my $name (sort keys %{$attr}) {
+    print STDERR $name . ': ' . $attr->{$name} . "\n";
 }
 
+$client->delete_object($id);
 
-try {
-    $client->create_object('SIAM', $attr);
-}
-    catch {
-        print STDERR "Error: " . $_ . "\n";
-        exit(1);
-    };
+print STDERR "Done\n";
 
 
-
-print STDERR "Created SIAM root object\n";
-exit(0);
 
 
     

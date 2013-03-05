@@ -1,0 +1,149 @@
+#!@PERL@
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Try::Tiny;
+use YAML;
+
+BEGIN {
+    if(defined($ENV{'SPSID_CONFIG'})) {
+        require $ENV{'SPSID_CONFIG'};
+    } else { require '@spsid_config_pl@'; }
+}
+
+use SPSID::Client;
+
+
+sub print_usage {
+    print STDERR ('Usage: ' . $0 . ' --url=URL --in=FILE [options...]' . "\n",
+                  SPSID::Client->getopt_help_string(),
+                  "  --in=FILE      YAML file for import\n",
+                  "\n");
+    print STDERR ("This program loads the SIAM database contents ",
+                  "from a YAML file\n");    
+}
+    
+
+my $client;
+
+try {
+    $client = SPSID::Client->new_from_getopt();
+}
+    catch {
+        print STDERR "Error: " . $_ . "\n";
+        print_usage();
+        exit(1);
+    };
+
+
+
+my $infile;
+my $obj_count = 0;
+
+my $ok =  GetOptions('in=s' => \$infile);
+
+if( not $ok or not defined($infile) or scalar(@ARGV) > 0 ) {
+    print_usage();
+    exit(1);
+};
+
+if( not -f $infile ) {
+    print STDERR "No such file: $infile\n";
+    exit(1);
+}
+
+my $data = eval { YAML::LoadFile($infile) };
+if( $@ ) {
+    print STDERR('Cannot load YAML data from ' . $infile . ': ' . $@);
+    exit(1);
+}
+
+if( ref($data) ne 'ARRAY' ) {
+    print STDERR('Top level is not a sequence in ' . $infile);
+    exit(1);
+}
+
+
+my $root = $client->get_siam_root();
+
+if( not defined($root) ) {
+    print STDERR "The SIAM root object does not exist\n";
+    exit(1);
+}
+
+
+my %filter_attributes =
+    ('_contains_' => 1,
+     'siam.object.id' => 1,
+     'siam.object.class' => 1,
+     );
+
+foreach my $obj (@{$data})
+{
+    import_object($obj, $root->{'spsid.object.id'});
+}
+
+print STDERR "Loaded $obj_count SIAM objects\n";
+exit(0);
+
+
+     
+sub import_object
+{
+    my $obj = shift;
+    my $container = shift;
+
+    # duplicate all attributes except "_contains_"
+
+    my $attr = {};
+    while( my ($key, $val) = each %{$obj} )
+    {
+        if( not $filter_attributes{$key} )
+        {
+            $attr->{$key} = $val;
+        }
+    }
+
+    if( not defined($attr->{'siam.object.complete'}) ) {
+        $attr->{'siam.object.complete'} = 1;
+    }
+    
+    my $objclass = $obj->{'siam.object.class'};
+    if( not defined($objclass) )
+    {
+        die('Import object does not have "siam.object.class"');
+    }
+
+    $attr->{'spsid.object.container'} = $container;
+        
+    my $id = $client->create_object($objclass, $attr);
+    $obj_count++;
+
+    if( defined($obj->{'_contains_'}) )
+    {
+        foreach my $contained_obj (@{$obj->{'_contains_'}})
+        {
+            import_object($contained_obj, $id);
+        }
+    }
+}
+
+
+    
+
+
+
+    
+
+
+# Local Variables:
+# mode: cperl
+# indent-tabs-mode: nil
+# cperl-indent-level: 4
+# cperl-continued-statement-offset: 4
+# cperl-continued-brace-offset: -4
+# cperl-brace-offset: 0
+# cperl-label-offset: -2
+# End:

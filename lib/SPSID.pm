@@ -184,12 +184,23 @@ sub modify_object
 
 
 
-
 sub delete_object
 {
     my $self = shift;
     my $id = shift;
 
+    if( not $self->object_exists($id) ) {
+        die("Object does not exist: $id");
+    }
+
+    # recursively delete all contained objects
+
+    foreach my $objclass ( @{$self->contained_classes($id)} ) {
+        foreach my $obj ( @{$self->search_objects($id, $objclass)} ) {
+            $self->delete_object($obj->{'spsid.object.id'});
+        }
+    }
+    
     $self->log_object($id, 'Object deleted');
     $self->_backend->delete_object($id);
     return;
@@ -306,9 +317,11 @@ sub _verify_attributes
             if( defined($attr->{$name}) ) {
 
                 my $found =
-                    $self->search_objects($attr->{'spsid.object.class'},
-                                          {$name => $attr->{$name}});
-
+                    $self->search_objects(undef,
+                                          $attr->{'spsid.object.class'},
+                                          $name,
+                                          $attr->{$name});
+                
                 if( scalar(@{$found}) > 0 and
                     ( $found->[0]->{'spsid.object.id'} ne
                       $attr->{'spsid.object.id'} ) ) {
