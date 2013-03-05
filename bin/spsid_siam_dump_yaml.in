@@ -5,7 +5,7 @@ use warnings;
 
 use Getopt::Long;
 use Try::Tiny;
-use YAML;
+use YAML ();
 
 BEGIN {
     if(defined($ENV{'SPSID_CONFIG'})) {
