@@ -167,6 +167,29 @@ sub fetch_object
 
 
 
+sub object_class
+{
+    my $self = shift;
+    my $id = shift;
+
+    my $r = $self->_dbh->selectrow_arrayref
+        ('SELECT OBJECT_DELETED, OBJECT_CLASS ' .
+         'FROM SPSID_OBJECTS WHERE OBJECT_ID=?',
+         undef, $id);
+
+    if( not defined($r) ) {
+        die('Object does not exist: ' . $id);
+    }
+    elsif( $r->[0] ) {
+        die('Object is deleted: ' . $id);
+    }
+
+    return $r->[1];
+}
+
+
+
+
 sub log_object
 {
     my $self = shift;
@@ -271,33 +294,26 @@ sub contained_objects
     my $container = shift;
     my $objclass = shift;
 
+    my $container_cond = defined($container) ?
+        ' OBJECT_CONTAINER=? AND ' : '';
+
     my $sth = $self->_dbh->prepare
-        ('SELECT SPSID_OBJECT_ATTR.OBJECT_ID, ATTR_NAME, ATTR_VALUE ' .
-         'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
+        ('SELECT OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
+         'FROM SPSID_OBJECTS ' .
          'WHERE ' .
-         ' OBJECT_CONTAINER=? AND ' .
+         $container_cond .
          ' OBJECT_CLASS=? AND ' .
-         ' OBJECT_DELETED=0 AND ' .
-         ' SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
+         ' OBJECT_DELETED=0');
 
-    $sth->execute($container, $objclass);
-
-    my %result;
-    while( my $r = $sth->fetchrow_arrayref() ) {
-        $result{$r->[0]}{$r->[1]} = $r->[2];
+    if( defined($container) ) {
+        $sth->execute($container, $objclass);
+    }
+    else {
+        $sth->execute($objclass);
     }
 
-    my $ret = [];
-
-    while( my ($id, $attr) = each %result ) {
-        $attr->{'spsid.object.id'} = $id;
-        $attr->{'spsid.object.class'} = $objclass;
-        $attr->{'spsid.object.container'} = $container;
-
-        push(@{$ret}, $attr);
-    }
-
-    return $ret;
+    my $object_tbl_fetch = $sth->fetchall_arrayref();
+    return $self->_retrieve_objects($object_tbl_fetch);
 }
 
 
@@ -316,18 +332,15 @@ sub search_objects
         ' OBJECT_CONTAINER=? AND ' : '';
     
     my $sth = $self->_dbh->prepare
-        ('SELECT OBJECT_ID, ATTR_NAME, ATTR_VALUE ' .
-         'FROM SPSID_OBJECT_ATTR ' .
-         'WHERE OBJECT_ID IN (' .
-         '  SELECT SPSID_OBJECT_ATTR.OBJECT_ID ' .
-         '  FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
-         '  WHERE ' .
+        ('SELECT SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
+         'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
+         'WHERE ' .
          $container_cond .
-         '   OBJECT_CLASS=? AND ' .
-         '   OBJECT_DELETED=0 AND ' .
-         '   SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID AND ' .
-         '   ATTR_NAME=? AND ' .
-         '   ATTR_VALUE=?)');
+         'OBJECT_CLASS=? AND ' .
+         'OBJECT_DELETED=0 AND ' .
+         'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID AND ' .
+         'ATTR_NAME=? AND ' .
+         'ATTR_VALUE=?');
 
     if( defined($container) ) {
         $sth->execute($container, $objclass, $attr_name, $attr_value);
@@ -336,23 +349,48 @@ sub search_objects
         $sth->execute($objclass, $attr_name, $attr_value);
     }    
 
-    my %result;
+    my $object_tbl_fetch = $sth->fetchall_arrayref();
+    return $self->_retrieve_objects($object_tbl_fetch);
+}
+
+
+# input: arrayref of arrayrefs: OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER
+sub _retrieve_objects
+{
+    my $self = shift;
+    my $object_tbl_fetch = shift;
+
+    if( scalar(@{$object_tbl_fetch}) == 0 ) {
+        return [];
+    }
+    
+    my @ids = map {'\'' . $_->[0] . '\''} @{$object_tbl_fetch};
+
+    my $sth = $self->_dbh->prepare
+        ('SELECT OBJECT_ID, ATTR_NAME, ATTR_VALUE ' .
+         'FROM SPSID_OBJECT_ATTR ' .
+         'WHERE OBJECT_ID IN (' . join(',', @ids) . ')');
+
+    $sth->execute();
+    
+    my %attributes;
     while( my $r = $sth->fetchrow_arrayref() ) {
-        $result{$r->[0]}{$r->[1]} = $r->[2];
+        $attributes{$r->[0]}{$r->[1]} = $r->[2];
     }
 
     my $ret = [];
 
-    while( my ($id, $attr) = each %result ) {
-        $attr->{'spsid.object.id'} = $id;
-        $attr->{'spsid.object.class'} = $objclass;
-        $attr->{'spsid.object.container'} = $container;
-
-        push(@{$ret}, $attr);
+    foreach my $r (@{$object_tbl_fetch}) {
+        $attributes{$r->[0]}->{'spsid.object.id'} = $r->[0];
+        $attributes{$r->[0]}->{'spsid.object.class'} = $r->[1];
+        $attributes{$r->[0]}->{'spsid.object.container'} = $r->[2];
+        push(@{$ret}, $attributes{$r->[0]});
     }
-
+            
     return $ret;
 }
+    
+    
 
 
 

@@ -21,9 +21,28 @@ if test $? -ne 0; then
     exit 1
 fi
 
+${PERL} ${SPSID_TOP}/bin/spsid_siam_init --url=${SPSID_PLACK_URL}
 
-echo "Press ENTER"
-read text
+if test $? -ne 0; then
+    echo "ERROR: Failed to initialize SIAM root" 1>&2
+    ${SHELL} ${SPSID_TOP}/t/stop_plack.sh
+    ${SHELL} ${SPSID_TOP}/t/delete_db.sh
+    exit 1
+fi
+
+
+${PERL} ${SPSID_TOP}/bin/spsid_siam_load_yaml --url=${SPSID_PLACK_URL} \
+    --in=${SPSID_TOP}/t/siam_test_data.yaml
+
+if test $? -ne 0; then
+    echo "ERROR: Failed to load YAML data" 1>&2
+    ${SHELL} ${SPSID_TOP}/t/stop_plack.sh
+    ${SHELL} ${SPSID_TOP}/t/delete_db.sh
+    exit 1
+fi
+
+
+${PERL} ${SPSID_TOP}/t/run_tap_harness.pl 
 
 
 ${SHELL} ${SPSID_TOP}/t/stop_plack.sh

@@ -20,8 +20,6 @@ The attribute `siam.object.complete`, if undefined, defaults to 1.
 The root object
 ---------------
 
-The root SIAM object is stored in SPSID, and it's the only object with
-the attribute `spsid.siam.root`, and its value is always 1.
-
-The root object has `NIL` as the container ID.
+The root SIAM object is stored in SPSID. The root object has `NIL` as
+the container ID.
 

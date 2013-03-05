@@ -82,7 +82,7 @@ my %filter_attributes =
 
 foreach my $obj (@{$data})
 {
-    import_object($obj, $root->{'spsid.object.id'});
+    import_object($obj, $root);
 }
 
 print STDERR "Loaded $obj_count SIAM objects\n";

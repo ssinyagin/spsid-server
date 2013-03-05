@@ -2,6 +2,7 @@
 echo "Starting Plack server" 1>&2
 
 plackup --host ${SPSID_PLACK_HOST} --port ${SPSID_PLACK_PORT} \
+    --access-log ${SPSID_PLACK_LOG} \
     ${SPSID_TOP}/share/psgi/spsid_jsonrpc.psgi &
 
 PLACK_PID=$!

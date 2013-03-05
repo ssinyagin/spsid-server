@@ -60,7 +60,7 @@ my %filter_attributes =
      'spsid.object.container' => 1,
      );
 
-my $data = fetch_contained_objects($root->{'spsid.object.id'});
+my $data = fetch_contained_objects($root);
 
 print YAML::Dump($data);
 exit(0);

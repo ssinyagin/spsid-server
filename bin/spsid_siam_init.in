@@ -45,9 +45,9 @@ if( not $ok or scalar(@ARGV) > 0 ) {
 
 
 my $attr = {
-            'spsid.object.class' => 'SIAM',
             'spsid.object.container' => 'NIL',
             'spsid.siam.root' => 1,
+            'siam.object.complete' => 1,
            };
 
 
@@ -60,7 +60,11 @@ if( defined($root) ) {
 
 
 try {
-    $client->create_object('SIAM', $attr);
+    $client->create_object('SIAM',
+                           {
+                            'spsid.object.container' => 'NIL',
+                            'siam.object.complete' => 1,
+                           });
 }
     catch {
         print STDERR "Error: " . $_ . "\n";

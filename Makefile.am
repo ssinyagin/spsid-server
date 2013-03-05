@@ -34,4 +34,4 @@ dist-hook:
 
 
 test: all
-	SPSID_TOP=@abs_top_builddir@ $(SHELL) t/run_tests.sh
+	SPSID_TOP=@abs_top_builddir@ PERL=$(PERL) $(SHELL) t/run_tests.sh

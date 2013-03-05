@@ -143,7 +143,8 @@ sub _call
         return $result->{'result'};
     }
 
-    my $err_result = decode_json($response->decoded_content);
+    my $err_result;
+    eval {$err_result = decode_json($response->decoded_content) };
     if( defined($err_result) and defined($err_result->{'error'}) ){
         die(&{$rpc_error_msg}($err_result));
     }
@@ -235,7 +236,7 @@ sub get_siam_root
     my $self = shift;
     my $r = $self->search_objects('NIL', 'SIAM');
     if( defined($r) and scalar(@{$r}) > 0 ) {
-        return $r->[0];
+        return $r->[0]->{'spsid.object.id'};
     }
     else {
         return;
