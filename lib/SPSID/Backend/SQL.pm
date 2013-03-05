@@ -279,7 +279,7 @@ sub contained_objects
         ('SELECT SPSID_OBJECT_ATTR.OBJECT_ID, ATTR_NAME, ATTR_VALUE ' .
          'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
          'WHERE ' .
-         ' OBJECT_CONTAINER=? AND ',
+         ' OBJECT_CONTAINER=? AND ' .
          ' OBJECT_CLASS=? AND ' .
          ' OBJECT_DELETED=0 AND ' .
          ' SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
@@ -323,7 +323,7 @@ sub search_objects
          '  SELECT SPSID_OBJECT_ATTR.OBJECT_ID ' .
          '  FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
          '  WHERE ' .
-         '   OBJECT_CONTAINER=? AND ',
+         '   OBJECT_CONTAINER=? AND ' .
          '   OBJECT_CLASS=? AND ' .
          '   OBJECT_DELETED=0 AND ' .
          '   SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID AND ' .

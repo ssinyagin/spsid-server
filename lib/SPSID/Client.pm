@@ -59,7 +59,7 @@ sub new_from_getopt
     my $password;
 
     my $p = new Getopt::Long::Parser;
-    $p->configure(pass_through => 1);
+    $p->configure('pass_through');
     if( not $p->getoptions('url=s'   => \$url,
                            'realm=s' => \$realm,
                            'user=s'  => \$username,
@@ -92,10 +92,10 @@ sub new_from_getopt
 sub getopt_help_string
 {
     return join("\n",
-                "--url=URL      SPSID RPC location",
-                "--realm=X      HTTP authentication realm",
-                "--user=X       HTTP authentication user",
-                "--pw=X         HTTP authentication password");
+                "  --url=URL      SPSID RPC location",
+                "  --realm=X      HTTP authentication realm",
+                "  --user=X       HTTP authentication user",
+                "  --pw=X         HTTP authentication password");
 }
             
     
@@ -116,22 +116,39 @@ sub _call
                      'method'  => $method,
                      'params'  => $params}));
 
-    my $reponse = $self->ua->request($req);
+    my $response = $self->ua->request($req);
 
-    die($response->status_line) unless $response->is_success;
+    my $rpc_error_msg = sub {
+        my $r = shift;
+        my $ret = 'JSON-RPC error ' . $r->{'error'}{'code'} . ': ' .
+            $r->{'error'}{'message'};
+        if( defined($r->{'error'}{'data'}) ) {
+            $ret .= ' ' . $r->{'error'}{'data'};
+        }
+        return $ret;
+    };
+        
+    if( $response->is_success ) {
+        my $result = decode_json($response->decoded_content);
+        die('Cannot parse responce') unless defined($result);
+        
+        die('Missing version 2.0 in RPC response') unless
+            (defined($result->{'jsonrpc'}) and $result->{'jsonrpc'} eq '2.0');
+        
+        if( defined($result->{'error'}) ) {            
+            die(&{$rpc_error_msg}($result));
+        }
 
-    my $result = decode_json($response->decoded_content);
-    die('Cannot parse responce') unless defined($result);
-    
-    die('Missing version 2.0 in RPC response') unless
-        (defined($result->{'jsonrpc'}) and $result->{'jsonrpc'} eq '2.0');
-
-    if( defined($result->{'error'}) ) {
-        die('JSON-RPC error ' . $result->{'error'}{'code'} . ': ' .
-            $result->{'error'}{'message'});
+        return $result->{'result'};
     }
 
-    return $result->{'result'};
+    my $err_result = decode_json($response->decoded_content);
+    if( defined($err_result) and defined($err_result->{'error'}) ){
+        die(&{$rpc_error_msg}($err_result));
+    }
+    else {
+        die('HTTP error:' . $response->status_line);
+    }
 }
 
 

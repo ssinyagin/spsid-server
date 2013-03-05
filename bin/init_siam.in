@@ -5,14 +5,14 @@ use warnings;
 
 use Getopt::Long;
 use Try::Tiny;
-use SPSID::Client;
-
     
 BEGIN {
     if(defined($ENV{'SPSID_CONFIG'})) {
         require $ENV{'SPSID_CONFIG'};
     } else { require '@spsid_config_pl@'; }
 }
+
+use SPSID::Client;
 
 
 my $client;
@@ -22,8 +22,8 @@ try {
 }
     catch {
         print STDERR "Error: " . $_ . "\n";
-        print STDERR 'Usage: ' . $0 . '--url [options...]' . "\n",
-            SPSID::Client->getopt_help_string();
+        print STDERR 'Usage: ' . $0 . ' --url [options...]' . "\n",
+            SPSID::Client->getopt_help_string(), "\n";
         exit(1);
     };
 

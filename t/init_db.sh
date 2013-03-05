@@ -7,12 +7,20 @@ if test x${SQLITE3} = x; then
     fi
 fi
 
+SQLFILE=${SPSID_TOP}/share/sql/spsid_schema.ansi.sql
+
+if test ! -f ${SQLFILE}; then
+    echo "No such file: ${SQLFILE}" 1>&2
+    exit 1
+fi
+
+
 echo "Initializing SPSID database in ${SPSID_SQLITE_DB}" 1>&2
 
-${SQLITE3} -init ${TOP_BUILDDIR}/share/sql/spsid_schema.ansi.sql \
+${SQLITE3} -init ${SPSID_TOP}/share/sql/spsid_schema.ansi.sql \
     ${SPSID_SQLITE_DB} .quit
 
-if test $? -ne 0; then
+if test $? -ne 0 -o ! -s ${SPSID_SQLITE_DB}; then
     echo "Failed to initialize ${SPSID_SQLITE_DB}" 1>&2
     exit 1
 fi
