@@ -19,13 +19,13 @@
 SUBST = @abs_top_builddir@/setup_tools/substvars.sh
 
 bin_SCRIPTS = \
-	init_siam
+	spsid_siam_init
 
 CLEANFILES = $(bin_SCRIPTS)
 
 EXTRA_DIST = \
-	init_siam.in
+	spsid_siam_init.in
 
 
-init_siam: init_siam.in
-	$(SUBST) init_siam.in > init_siam
+spsid_siam_init: spsid_siam_init.in
+	$(SUBST) spsid_siam_init.in > spsid_siam_init

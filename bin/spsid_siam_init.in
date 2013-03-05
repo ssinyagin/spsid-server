@@ -23,7 +23,9 @@ try {
     catch {
         print STDERR "Error: " . $_ . "\n";
         print STDERR 'Usage: ' . $0 . ' --url [options...]' . "\n",
-            SPSID::Client->getopt_help_string(), "\n";
+            SPSID::Client->getopt_help_string(), "\n\n";
+        print STDERR "This program initializes the SIAM root " .
+            "object in SPSID database.\n";
         exit(1);
     };
 
