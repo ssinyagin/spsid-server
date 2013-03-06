@@ -30,72 +30,198 @@ $SPSID::Config::backend = 'SPSID::Backend::SQL';
     );
 
                                
-                                     
 
-$SPSID::Config::object_attributes =
+$SPSID::Config::common_attributes =
 {
- '_mandatory' =>
+ 'mandatory' =>
  {
   'spsid.object.id' => 1,
   'spsid.object.class' => 1,
   'spsid.object.container' => 1,
  },
- '_unique' =>
+ 'unique' =>
  {
   'spsid.object.id' => 1,
  },
-  
+};
+
+
+$SPSID::Config::class_attributes =
+{
+ 'mandatory' =>
+ {
+  'spsid.object.id' => 1,
+  'spsid.object.class' => 1,
+  'spsid.object.container' => 1,
+ },
+ 'unique' =>
+ {
+  'spsid.object.id' => 1,
+ },
+
+
+ 'SIAM' =>
+ {
+  'single_instance' => 1,
+ },
+
  'SIAM::Contract' =>
  {
-  '_mandatory' =>
+  'mandatory' =>
   {
    'siam.contract.inventory_id' => 1,
    'siam.contract.customer_name' => 1,
   },
-  '_unique' =>
+  'unique' =>
   {
    'siam.contract.inventory_id' => 1,
   },
+  'contained_in' => {'SIAM' => 1},
  },
 
  'SIAM::Service' =>
  {
-  '_mandatory' =>
+  'mandatory' =>
   {
    'siam.svc.product_name' => 1,
    'siam.svc.type' => 1,
    'siam.svc.inventory_id' => 1,
   },
-  '_unique' =>
+  'unique' =>
   {
    'siam.svc.inventory_id' => 1,
   },
+  'contained_in' => {'SIAM::Contract' => 1},
  },
 
  'SIAM::ServiceUnit' =>
  {
-  '_mandatory' =>
+  'mandatory' =>
   {
    'siam.svcunit.name' => 1,
    'siam.svcunit.type' => 1,
    'siam.svcunit.inventory_id' => 1,
   },
-  '_unique' =>
+  'unique' =>
   {
    'siam.svcunit.inventory_id' => 1,
   },
+  'contained_in' => {'SIAM::Service' => 1},
  },
 
+ 'SIAM::ServiceComponent' =>
+ {
+  'mandatory' =>
+  {
+   'siam.svcc.name' => 1,
+   'siam.svcc.type' => 1,
+   'siam.svcc.inventory_id' => 1,
+   'siam.svcc.device_id' => 1,
+  },
+  'unique' =>
+  {
+   'siam.svcc.inventory_id' => 1,
+  },
+  'contained_in' => {'SIAM::ServiceUnit' => 1},
+  'object_ref' =>  {'siam.svcc.device_id' => 1},
+ },
  
+ 'SIAM::Device' =>
+ {
+  'mandatory' =>
+  {
+   'siam.device.inventory_id' => 1,
+   'siam.device.name' => 1,
+  },
+  'unique' =>
+  {
+   'siam.device.inventory_id' => 1,
+   'siam.device.name' => 1,
+  },
+  'contained_in' => {'SIAM' => 1},
+ },
 
-  
+ 'SIAM::AccessScope' =>
+ {
+  'mandatory' =>
+  {
+   'siam.scope.name' => 1,
+   'siam.scope.applies_to' => 1,
+  },
+  'unique' =>
+  {
+   'siam.scope.name' => 1,
+  },
+  'contained_in' => {'SIAM' => 1},
+ },
+
+ 'SIAM::ScopeMember' =>
+ {
+  'mandatory' =>
+  {
+   'siam.scmember.object_id' => 1,
+  },
+  'contained_in' => {'SIAM::AccessScope' => 1},
+  'object_ref' => {'siam.scmember.object_id' => 1},
+ },
+
+ 'SIAM::User' =>
+ {
+  'mandatory' =>
+  {
+   'siam.user.uid' => 1,
+  },
+  'unique' =>
+  {
+   'siam.user.uid' => 1,
+  },
+  'contained_in' => {'SIAM' => 1},
+ },
+
+ 'SIAM::Privilege' =>
+ {
+  'mandatory' =>
+  {
+   'siam.privilege.access_scope_id' => 1,
+   'siam.privilege.type' => 1,
+  },
+  'contained_in' => {'SIAM::User' => 1},
+  'object_ref' => {'siam.privilege.access_scope_id' => 1},
+ },
+
+ 'SIAM::Attribute' =>
+ {
+  'mandatory' =>
+  {
+   'siam.attribute.name' => 1,
+  },
+  'unique' =>
+  {
+   'siam.attribute.name' => 1,
+  },
+  'contained_in' => {'SIAM' => 1},
+ },
+
+
+ 'SIAM::Report' =>
+ {
+  'mandatory' =>
+  {
+   'siam.report.name' => 1,
+   'siam.report.description' => 1,
+   'siam.report.object_class' => 1,
+   'siam.report.type' => 1,
+   'siam.report.last_updated' => 1,
+  },
+  'unique' =>
+  {
+   'siam.report.name' => 1,
+  },
+ },
+
 };
-
-
-  
+                                     
  
-
-  
 
                                       
                  

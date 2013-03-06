@@ -86,9 +86,9 @@ sub create_object
     $attr->{'spsid.object.id'} = $id;
     $attr->{'spsid.object.class'} = $objclass;
 
-    my $cfg = $SPSID::Config::object_attributes;
+    my $cfg = $SPSID::Config::class_attributes;
     if( defined($cfg->{$objclass}) and
-        $cfg->{$objclass}{'_single_instance'} ) {        
+        $cfg->{$objclass}{'single_instance'} ) {        
         my $r = $self->search_objects(undef, $objclass);
         if( scalar(@{$r}) > 0 ) {
             die('Only one instance of object class ' . $objclass .
@@ -291,21 +291,20 @@ sub validate_object
         &{$func}($attr);
     }
 
-    my $cfg = $SPSID::Config::object_attributes;
-    $self->_verify_attributes($attr, $cfg);
+    $self->_verify_attributes($attr, $SPSID::Config::common_attributes);
 
     my $objclass = $attr->{'spsid.object.class'};
 
+    my $cfg = $SPSID::Config::class_attributes;
     if( defined($cfg->{$objclass}) ) {
         $self->_verify_attributes($attr, $cfg->{$objclass});
 
-        if( defined($cfg->{$objclass}{'_contained_in'}) ) {
+        if( defined($cfg->{$objclass}{'contained_in'}) ) {
             my $container_class =
                 $self->_backend->object_class
                     ($attr->{'spsid.object.container'});
 
-            if( not grep {$container_class eq $_}
-                @{$cfg->{$objclass}{'_contained_in'}}) {
+            if( not $cfg->{$objclass}{'contained_in'}{$container_class} ) {
                 die('Object ' . $attr->{'spsid.object.id'} .
                     ' of class ' . $objclass . ' cannot be contained inside ' .
                     'of an object of class ' . $container_class);
@@ -324,9 +323,8 @@ sub _verify_attributes
     my $attr = shift;
     my $cfg = shift;
 
-    if( defined($cfg->{'_mandatory'}) ) {
-
-        while( my ($name, $must) = each %{$cfg->{'_mandatory'}} ) {
+    if( defined($cfg->{'mandatory'}) ) {
+        while( my ($name, $must) = each %{$cfg->{'mandatory'}} ) {
             if( $must and not defined($attr->{$name}) ) {
                 die('Missing mandatory attribute ' . $name . ' in ' .
                     $attr->{'spsid.object.id'});
@@ -334,12 +332,9 @@ sub _verify_attributes
         }
     }
 
-    if( defined($cfg->{'_unique'}) ) {
-
-        while( my ($name, $must) = each %{$cfg->{'_unique'}} ) {
-
+    if( defined($cfg->{'unique'}) ) {
+        while( my ($name, $must) = each %{$cfg->{'unique'}} ) {
             if( defined($attr->{$name}) ) {
-
                 my $found =
                     $self->search_objects(undef,
                                           $attr->{'spsid.object.class'},
@@ -353,6 +348,19 @@ sub _verify_attributes
                     die('Duplicate value "' . $attr->{$name} .
                         '" for a unique attribute ' . $name . ' in ' .
                         $attr->{'spsid.object.id'});
+                }
+            }
+        }
+    }
+
+    if( defined($cfg->{'object_ref'}) ) {
+        while( my ($name, $must) = each %{$cfg->{'object_ref'}} ) {
+            if( defined($attr->{$name}) and $attr->{$name} ne 'NIL' ) {
+                if( not $self->object_exists($attr->{$name}) ) {
+                    
+                    die('Attribute ' . $name .
+                        ' points to a non-existent object ' . $attr->{$name} .
+                        ' in ' . $attr->{'spsid.object.id'});
                 }
             }
         }
