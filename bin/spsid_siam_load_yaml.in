@@ -73,6 +73,16 @@ if( not defined($root) ) {
     exit(1);
 }
 
+my $schema = $client->get_schema();
+my %objref_attribute;
+
+foreach my $objclass (keys %{$schema}) {
+    my $refs = $schema->{$objclass}{'object_ref'};
+    if( defined($refs) ) {
+        $objref_attribute{$objclass} = $refs;
+    }
+}
+
 
 my %filter_attributes =
     ('_contains_' => 1,
@@ -80,9 +90,37 @@ my %filter_attributes =
      'siam.object.class' => 1,
      );
 
+my %delayed_refs;
+my %id_translation;
+
+my %reserved_refs =
+    ('SIAM.SCOPE.ALL.CONTRACTS' => 1,
+     'SIAM.SCOPE.ALL.ATTRIBUTES' => 1,
+    );
+
 foreach my $obj (@{$data})
 {
     import_object($obj, $root);
+}
+
+# all delayed references are NIL, and now we make them point to real objects
+
+while( my ($import_id, $refs) = each %delayed_refs ) {
+
+    my $id = $id_translation{$import_id};
+    die('cannot find import ID: ' . $import_id) unless defined($id);
+    
+    my $mod_attr = {};
+    
+    while( my ($attr, $oldref) = each %{$refs} ) {
+        
+        my $newref = $id_translation{$oldref};
+        die('cannot find import ID: ' . $oldref) unless defined($newref);
+
+        $mod_attr->{$attr} = $newref;
+    }
+        
+    $client->modify_object($id, $mod_attr);
 }
 
 print STDERR "Loaded $obj_count SIAM objects\n";
@@ -95,30 +133,46 @@ sub import_object
     my $obj = shift;
     my $container = shift;
 
-    # duplicate all attributes except "_contains_"
-
-    my $attr = {};
-    while( my ($key, $val) = each %{$obj} )
-    {
-        if( not $filter_attributes{$key} )
-        {
-            $attr->{$key} = $val;
-        }
-    }
-
-    if( not defined($attr->{'siam.object.complete'}) ) {
-        $attr->{'siam.object.complete'} = 1;
-    }
-    
     my $objclass = $obj->{'siam.object.class'};
     if( not defined($objclass) )
     {
         die('Import object does not have "siam.object.class"');
     }
 
+    my $import_id = $obj->{'siam.object.id'};
+    if( not defined($import_id) ) {
+        die('Import object does not have "siam.object.id"');
+    }
+
+    # duplicate all attributes except the filtered ones, and remember
+    # all object references for further update
+
+    my $attr = {};
+    while( my ($key, $val) = each %{$obj} )
+    {
+        if( not $filter_attributes{$key} )
+        {
+            if( defined($objref_attribute{$objclass}{$key}) and
+                not $reserved_refs{$val} ) {
+                
+                $delayed_refs{$import_id}{$key} = $val;
+                $attr->{$key} = 'NIL';
+            }
+            else {
+                $attr->{$key} = $val;
+            }
+        }
+    }
+
+    if( not defined($attr->{'siam.object.complete'}) ) {
+        $attr->{'siam.object.complete'} = 1;
+    }    
+
     $attr->{'spsid.object.container'} = $container;
         
     my $id = $client->create_object($objclass, $attr);
+    $id_translation{$import_id} = $id;
+        
     $obj_count++;
 
     if( defined($obj->{'_contains_'}) )

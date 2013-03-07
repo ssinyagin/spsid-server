@@ -117,6 +117,12 @@ sub contained_classes
 }
 
 
+sub get_schema
+{
+    return $spsid->get_schema();
+}
+
+
     
 my $rpc = JSON::RPC::Dispatcher->new;
 
@@ -126,6 +132,7 @@ $rpc->register('delete_object', \&delete_object, { with_plack_request => 1 });
 $rpc->register('get_object', \&get_object);
 $rpc->register('search_objects', \&search_objects);
 $rpc->register('contained_classes', \&contained_classes);
+$rpc->register('get_schema', \&get_schema);
 
 $rpc->register('ping', sub{my %arg = @_; return \%arg});
 

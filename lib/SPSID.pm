@@ -281,6 +281,13 @@ sub contained_classes
 }
 
 
+sub get_schema
+{
+    my $self = shift;
+    return $SPSID::Config::class_attributes;
+}
+
+
 
 sub validate_object
 {
@@ -354,13 +361,31 @@ sub _verify_attributes
     }
 
     if( defined($cfg->{'object_ref'}) ) {
-        while( my ($name, $must) = each %{$cfg->{'object_ref'}} ) {
+        while( my ($name, $refclass) = each %{$cfg->{'object_ref'}} ) {
             if( defined($attr->{$name}) and $attr->{$name} ne 'NIL' ) {
-                if( not $self->object_exists($attr->{$name}) ) {
+
+                my $target = $attr->{$name};
+
+                if( not $cfg->{'reserved_refs'}{$name}{$target} ) {
                     
-                    die('Attribute ' . $name .
-                        ' points to a non-existent object ' . $attr->{$name} .
-                        ' in ' . $attr->{'spsid.object.id'});
+                    if( not $self->object_exists($target) ) {
+                        die('Attribute ' . $name .
+                            ' points to a non-existent object ' . $target .
+                            ' in ' . $attr->{'spsid.object.id'});
+                    }
+                    
+                    if( $refclass ne '*' ) {
+                        my $target_class =
+                            $self->_backend->object_class($target);
+                        
+                        if( $target_class ne $refclass ) {
+                            die('Attribute ' . $name .
+                                ' points to an object ' . $target .
+                                ' of class ' . $target_class . ', but is only' .
+                                ' allowed to point to ' . $refclass .
+                                ' in ' . $attr->{'spsid.object.id'});
+                        }
+                    }
                 }
             }
         }

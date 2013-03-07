@@ -123,7 +123,7 @@ $SPSID::Config::class_attributes =
    'siam.svcc.inventory_id' => 1,
   },
   'contained_in' => {'SIAM::ServiceUnit' => 1},
-  'object_ref' =>  {'siam.svcc.device_id' => 1},
+  'object_ref' =>  {'siam.svcc.device_id' => 'SIAM::Device'},
  },
  
  'SIAM::Device' =>
@@ -162,7 +162,7 @@ $SPSID::Config::class_attributes =
    'siam.scmember.object_id' => 1,
   },
   'contained_in' => {'SIAM::AccessScope' => 1},
-  'object_ref' => {'siam.scmember.object_id' => 1},
+  'object_ref' => {'siam.scmember.object_id' => '*'},
  },
 
  'SIAM::User' =>
@@ -186,7 +186,15 @@ $SPSID::Config::class_attributes =
    'siam.privilege.type' => 1,
   },
   'contained_in' => {'SIAM::User' => 1},
-  'object_ref' => {'siam.privilege.access_scope_id' => 1},
+  'object_ref' => {'siam.privilege.access_scope_id' => 'SIAM::AccessScope'},
+  'reserved_refs' => 
+  {
+   'siam.privilege.access_scope_id' =>
+   {
+    'SIAM.SCOPE.ALL.CONTRACTS' => 1,
+    'SIAM.SCOPE.ALL.ATTRIBUTES' => 1,
+   },
+  },
  },
 
  'SIAM::Attribute' =>

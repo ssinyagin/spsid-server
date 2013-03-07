@@ -236,14 +236,6 @@
       siam.object.class:         SIAM::ScopeMember
       siam.scmember.object_id:   ATTR0006
     -
-      siam.object.id:            ASCP_CUST.m07
-      siam.object.class:         SIAM::ScopeMember
-      siam.scmember.object_id:   ATTR0007
-    -
-      siam.object.id:            ASCP_CUST.m08
-      siam.object.class:         SIAM::ScopeMember
-      siam.scmember.object_id:   ATTR0008
-    -
       siam.object.id:            ASCP_CUST.m09
       siam.object.class:         SIAM::ScopeMember
       siam.scmember.object_id:   ATTR0009

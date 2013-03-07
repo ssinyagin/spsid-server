@@ -231,6 +231,14 @@ sub contained_classes
 }
 
 
+sub get_schema
+{
+    my $self = shift;
+    return $self->_call('get_schema', {});
+}
+    
+
+
 sub get_siam_root
 {
     my $self = shift;
@@ -242,6 +250,9 @@ sub get_siam_root
         return;
     }
 }
+
+
+
 
 
 sub ping

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 6;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
