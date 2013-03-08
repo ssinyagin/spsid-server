@@ -1,0 +1,94 @@
+#!@PERL@
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Try::Tiny;
+use JSON;
+
+BEGIN {
+    if(defined($ENV{'SPSID_CONFIG'})) {
+        require $ENV{'SPSID_CONFIG'};
+    } else { require '@spsid_config_pl@'; }
+}
+
+use SPSID::Client;
+
+$| = 1;
+
+sub print_usage {
+    print STDERR
+        ('Usage: ' . $0 . ' --url=URL --class=CLASS [options...]' . "\n",
+         SPSID::Client->getopt_help_string(),
+         "  --class=CLASS      Object class\n",
+         "  --container=ID     Optional container ID\n",
+         "  --attr=NAME:VALUE  Optional search criteria\n",
+         "\n");
+    print STDERR ("This program searches SPSID objects.\n");
+}
+
+
+my $client;
+
+try {
+    $client = SPSID::Client->new_from_getopt();
+}
+    catch {
+        print STDERR "Error: " . $_ . "\n";
+        print_usage();
+        exit(1);
+    };
+
+
+
+my $objclass;
+my $container;
+my @attrfilters;
+
+my $ok =  GetOptions
+    ('class=s' => \$objclass,
+     'container=s' => \$container,
+     'attr=s' => \@attrfilters,
+    );
+
+
+if( not $ok or not defined($objclass) or scalar(@ARGV) > 0 ) {
+    print_usage();
+    exit(1);
+};
+
+
+my @args = ($container, $objclass);
+
+if( scalar(@attrfilters) ) {
+
+    my $pair = shift @attrfilters;
+
+    if( $pair !~ /^([a-z0-9._]+):(.+)/ ) {
+        print STDERR "Invalid syntax for the attribute filter: $pair\n";
+        print_usage();
+        exit(1);
+    }
+
+    push(@args, $1, $2);
+}
+
+my $result = $client->search_objects(@args);
+
+my $json = JSON->new->utf8(1)->pretty(1);
+print $json->encode($result);
+
+
+exit(0);
+
+
+# Local Variables:
+# mode: cperl
+# indent-tabs-mode: nil
+# cperl-indent-level: 4
+# cperl-continued-statement-offset: 4
+# cperl-continued-brace-offset: -4
+# cperl-brace-offset: 0
+# cperl-label-offset: -2
+# End:

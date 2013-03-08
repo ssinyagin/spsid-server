@@ -92,7 +92,7 @@ sub search_objects
 {
     my %arg = @_;
     
-    die('container required') unless defined $arg{'container'};
+    die('container required') unless exists $arg{'container'};
     die('objclass required') unless defined $arg{'objclass'};
 
     my @search_attrs = ();

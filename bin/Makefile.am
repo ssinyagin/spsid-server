@@ -20,6 +20,7 @@ SUBST = @abs_top_builddir@/setup_tools/substvars.sh
 
 bin_SCRIPTS = \
 	spsid_delete_object \
+	spsid_search \
 	spsid_siam_dump_yaml \
 	spsid_siam_init \
 	spsid_siam_load_yaml
@@ -27,14 +28,18 @@ bin_SCRIPTS = \
 CLEANFILES = $(bin_SCRIPTS)
 
 EXTRA_DIST = \
-	spsid_delete_object \
-	spsid_siam_dump_yaml \
+	spsid_delete_object.in \
+	spsid_search.in
+	spsid_siam_dump_yaml.in \
 	spsid_siam_init.in \
 	spsid_siam_load_yaml.in
 
 
 spsid_delete_object: spsid_delete_object.in
 	$(SUBST) spsid_delete_object.in > spsid_delete_object
+
+spsid_search: spsid_search.in
+	$(SUBST) spsid_search.in > spsid_search
 
 spsid_siam_dump_yaml: spsid_siam_dump_yaml.in
 	$(SUBST) spsid_siam_dump_yaml.in > spsid_siam_dump_yaml

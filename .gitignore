@@ -14,6 +14,7 @@ share/conf_defaults/spsid_config.pl
 share/psgi/spsid_jsonrpc.psgi
 
 bin/spsid_delete_object
+bin/spsid_search
 bin/spsid_siam_dump_yaml
 bin/spsid_siam_init
 bin/spsid_siam_load_yaml
