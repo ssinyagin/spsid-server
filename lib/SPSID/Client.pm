@@ -222,6 +222,19 @@ sub search_objects
 }
 
 
+sub search_prefix
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $attr_name = shift;
+    my $attr_prefix = shift;
+
+    return $self->_call('search_prefix', {'objclass' => $objclass,
+                                          'attr_name' => $attr_name,
+                                          'attr_prefix' => $attr_prefix});
+}
+
+
 sub contained_classes
 {
     my $self = shift;

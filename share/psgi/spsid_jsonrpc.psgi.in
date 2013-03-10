@@ -109,6 +109,20 @@ sub search_objects
 }
 
 
+sub search_prefix
+{
+    my %arg = @_;
+    
+    die('objclass required') unless defined $arg{'objclass'};
+    die('attr_name required') unless defined $arg{'attr_name'};
+    die('attr_prefix required') unless defined $arg{'attr_prefix'};
+
+    return $spsid->search_prefix($arg{'objclass'},
+                                 $arg{'attr_name'},
+                                 $arg{'attr_prefix'});
+}
+
+
 sub contained_classes
 {
     my %arg = @_;    
@@ -131,6 +145,7 @@ $rpc->register('modify_object', \&modify_object, { with_plack_request => 1 });
 $rpc->register('delete_object', \&delete_object, { with_plack_request => 1 });
 $rpc->register('get_object', \&get_object);
 $rpc->register('search_objects', \&search_objects);
+$rpc->register('search_prefix', \&search_prefix);
 $rpc->register('contained_classes', \&contained_classes);
 $rpc->register('get_schema', \&get_schema);
 

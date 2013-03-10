@@ -17,17 +17,21 @@ use SPSID::Client;
 
 $| = 1;
 
-sub print_usage {
+sub print_usage
+{
     print STDERR
         ('Usage: ' . $0 . ' --url=URL --class=CLASS [options...]' . "\n",
          SPSID::Client->getopt_help_string(),
-         "  --class=CLASS      Object class\n",
-         "  --container=ID     Optional container ID\n",
-         "  --attr=NAME:VALUE  Optional search criteria\n",
+         "  --class=CLASS         Object class\n",
+         "  --container=ID        Optional container ID\n",
+         "  --attr=NAME:VALUE     Optional search criteria\n",
+         "  --prefix=NAME:SUBSTR  Optional search criteria\n",
          "\n");
-    print STDERR ("This program searches SPSID objects.\n");
-}
-
+    print STDERR
+        ("This program searches SPSID objects. Without container, all\n",
+         "matching objects are returned. Either exact match, or\n",
+         "case-insensoiotive prefix search can narrow down the results\n");
+};
 
 my $client;
 
@@ -45,36 +49,53 @@ try {
 my $objclass;
 my $container;
 my @attrfilters;
+my $prefix;
 
 my $ok =  GetOptions
     ('class=s' => \$objclass,
      'container=s' => \$container,
      'attr=s' => \@attrfilters,
+     'prefix=s' => \$prefix,
     );
 
 
-if( not $ok or not defined($objclass) or scalar(@ARGV) > 0 ) {
+if( not $ok or not defined($objclass) or scalar(@ARGV) > 0 or
+    (scalar(@attrfilters) > 0 and defined($prefix)) ) {
     print_usage();
     exit(1);
 };
 
+    
+my $result;
 
-my @args = ($container, $objclass);
+if( defined($prefix) ) {
 
-if( scalar(@attrfilters) ) {
-
-    my $pair = shift @attrfilters;
-
-    if( $pair !~ /^([a-z0-9._]+):(.+)/ ) {
-        print STDERR "Invalid syntax for the attribute filter: $pair\n";
+    if( $prefix !~ /^([a-z0-9._]+):(.+)/ ) {
+        print STDERR "Invalid syntax for the prefix: $prefix\n";
         print_usage();
         exit(1);
     }
 
-    push(@args, $1, $2);
+    $result = $client->search_prefix($objclass, $1, $2);
 }
+else {
+    my @args = ($container, $objclass);
 
-my $result = $client->search_objects(@args);
+    if( scalar(@attrfilters) ) {
+
+        my $pair = shift @attrfilters;
+        
+        if( $pair !~ /^([a-z0-9._]+):(.+)/ ) {
+            print STDERR "Invalid syntax for the attribute filter: $pair\n";
+            print_usage();
+            exit(1);
+        }
+        
+        push(@args, $1, $2);
+    }
+    
+    $result = $client->search_objects(@args);
+}
 
 my $json = JSON->new->utf8(1)->pretty(1);
 print $json->encode($result);

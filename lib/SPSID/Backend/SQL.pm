@@ -238,12 +238,12 @@ sub add_object_attributes
 
     my $sth = $self->_dbh->prepare
         ('INSERT INTO SPSID_OBJECT_ATTR ' .
-         '  (OBJECT_ID, ATTR_NAME, ATTR_VALUE) ' .
-         'VALUES(?,?,?)');
+         '  (OBJECT_ID, ATTR_NAME, ATTR_VALUE, ATTR_LOWER) ' .
+         'VALUES(?,?,?,?)');
 
     while( my ($name, $value) = each %{$add_attr} ) {
         if( not $spsid_attr_filter{$name} ) {
-            $sth->execute($id, $name, $value);
+            $sth->execute($id, $name, $value, lc($value));
         }
     }
 
@@ -260,11 +260,11 @@ sub modify_object_attributes
 
     my $sth = $self->_dbh->prepare
         ('UPDATE SPSID_OBJECT_ATTR ' .
-         '  SET ATTR_VALUE=? WHERE OBJECT_ID=? AND ATTR_NAME=?');
+         '  SET ATTR_VALUE=?, ATTR_LOWER=? WHERE OBJECT_ID=? AND ATTR_NAME=?');
 
     while( my ($name, $value) = each %{$mod_attr} ) {
         if( not $spsid_attr_filter{$name} ) {
-            $sth->execute($value, $id, $name);
+            $sth->execute($value, lc($value), $id, $name);
         }
     }
 
@@ -335,23 +335,50 @@ sub search_objects
         ('SELECT SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
          'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
          'WHERE ' .
+         'ATTR_NAME=? AND ' .
+         'ATTR_VALUE=? AND ' .
          $container_cond .
          'OBJECT_CLASS=? AND ' .
          'OBJECT_DELETED=0 AND ' .
-         'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID AND ' .
-         'ATTR_NAME=? AND ' .
-         'ATTR_VALUE=?');
+         'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
 
     if( defined($container) ) {
-        $sth->execute($container, $objclass, $attr_name, $attr_value);
+        $sth->execute($attr_name, $attr_value, $container, $objclass);
     }
     else {
-        $sth->execute($objclass, $attr_name, $attr_value);
+        $sth->execute($attr_name, $attr_value, $objclass);
     }    
 
     my $object_tbl_fetch = $sth->fetchall_arrayref();
     return $self->_retrieve_objects($object_tbl_fetch);
 }
+
+
+
+sub search_prefix
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $attr_name = shift;
+    my $attr_prefix = shift;
+
+    my $sth = $self->_dbh->prepare
+        ('SELECT SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
+         'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
+         'WHERE ' .
+         'ATTR_NAME=? AND ' .
+         'ATTR_LOWER LIKE ? AND ' .
+         'OBJECT_CLASS=? AND ' .
+         'OBJECT_DELETED=0 AND ' .
+         'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
+
+    $sth->execute($attr_name, lc($attr_prefix) . '%', $objclass);
+
+    my $object_tbl_fetch = $sth->fetchall_arrayref();
+    return $self->_retrieve_objects($object_tbl_fetch);
+}
+
+
 
 
 # input: arrayref of arrayrefs: OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER

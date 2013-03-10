@@ -271,6 +271,17 @@ sub search_objects
 }
 
 
+# case insensitive attribute prefix search
+sub search_prefix
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $attr_name = shift;
+    my $attr_prefix = shift;
+
+    return $self->_backend->search_prefix($objclass,$attr_name, $attr_prefix);
+}
+
 
 sub contained_classes
 {
