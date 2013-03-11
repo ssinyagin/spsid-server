@@ -1,0 +1,2 @@
+#!@SHELL@
+exec @PLACKUP@ -s FCGI @pkgdatadir@/psgi/spsid_jsonrpc.psgi

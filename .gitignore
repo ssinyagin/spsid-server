@@ -11,6 +11,7 @@ configure.lineno
 spsid-*.tar.gz
 setup_tools/substvars.sh
 share/conf_defaults/spsid_config.pl
+share/psgi/spsid_jsonrpc.fcgi
 share/psgi/spsid_jsonrpc.psgi
 
 bin/spsid_delete_object

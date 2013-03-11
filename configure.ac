@@ -29,6 +29,15 @@ AC_PATH_PROG(RM, rm, no)
 AC_PATH_PROG(RMDIR, rmdir, no)
 AC_PATH_PROG(FIND, find, no)
 
+AC_PATH_PROG(PLACKUP, plackup, no)
+
+AC_MSG_CHECKING([location of plackup])
+if test ${PLACKUP} = no; then
+   AC_MSG_ERROR([plackup is not found]);
+else
+   AC_MSG_RESULT([Ok])
+fi
+
 
 AC_ARG_ENABLE(pkgonly,
         [AC_HELP_STRING([--enable-pkgonly],

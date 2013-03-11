@@ -30,6 +30,8 @@ psgidir = @pkgdatadir@/psgi
 psgi_DATA = \
 	psgi/spsid_jsonrpc.psgi
 
+psgi_SCRIPTS = \
+	psgi/spsid_jsonrpc.fcgi
 
 sqldir = @pkgdatadir@/sql
 
@@ -39,10 +41,11 @@ dist_sql_DATA = \
 
 EXTRA_DIST = \
 	conf_defaults/spsid_config.pl.in \
-	psgi/spsid_jsonrpc.psgi.in
+	psgi/spsid_jsonrpc.psgi.in \
+	psgi/spsid_jsonrpc.fcgi.in
 
 
-CLEANFILES = $(psgi_DATA)
+CLEANFILES = $(psgi_DATA) $(psgi_SCRIPTS)
 
 
 
@@ -51,3 +54,6 @@ conf_defaults/spsid_config.pl: conf_defaults/spsid_config.pl.in
 
 psgi/spsid_jsonrpc.psgi: psgi/spsid_jsonrpc.psgi.in
 	$(SUBST) psgi/spsid_jsonrpc.psgi.in > psgi/spsid_jsonrpc.psgi
+
+psgi/spsid_jsonrpc.fcgi: psgi/spsid_jsonrpc.fcgi.in
+	$(SUBST) psgi/spsid_jsonrpc.fcgi.in > psgi/spsid_jsonrpc.fcgi
