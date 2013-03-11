@@ -31,8 +31,11 @@ if test $? -ne 0; then
 fi
 
 
+DATA_YAML=${SPSID_TOP}/t/siam_test_data.yaml
+echo "Loading objects from ${DATA_YAML}" 1>&2
+
 ${PERL} ${SPSID_TOP}/bin/spsid_siam_load_yaml --url=${SPSID_PLACK_URL} \
-    --in=${SPSID_TOP}/t/siam_test_data.yaml
+    --in=${DATA_YAML}
 
 if test $? -ne 0; then
     echo "ERROR: Failed to load YAML data" 1>&2

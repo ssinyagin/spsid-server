@@ -97,7 +97,8 @@ else {
     $result = $client->search_objects(@args);
 }
 
-my $json = JSON->new->utf8(1)->pretty(1);
+binmode(STDOUT);
+my $json = JSON->new->pretty(1);
 print $json->encode($result);
 
 

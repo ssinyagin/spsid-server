@@ -330,7 +330,11 @@ sub search_objects
 
     my $container_cond = defined($container) ?
         ' OBJECT_CONTAINER=? AND ' : '';
-    
+
+    if( $spsid_attr_filter{$attr_name} ) {
+        die('Object search on ' . $attr_name . ' is not allowed');
+    }
+
     my $sth = $self->_dbh->prepare
         ('SELECT SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
          'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
@@ -361,6 +365,10 @@ sub search_prefix
     my $objclass = shift;
     my $attr_name = shift;
     my $attr_prefix = shift;
+
+    if( $spsid_attr_filter{$attr_name} ) {
+        die('Prefix search on ' . $attr_name . ' is not allowed');
+    }
 
     my $sth = $self->_dbh->prepare
         ('SELECT SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .

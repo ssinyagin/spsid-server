@@ -342,8 +342,8 @@ sub _verify_attributes
     my $cfg = shift;
 
     if( defined($cfg->{'mandatory'}) ) {
-        while( my ($name, $must) = each %{$cfg->{'mandatory'}} ) {
-            if( $must and not defined($attr->{$name}) ) {
+        foreach my $name (keys %{$cfg->{'mandatory'}}) {
+            if( $cfg->{'mandatory'}{$name} and not defined($attr->{$name}) ) {
                 die('Missing mandatory attribute ' . $name . ' in ' .
                     $attr->{'spsid.object.id'});
             }
@@ -351,8 +351,9 @@ sub _verify_attributes
     }
 
     if( defined($cfg->{'unique'}) ) {
-        while( my ($name, $must) = each %{$cfg->{'unique'}} ) {
-            if( defined($attr->{$name}) ) {
+        foreach my $name (keys %{$cfg->{'unique'}}) {
+            if( $cfg->{'unique'}{$name} and 
+                defined($attr->{$name}) ) {
                 my $found =
                     $self->search_objects(undef,
                                           $attr->{'spsid.object.class'},
@@ -372,11 +373,12 @@ sub _verify_attributes
     }
 
     if( defined($cfg->{'object_ref'}) ) {
-        while( my ($name, $refclass) = each %{$cfg->{'object_ref'}} ) {
+        foreach my $name (keys %{$cfg->{'object_ref'}}) {
             if( defined($attr->{$name}) and $attr->{$name} ne 'NIL' ) {
 
                 my $target = $attr->{$name};
-
+                my $refclass = $cfg->{'object_ref'}{$name};
+                
                 if( not $cfg->{'reserved_refs'}{$name}{$target} ) {
                     
                     if( not $self->object_exists($target) ) {
