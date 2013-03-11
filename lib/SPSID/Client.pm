@@ -111,12 +111,15 @@ sub _call
 
     my $req = HTTP::Request->new( 'POST', $self->url );    
     $req->header( 'Content-Type' => 'application/json' );
-    $req->content( encode_json
-                   ({'jsonrpc' => '2.0',
-                     'id'      => $self->_next_id->(),
-                     'method'  => $method,
-                     'params'  => $params}));
 
+    my $json = JSON->new;
+    $req->content
+        ( $json->encode
+          ({'jsonrpc' => '2.0',
+            'id'      => $self->_next_id->(),
+            'method'  => $method,
+            'params'  => $params}));
+    
     my $response = $self->ua->request($req);
 
     my $rpc_error_msg = sub {
