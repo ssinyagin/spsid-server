@@ -28,7 +28,7 @@ pkgdatadir=@pkgdatadir@
 sysconfdir=@sysconfdir@
 
 
-spsid_config_pl=@pkgdatadir@/conf_defaults/spsid-config.pl
+spsid_config_pl=@pkgdatadir@/conf_defaults/spsid_config.pl
 
 @SED@ \
     -e "s,\@PERL\@,@PERL@,g" \

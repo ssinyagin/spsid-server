@@ -8,9 +8,12 @@ use Try::Tiny;
 use JSON;
 
 BEGIN {
-    if(defined($ENV{'SPSID_CONFIG'})) {
-        require $ENV{'SPSID_CONFIG'};
-    } else { require '@spsid_config_pl@'; }
+    if( defined($ENV{'SPSID_PERLLIBDIRS'}) ) {
+        unshift(@INC, split(/,/, $ENV{'SPSID_PERLLIBDIRS'}));
+    }
+    else {
+        unshift(@INC, split(/,/, @perllibdirs@));
+    }
 }
 
 use SPSID::Client;
