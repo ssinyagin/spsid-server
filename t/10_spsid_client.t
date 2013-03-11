@@ -5,7 +5,7 @@ use warnings;
 use utf8;
 use Unicode::Normalize;
 
-use Test::More tests => 26;
+use Test::More tests => 34;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
@@ -29,6 +29,7 @@ my $device = $r->[0]->{'spsid.object.id'};
 # try to create a duplicate root
 
 my $id;
+$id = undef;
 eval {
     $id = $client->create_object
         ('SIAM',
@@ -108,6 +109,7 @@ ok(($x eq $y),
 
 
 # try to create a SIAM::ServiceComponent at the top level
+$id = undef;
 eval {
     $id = $client->create_object
         ('SIAM::ServiceComponent',
@@ -124,6 +126,7 @@ ok((not defined($id) and $@), 'create object with wrong container');
 
 
 # try to create a SIAM::ServiceUnit with duplicate inventory ID
+$id = undef;
 eval {
     $id = $client->create_object
         ('SIAM::ServiceUnit',
@@ -139,6 +142,7 @@ ok((not defined($id) and $@), 'create ServiceUnit with duplicate inventory_id');
 
 # Create, modify, delete SIAM::ServiceUnit
 
+$id = undef;
 eval {
     $id = $client->create_object
         ('SIAM::ServiceUnit',
@@ -177,6 +181,50 @@ ok((scalar(@{$r}) == 0), 'contained_classes N1');
 $r = $client->contained_classes($svc);
 ok(((scalar(@{$r}) == 1) and ($r->[0] eq 'SIAM::ServiceUnit')),
    'contained_classes N2');
+
+
+$client->delete_object($id);
+$r = undef;
+eval { $r = $client->get_object($id); };
+ok((not defined($r) and $@), 'fetch a deleted object');
+
+
+# delete a device and check that the referring ServiceComponent got NIL
+# in the reference
+$client->delete_object($device);
+$r = $client->search_objects(undef, 'SIAM::ServiceComponent',
+                             'siam.svcc.inventory_id', 'SRVC0001.01.u01.c01');
+ok((scalar(@{$r}) == 1), 'retrieve ServiceComponent SRVC0001.01.u01.c01');
+ok(($r->[0]->{'siam.svcc.device_id'} eq 'NIL'),
+   'siam.svcc.device_id set to NIL after device is deleted');
+
+
+# delete a contract and check that contained objects are deleted and
+# the ScopeMember got NIL in the reference
+
+$r = $client->search_objects(undef, 'SIAM::Contract',
+                             'siam.contract.inventory_id', 'INVC0001');
+ok((scalar(@{$r}) == 1), 'retrieve Contract INVC0001');
+my $contract = $r->[0]->{'spsid.object.id'};
+
+$client->delete_object($contract);
+$r = $client->search_objects(undef, 'SIAM::ServiceComponent',
+                             'siam.svcc.inventory_id', 'SRVC0001.01.u01.c01');
+ok((scalar(@{$r}) == 0),
+   'ServiceComponent objects are deleted after contract deletion');
+
+$r = $client->search_objects(undef, 'SIAM::AccessScope',
+                             'siam.scope.name', 'Contract.0001');
+ok((scalar(@{$r}) == 1), 'retrieve AccessScope Contract.0001');
+my $scope = $r->[0]->{'spsid.object.id'};
+
+$r = $client->search_objects($scope, 'SIAM::ScopeMember');
+ok((scalar(@{$r}) == 1), 'retrieve scope members of Contract.0001');
+ok(($r->[0]->{'siam.scmember.object_id'} eq 'NIL'),
+   'siam.scmember.object_id set to NUL after contract deletion');
+
+
+
 
 
 

@@ -30,6 +30,14 @@ has '_backend' =>
     );
 
 
+has '_objrefs' =>
+    (
+     is  => 'rw',
+     isa => 'HashRef',
+     init_arg => undef,
+    );
+
+
 
 sub BUILD
 {
@@ -49,6 +57,21 @@ sub BUILD
         $self->_backend($SPSID::Config::backend->new
                         (user_id => $self->user_id));
     }
+
+    # build the hash of object reference attributes
+    my $objrefs = {};    
+    foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
+        my $cfg = $SPSID::Config::class_attributes->{$objclass};
+        if( defined($cfg->{'object_ref'}) ) {
+            while( my ($attr_name, $target_class) =
+                   each %{$cfg->{'object_ref'}} ) {
+                $objrefs->{$target_class}{$objclass}{$attr_name} = 1;
+            }
+        }                
+    }
+
+    $self->_objrefs($objrefs);
+    
     return;
 }
 
@@ -211,7 +234,27 @@ sub delete_object
             $self->delete_object($obj->{'spsid.object.id'});
         }
     }
-    
+
+    # set all references to this object to NIL
+    my $thisclass = $self->_backend->object_class($id);
+    my $objrefs = $self->_objrefs;
+
+    foreach my $target_class ('*', $thisclass) {
+        if( defined($objrefs->{$target_class}) ) {
+            foreach my $objclass (keys %{$objrefs->{$target_class}}) {
+                foreach my $attr_name
+                    (keys %{$objrefs->{$target_class}{$objclass}}) {
+                    my $r = $self->search_objects(undef, $objclass,
+                                                  $attr_name, $id);
+                    foreach my $obj (@{$r}) {
+                        $self->modify_object($obj->{'spsid.object.id'},
+                                             {$attr_name => 'NIL'});
+                    }
+                }
+            }
+        }
+    }
+            
     $self->log_object($id, 'Object deleted');
     $self->_backend->delete_object($id);
     return;
