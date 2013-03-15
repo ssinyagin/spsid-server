@@ -12,7 +12,7 @@ BEGIN {
 use JSON::RPC::Dispatcher;
 use SPSID;
 
-use Log::Any::Adapter ('File', '/tmp/plack_' . $$ . '.log');
+# use Log::Any::Adapter ('File', '/tmp/plack_' . $$ . '.log');
 
 
 my $spsid = SPSID->new();
