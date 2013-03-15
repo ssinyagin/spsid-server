@@ -39,30 +39,19 @@ $SPSID::Config::common_attributes =
   'spsid.object.class' => 1,
   'spsid.object.container' => 1,
  },
- 'unique' =>
- {
-  'spsid.object.id' => 1,
- },
 };
 
 
 $SPSID::Config::class_attributes =
 {
- 'mandatory' =>
- {
-  'spsid.object.id' => 1,
-  'spsid.object.class' => 1,
-  'spsid.object.container' => 1,
- },
- 'unique' =>
- {
-  'spsid.object.id' => 1,
- },
-
-
  'SIAM' =>
  {
   'single_instance' => 1,
+  'display' =>
+  {
+   'class_descr' => 'SIAM Root Object',
+   'sequence' => 10,
+  },
  },
 
  'SIAM::Contract' =>
@@ -77,6 +66,18 @@ $SPSID::Config::class_attributes =
    'siam.contract.inventory_id' => 1,
   },
   'contained_in' => {'SIAM' => 1},
+  'display' =>
+  {
+   'class_descr' => 'Contracts',
+   'sequence' => 110,
+   'name_attr' => 'siam.contract.inventory_id',
+   'info_attr' => ['siam.contract.customer_name'],
+   'attr_help' =>
+   {
+    'siam.contract.inventory_id' => 'Contract number in the billing system',
+    'siam.contract.customer_name' => 'Customer name',
+   },
+  },
  },
 
  'SIAM::Service' =>
@@ -92,6 +93,20 @@ $SPSID::Config::class_attributes =
    'siam.svc.inventory_id' => 1,
   },
   'contained_in' => {'SIAM::Contract' => 1},
+  'display' =>
+  {
+   'class_descr' => 'Services',
+   'sequence' => 120,
+   'name_attr' => 'siam.svc.product_name',
+   'info_attr' => ['siam.svc.type',
+                   'siam.svc.inventory_id'],
+   'attr_help' =>
+   {
+    'siam.svc.product_name' => 'Service product name',
+    'siam.svc.type' => 'Service type',
+    'siam.svc.inventory_id' => 'Service ID in the billing system',
+   },
+  },
  },
 
  'SIAM::ServiceUnit' =>
@@ -107,6 +122,20 @@ $SPSID::Config::class_attributes =
    'siam.svcunit.inventory_id' => 1,
   },
   'contained_in' => {'SIAM::Service' => 1},
+  'display' =>
+  {
+   'class_descr' => 'Service Units',
+   'sequence' => 130,
+   'name_attr' => 'siam.svcunit.name',
+   'info_attr' => ['siam.svcunit.type',
+                   'siam.svcunit.inventory_id'],
+   'attr_help' =>
+   {
+    'siam.svcunit.name' => 'Service Unit name',
+    'siam.svcunit.type' => 'Service Unit type',
+    'siam.svcunit.inventory_id' => 'Service Unit ID'
+   },
+  },
  },
 
  'SIAM::ServiceComponent' =>
@@ -124,6 +153,21 @@ $SPSID::Config::class_attributes =
   },
   'contained_in' => {'SIAM::ServiceUnit' => 1},
   'object_ref' =>  {'siam.svcc.device_id' => 'SIAM::Device'},
+  'display' =>
+  {
+   'class_descr' => 'Service Components',
+   'sequence' => 140,
+   'name_attr' => 'siam.svcc.name',
+   'info_attr' => ['siam.svcc.type',
+                   'siam.svcc.inventory_id'],
+   'attr_help' =>
+   {
+    'siam.svcc.name' => 'Service Component name',
+    'siam.svcc.type' => 'Service Component type',
+    'siam.svcc.inventory_id' => 'Service Component ID',
+    'siam.svcc.device_id' => 'Associated device',    
+   },
+  },
  },
  
  'SIAM::Device' =>
@@ -139,6 +183,18 @@ $SPSID::Config::class_attributes =
    'siam.device.name' => 1,
   },
   'contained_in' => {'SIAM' => 1},
+  'display' =>
+  {
+   'class_descr' => 'Devices',
+   'sequence' => 150,
+   'name_attr' => 'siam.device.name',
+   'info_attr' => ['siam.device.inventory_id'],
+   'attr_help' =>
+   {
+    'siam.device.name' => 'Device name',
+    'siam.device.inventory_id' => 'Device ID',
+   },
+  },
  },
 
  'SIAM::AccessScope' =>
