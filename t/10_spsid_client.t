@@ -91,6 +91,15 @@ ok((($svc eq $r4->[0]->{'spsid.object.id'}) or
     ($svc eq $r4->[1]->{'spsid.object.id'})),
    'Unicode prefix search returns the same object');
 
+# search by prefix with removed umlaut
+my $r5 = $client->search_prefix('SIAM::Service',
+                                'xyz.svc.city', 'duben');
+ok(scalar(@{$r5} == 2), 'ASCII-zed prefix search Service by city');
+
+ok((($svc eq $r5->[0]->{'spsid.object.id'}) or
+    ($svc eq $r5->[1]->{'spsid.object.id'})),
+   'ASCII-zed prefix search returns the same object');
+
 
 # Check unicode attribute
 

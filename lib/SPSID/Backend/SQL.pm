@@ -2,6 +2,7 @@ package SPSID::Backend::SQL;
 
 use DBI;
 use Time::HiRes;
+use Text::Unidecode;
 use Moose;
 
 
@@ -243,7 +244,7 @@ sub add_object_attributes
 
     while( my ($name, $value) = each %{$add_attr} ) {
         if( not $spsid_attr_filter{$name} ) {
-            $sth->execute($id, $name, $value, lc($value));
+            $sth->execute($id, $name, $value, $self->_ascii_lower($value));
         }
     }
 
@@ -264,7 +265,7 @@ sub modify_object_attributes
 
     while( my ($name, $value) = each %{$mod_attr} ) {
         if( not $spsid_attr_filter{$name} ) {
-            $sth->execute($value, lc($value), $id, $name);
+            $sth->execute($value, $self->_ascii_lower($value), $id, $name);
         }
     }
 
@@ -380,7 +381,9 @@ sub search_prefix
          'OBJECT_DELETED=0 AND ' .
          'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
 
-    $sth->execute($attr_name, lc($attr_prefix) . '%', $objclass);
+    $sth->execute($attr_name,
+                  $self->_ascii_lower($attr_prefix) . '%',
+                  $objclass);
 
     my $object_tbl_fetch = $sth->fetchall_arrayref();
     return $self->_retrieve_objects($object_tbl_fetch);
@@ -451,7 +454,12 @@ sub contained_classes
 
 
 
-
+sub _ascii_lower
+{
+    my $self = shift;
+    my $str = shift;
+    return lc(unidecode($str));
+}
 
 
 

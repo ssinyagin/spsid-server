@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use utf8;
 use Getopt::Long;
 use Try::Tiny;
 use JSON;
@@ -73,6 +74,8 @@ my $result;
 
 if( defined($prefix) ) {
 
+    utf8::decode($prefix);
+    
     if( $prefix !~ /^([a-z0-9._]+):(.+)/ ) {
         print STDERR "Invalid syntax for the prefix: $prefix\n";
         print_usage();

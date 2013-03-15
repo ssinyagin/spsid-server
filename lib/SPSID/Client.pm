@@ -2,6 +2,7 @@
 
 package SPSID::Client;
 
+use utf8;
 use JSON;
 use LWP::UserAgent;
 use HTTP::Request;
@@ -112,7 +113,7 @@ sub _call
     my $req = HTTP::Request->new( 'POST', $self->url );    
     $req->header( 'Content-Type' => 'application/json' );
 
-    my $json = JSON->new;
+    my $json = JSON->new->utf8(1);
     $req->content
         ( $json->encode
           ({'jsonrpc' => '2.0',
