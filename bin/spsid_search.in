@@ -30,6 +30,7 @@ sub print_usage
          "  --container=ID        Optional container ID\n",
          "  --attr=NAME:VALUE     Optional search criteria\n",
          "  --prefix=NAME:SUBSTR  Optional search criteria\n",
+         "  --prefix=:SUBSTR      Search by any attribute\n",
          "\n");
     print STDERR
         ("This program searches SPSID objects. Without container, all\n",
@@ -76,13 +77,18 @@ if( defined($prefix) ) {
 
     utf8::decode($prefix);
     
-    if( $prefix !~ /^([a-z0-9._]+):(.+)/ ) {
+    if( $prefix =~ /^([a-z0-9._]+):(.+)/ ) {
+        $result = $client->search_prefix($objclass, $1, $2);
+    }
+    elsif( $prefix =~ /^:(.+)/ ) {
+        $result = $client->search_prefix($objclass, undef, $1);
+    }
+    else {        
         print STDERR "Invalid syntax for the prefix: $prefix\n";
         print_usage();
         exit(1);
     }
 
-    $result = $client->search_prefix($objclass, $1, $2);
 }
 else {
     my @args = ($container, $objclass);

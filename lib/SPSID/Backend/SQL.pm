@@ -371,19 +371,30 @@ sub search_prefix
         die('Prefix search on ' . $attr_name . ' is not allowed');
     }
 
+    my $attr_name_condition = '';    
+    if( defined($attr_name) ) {
+        $attr_name_condition = ' ATTR_NAME=? AND ';
+    }
+    
     my $sth = $self->_dbh->prepare
         ('SELECT SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
          'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
          'WHERE ' .
-         'ATTR_NAME=? AND ' .
+         $attr_name_condition .
          'ATTR_LOWER LIKE ? AND ' .
          'OBJECT_CLASS=? AND ' .
          'OBJECT_DELETED=0 AND ' .
          'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
 
-    $sth->execute($attr_name,
-                  $self->_ascii_lower($attr_prefix) . '%',
-                  $objclass);
+    if( defined($attr_name) ) {
+        $sth->execute($attr_name,
+                      $self->_ascii_lower($attr_prefix) . '%',
+                      $objclass);
+    }
+    else {
+        $sth->execute($self->_ascii_lower($attr_prefix) . '%',
+                      $objclass);        
+    }
 
     my $object_tbl_fetch = $sth->fetchall_arrayref();
     return $self->_retrieve_objects($object_tbl_fetch);

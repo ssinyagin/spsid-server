@@ -114,7 +114,7 @@ sub search_prefix
     my %arg = @_;
     
     die('objclass required') unless defined $arg{'objclass'};
-    die('attr_name required') unless defined $arg{'attr_name'};
+    die('attr_name required') unless exists $arg{'attr_name'};
     die('attr_prefix required') unless defined $arg{'attr_prefix'};
 
     return $spsid->search_prefix($arg{'objclass'},

@@ -5,7 +5,7 @@ use warnings;
 use utf8;
 use Unicode::Normalize;
 
-use Test::More tests => 36;
+use Test::More tests => 38;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
@@ -99,6 +99,15 @@ ok(scalar(@{$r5} == 2), 'ASCII-zed prefix search Service by city');
 ok((($svc eq $r5->[0]->{'spsid.object.id'}) or
     ($svc eq $r5->[1]->{'spsid.object.id'})),
    'ASCII-zed prefix search returns the same object');
+
+
+# search any attribute by prefix
+my $r6 = $client->search_prefix('SIAM::Service', undef, 'datastr');
+ok(scalar(@{$r6} == 2), 'Prefix search Service by any attribute');
+
+ok((($svc eq $r6->[0]->{'spsid.object.id'}) or
+    ($svc eq $r6->[1]->{'spsid.object.id'})),
+   'Any-attribute prefix search returns the same object');
 
 
 # Check unicode attribute
