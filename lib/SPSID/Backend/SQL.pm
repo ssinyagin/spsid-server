@@ -367,12 +367,12 @@ sub search_prefix
     my $attr_name = shift;
     my $attr_prefix = shift;
 
-    if( $spsid_attr_filter{$attr_name} ) {
-        die('Prefix search on ' . $attr_name . ' is not allowed');
-    }
-
     my $attr_name_condition = '';    
     if( defined($attr_name) ) {
+        if( $spsid_attr_filter{$attr_name} ) {
+            die('Prefix search on ' . $attr_name . ' is not allowed');
+        }
+
         $attr_name_condition = ' ATTR_NAME=? AND ';
     }
     
