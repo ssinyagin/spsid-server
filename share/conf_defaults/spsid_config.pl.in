@@ -47,11 +47,6 @@ $SPSID::Config::class_attributes =
  'SIAM' =>
  {
   'single_instance' => 1,
-  'display' =>
-  {
-   'class_descr' => 'SIAM Root Object',
-   'sequence' => 10,
-  },
  },
 
  'SIAM::Contract' =>
