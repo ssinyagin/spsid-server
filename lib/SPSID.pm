@@ -1,5 +1,6 @@
 package SPSID;
 
+use utf8;
 use Digest::MD5 qw(md5_hex);
 
 use Moose;

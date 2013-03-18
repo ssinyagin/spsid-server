@@ -110,7 +110,7 @@ else {
 }
 
 binmode(STDOUT);
-my $json = JSON->new->pretty(1);
+my $json = JSON->new->utf8(1)->pretty(1);
 print $json->encode($result);
 
 

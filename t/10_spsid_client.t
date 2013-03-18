@@ -117,10 +117,7 @@ ok(utf8::is_utf8($x),
    'xyz.svc.city is a valid Unicode string');
 
 my $y = 'Dübendorf';
-utf8::encode($y);
-
-diag($x);
-diag($y);
+utf8::decode($y);
 
 ok(($x eq $y),
    'Unicode string in attribute value');

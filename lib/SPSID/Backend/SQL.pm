@@ -1,5 +1,6 @@
 package SPSID::Backend::SQL;
 
+use utf8;
 use DBI;
 use Time::HiRes;
 use Text::Unidecode;
@@ -160,7 +161,9 @@ sub fetch_object
     $sth->execute($id);
 
     while( $r = $sth->fetchrow_arrayref() ) {
-        $attr->{$r->[0]} = $r->[1];
+        my $val = $r->[1];
+        utf8::decode($val);
+        $attr->{$r->[0]} = $val;
     }
 
     return $attr;
@@ -424,7 +427,9 @@ sub _retrieve_objects
     
     my %attributes;
     while( my $r = $sth->fetchrow_arrayref() ) {
-        $attributes{$r->[0]}{$r->[1]} = $r->[2];
+        my $val = $r->[2];
+        utf8::decode($val);
+        $attributes{$r->[0]}{$r->[1]} = $val;
     }
 
     my $ret = [];

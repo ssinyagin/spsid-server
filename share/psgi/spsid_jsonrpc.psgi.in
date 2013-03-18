@@ -1,6 +1,7 @@
 
 use strict;
 use warnings;
+use utf8;
 
 BEGIN {
     if(defined($ENV{'SPSID_CONFIG'})) {

@@ -134,7 +134,8 @@ sub _call
     };
         
     if( $response->is_success ) {
-        my $result = decode_json($response->decoded_content);
+        my $content = $response->decoded_content;
+        my $result = decode_json($content);
         die('Cannot parse responce') unless defined($result);
         
         die('Missing version 2.0 in RPC response') unless
