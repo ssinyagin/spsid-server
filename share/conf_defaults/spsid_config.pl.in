@@ -92,9 +92,9 @@ $SPSID::Config::class_attributes =
   {
    'class_descr' => 'Services',
    'sequence' => 120,
-   'name_attr' => 'siam.svc.product_name',
+   'name_attr' => 'siam.svc.inventory_id',
    'info_attr' => ['siam.svc.type',
-                   'siam.svc.inventory_id'],
+                   'siam.svc.product_name'],
    'attr_help' =>
    {
     'siam.svc.product_name' => 'Service product name',

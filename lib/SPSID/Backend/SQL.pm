@@ -380,7 +380,8 @@ sub search_prefix
     }
     
     my $sth = $self->_dbh->prepare
-        ('SELECT SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
+        ('SELECT DISTINCT ' .
+         ' SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
          'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
          'WHERE ' .
          $attr_name_condition .
