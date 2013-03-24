@@ -47,6 +47,8 @@ $SPSID::Config::class_attributes =
  'SIAM' =>
  {
   'single_instance' => 1,
+  'root_object' => 1,
+  'read_only' => 1,
  },
 
  'SIAM::Contract' =>
@@ -148,6 +150,7 @@ $SPSID::Config::class_attributes =
   },
   'contained_in' => {'SIAM::ServiceUnit' => 1},
   'object_ref' =>  {'siam.svcc.device_id' => 'SIAM::Device'},
+  'no_children' => 1,
   'display' =>
   {
    'class_descr' => 'Service Components',
@@ -178,6 +181,7 @@ $SPSID::Config::class_attributes =
    'siam.device.name' => 1,
   },
   'contained_in' => {'SIAM' => 1},
+  'no_children' => 1,
   'display' =>
   {
    'class_descr' => 'Devices',
@@ -214,6 +218,7 @@ $SPSID::Config::class_attributes =
   },
   'contained_in' => {'SIAM::AccessScope' => 1},
   'object_ref' => {'siam.scmember.object_id' => '*'},
+  'no_children' => 1,
  },
 
  'SIAM::User' =>
@@ -238,6 +243,7 @@ $SPSID::Config::class_attributes =
   },
   'contained_in' => {'SIAM::User' => 1},
   'object_ref' => {'siam.privilege.access_scope_id' => 'SIAM::AccessScope'},
+  'no_children' => 1,
   'reserved_refs' => 
   {
    'siam.privilege.access_scope_id' =>
@@ -259,6 +265,7 @@ $SPSID::Config::class_attributes =
    'siam.attribute.name' => 1,
   },
   'contained_in' => {'SIAM' => 1},
+  'no_children' => 1,
  },
 
 
