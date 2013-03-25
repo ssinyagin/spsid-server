@@ -188,6 +188,14 @@ sub modify_object
 }
 
 
+sub validate_object
+{
+    my $self = shift;
+    my $attr = shift;
+    
+    return $self->_call('validate_object', {'attr' => $attr});
+}
+
 
 sub delete_object
 {

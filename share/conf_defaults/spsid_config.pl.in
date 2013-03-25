@@ -30,12 +30,12 @@ $SPSID::Config::backend = 'SPSID::Backend::SQL';
     );
 
                                
-
+# spsid.object.id is not listed here because it's validated and created
+# explicitly
 $SPSID::Config::common_attributes =
 {
  'mandatory' =>
  {
-  'spsid.object.id' => 1,
   'spsid.object.class' => 1,
   'spsid.object.container' => 1,
  },

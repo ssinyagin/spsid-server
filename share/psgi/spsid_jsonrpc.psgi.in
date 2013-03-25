@@ -11,6 +11,7 @@ BEGIN {
 
 
 use JSON::RPC::Dispatcher;
+use Try::Tiny;
 use SPSID;
 
 use Log::Any::Adapter ('Stderr');
@@ -61,6 +62,22 @@ sub modify_object
 }
 
 
+sub validate_object
+{
+    my %arg = @_;
+
+    die('attr required') unless defined $arg{'attr'};
+
+    my $result = {'status' => 1};
+    try {
+        $spsid->validate_object($arg{'attr'});        
+    } catch {
+        $result->{'status'} = 0;
+        $result->{'error'} = $_;
+    };
+    return $result;
+}
+    
 
 sub delete_object
 {
@@ -143,6 +160,7 @@ my $rpc = JSON::RPC::Dispatcher->new;
 
 $rpc->register('create_object', \&create_object, { with_plack_request => 1 });
 $rpc->register('modify_object', \&modify_object, { with_plack_request => 1 });
+$rpc->register('validate_object', \&validate_object);
 $rpc->register('delete_object', \&delete_object, { with_plack_request => 1 });
 $rpc->register('get_object', \&get_object);
 $rpc->register('search_objects', \&search_objects);

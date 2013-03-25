@@ -5,7 +5,7 @@ use warnings;
 use utf8;
 use Unicode::Normalize;
 
-use Test::More tests => 38;
+use Test::More tests => 42;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
@@ -108,6 +108,22 @@ ok(scalar(@{$r6} == 2), 'Prefix search Service by any attribute');
 ok((($svc eq $r6->[0]->{'spsid.object.id'}) or
     ($svc eq $r6->[1]->{'spsid.object.id'})),
    'Any-attribute prefix search returns the same object');
+
+# test validate_object()
+$r = $client->search_objects(undef, 'SIAM::ServiceComponent',
+                             'siam.svcc.inventory_id', 'SRVC0001.01.u02.c01');
+ok((scalar(@{$r} == 1) and defined($r->[0]->{'siam.svcc.device_id'})),
+   'find the ServiceComponent');
+
+my $oldref = $r->[0]->{'siam.svcc.device_id'};
+$r->[0]->{'siam.svcc.device_id'} = "xxxx";
+my $result = $client->validate_object($r->[0]);
+ok((not $result->{'status'}), "validate_object() returns a failure");
+ok((defined($result->{'error'})), "validate_object() returns an error message");
+diag($result->{'error'});
+$r->[0]->{'siam.svcc.device_id'} = $oldref;
+$result = $client->validate_object($r->[0]);
+ok($result->{'status'}, "validate_object() returns success");
 
 
 # Check unicode attribute
