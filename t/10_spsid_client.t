@@ -1,11 +1,11 @@
-#!perl -T
+#!perl
 
 use strict;
 use warnings;
 use utf8;
 use Unicode::Normalize;
 
-use Test::More tests => 42;
+use Test::More tests => 43;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
