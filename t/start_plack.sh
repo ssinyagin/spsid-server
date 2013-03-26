@@ -1,5 +1,5 @@
 
-echo "Starting Plack server" 1>&2
+echo "Starting Plack server at ${SPSID_PLACK_URL}" 1>&2
 
 plackup --host ${SPSID_PLACK_HOST} --port ${SPSID_PLACK_PORT} \
     --access-log ${SPSID_PLACK_LOG} \

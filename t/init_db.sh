@@ -20,7 +20,7 @@ echo "Initializing SPSID database in ${SPSID_SQLITE_DB}" 1>&2
 ${SQLITE3} -init ${SPSID_TOP}/share/sql/spsid_schema.ansi.sql \
     ${SPSID_SQLITE_DB} .quit
 
-if test $? -ne 0 -o ! -s ${SPSID_SQLITE_DB}; then
+if test ! -f ${SPSID_SQLITE_DB} -o ! -s ${SPSID_SQLITE_DB}; then
     echo "Failed to initialize ${SPSID_SQLITE_DB}" 1>&2
     exit 1
 fi
