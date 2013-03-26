@@ -154,6 +154,7 @@ sub import_object
     my $attr = {};
     while( my ($key, $val) = each %{$obj} )
     {
+        utf8::decode($val);
         if( not $filter_attributes{$key} )
         {
             if( defined($objref_attribute{$objclass}{$key}) and
