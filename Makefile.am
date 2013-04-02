@@ -18,14 +18,17 @@
 
 SUBDIRS = . bin lib share
 
-siteconfdir = @siteconfdir@
-dist_siteconf_DATA = \
+EXTRA_DIST = \
 	etc/spsid_siteconfig.pl
 
 
+siteconf_s = etc/spsid_siteconfig.pl
+siteconf_d = @siteconfdir@/spsid_siteconfig.pl
+
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(plugconfdir)
-
+	if test ! -e $(siteconf_d); then \
+	  $(INSTALL_DATA) $(siteconf_s) $(siteconf_d); fi
 
 dist-hook:
 	date >DIST_REVISION
