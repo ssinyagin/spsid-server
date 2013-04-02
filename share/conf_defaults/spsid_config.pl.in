@@ -48,7 +48,10 @@ $SPSID::Config::class_attributes =
  {
   'single_instance' => 1,
   'root_object' => 1,
-  'read_only' => 1,
+  'display' =>
+  {
+   'read_only' => 1,
+  },
  },
 
  'SIAM::Contract' =>
