@@ -13,7 +13,7 @@ else {
 
 $SPSID::Config::backend = 'SPSID::Backend::SQL';
 
-             
+
 
 @SPSID::Config::object_validators =
     (sub {
@@ -29,7 +29,7 @@ $SPSID::Config::backend = 'SPSID::Backend::SQL';
      },
     );
 
-                               
+
 # spsid.object.id is not listed here because it's validated and created
 # explicitly
 $SPSID::Config::common_attributes =
@@ -163,11 +163,11 @@ $SPSID::Config::class_attributes =
     'siam.svcc.name' => 'Service Component name',
     'siam.svcc.type' => 'Service Component type',
     'siam.svcc.inventory_id' => 'Service Component ID',
-    'siam.svcc.device_id' => 'Associated device',    
+    'siam.svcc.device_id' => 'Associated device',
    },
   },
  },
- 
+
  'SIAM::Device' =>
  {
   'mandatory' =>
@@ -244,7 +244,7 @@ $SPSID::Config::class_attributes =
   'contained_in' => {'SIAM::User' => 1},
   'object_ref' => {'siam.privilege.access_scope_id' => 'SIAM::AccessScope'},
   'no_children' => 1,
-  'reserved_refs' => 
+  'reserved_refs' =>
   {
    'siam.privilege.access_scope_id' =>
    {
@@ -286,12 +286,22 @@ $SPSID::Config::class_attributes =
  },
 
 };
-                                     
- 
 
-                                      
-                 
-                                     
+
+foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
+
+    if( $objclass =~ /^SIAM\:\:/o ) {
+        my $ref = $SPSID::Config::class_attributes->{$objclass};
+        $ref->{'mandatory'}{'siam.object.complete'} = 1;
+        if( defined($ref->{'display'}) ) {
+            $ref->{'display'}{'attr_help'}{'siam.object.complete'} =
+                "0 if object is not ready, otherwise 1";
+        }
+    }
+}
+
+
+
 
 
 
@@ -303,7 +313,7 @@ else {
     require '@siteconfdir@/spsid_siteconfig.pl';
 }
 
-  
+
 
 1;
 
