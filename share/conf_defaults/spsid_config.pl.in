@@ -293,12 +293,14 @@ $SPSID::Config::class_attributes =
 
 foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
 
-    if( $objclass =~ /^SIAM\:\:/o ) {
+    if( $objclass =~ /^SIAM/o ) {
         my $ref = $SPSID::Config::class_attributes->{$objclass};
         $ref->{'mandatory'}{'siam.object.complete'} = 1;
         if( defined($ref->{'display'}) ) {
+            $ref->{'display'}{'default'}{'siam.object.complete'} = '1';
+            $ref->{'display'}{'boolean'}{'siam.object.complete'} = 1;           
             $ref->{'display'}{'attr_help'}{'siam.object.complete'} =
-                "0 if object is not ready, otherwise 1";
+                "true if object is ready";
         }
     }
 }
