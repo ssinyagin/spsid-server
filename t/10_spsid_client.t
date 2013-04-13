@@ -5,7 +5,7 @@ use warnings;
 use utf8;
 use Unicode::Normalize;
 
-use Test::More tests => 43;
+use Test::More tests => 44;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
@@ -213,6 +213,9 @@ $r = $client->contained_classes($svc);
 ok(((scalar(@{$r}) == 1) and ($r->[0] eq 'SIAM::ServiceUnit')),
    'contained_classes N2');
 
+my $log = $client->get_object_log($id);
+ok((scalar(@{$log}) == 4), 'get_object_log') or
+    diag('get_object_log returned ' . scalar(@{$log}) . ' iems');
 
 $client->delete_object($id);
 $r = undef;

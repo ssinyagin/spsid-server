@@ -271,6 +271,15 @@ sub get_object
 }
 
 
+sub get_object_log
+{
+    my $self = shift;
+    my $id = shift;
+
+    return $self->_backend->get_object_log($id);
+}
+
+
 # input: attribute names and values for AND condition
 # output: arrayref of objects found
 
@@ -377,7 +386,7 @@ sub validate_object
     return;
 }
 
-
+    
 
 sub _verify_attributes
 {

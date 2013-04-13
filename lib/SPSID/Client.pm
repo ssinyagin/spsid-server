@@ -215,6 +215,14 @@ sub get_object
     return $self->_call('get_object', {'id' => $id});
 }
 
+sub get_object_log
+{
+    my $self = shift;
+    my $id = shift;
+
+    return $self->_call('get_object_log', {'id' => $id});
+}
+
 
 # input: attribute names and values for AND condition
 # output: arrayref of objects found

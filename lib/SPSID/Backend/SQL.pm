@@ -214,7 +214,32 @@ sub log_object
 }
 
 
+sub get_object_log
+{
+    my $self = shift;
+    my $id = shift;
 
+    my $sth = $self->_dbh->prepare
+        ('SELECT LOG_TS, USER_ID, MESSAGE ' .
+         'FROM SPSID_OBJECT_LOG ' .
+         'WHERE OBJECT_ID=? ' .
+         'ORDER BY LOG_TS');
+    
+    $sth->execute($id);
+
+    my $ret = [];
+    while( my $r = $sth->fetchrow_arrayref() ) {
+        push(@{$ret},
+             {'time' => $r->[0],
+              'user' => $r->[1],
+              'msg' => $r->[2],});
+    }
+
+    return $ret;
+}
+        
+        
+        
 sub delete_object_attributes
 {
     my $self = shift;

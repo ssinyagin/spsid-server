@@ -106,6 +106,14 @@ sub get_object
 }
 
 
+sub get_object_log
+{
+    my %arg = @_;
+    die('id required') unless defined $arg{'id'};
+    return $spsid->get_object_log($arg{'id'});    
+}
+
+
 sub search_objects
 {
     my %arg = @_;
@@ -163,6 +171,7 @@ $rpc->register('modify_object', \&modify_object, { with_plack_request => 1 });
 $rpc->register('validate_object', \&validate_object);
 $rpc->register('delete_object', \&delete_object, { with_plack_request => 1 });
 $rpc->register('get_object', \&get_object);
+$rpc->register('get_object_log', \&get_object_log);
 $rpc->register('search_objects', \&search_objects);
 $rpc->register('search_prefix', \&search_prefix);
 $rpc->register('contained_classes', \&contained_classes);
