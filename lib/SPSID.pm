@@ -387,13 +387,20 @@ sub _verify_attributes
 
     if( defined($cfg->{'mandatory'}) ) {
         foreach my $name (keys %{$cfg->{'mandatory'}}) {
-            if( $cfg->{'mandatory'}{$name} and not defined($attr->{$name}) ) {
-                die('Missing mandatory attribute ' . $name . ' in ' .
-                    $attr->{'spsid.object.id'});
+            if( $cfg->{'mandatory'}{$name} ) {
+                if( not defined($attr->{$name}) ) {
+                    die('Missing mandatory attribute ' . $name . ' in ' .
+                        $attr->{'spsid.object.id'});
+                }
+                elsif( $attr->{$name} eq '' ) {
+                    die('Mandatory attribute ' . $name .
+                        ' cannot have empty value in ' .
+                        $attr->{'spsid.object.id'});
+                }
             }
         }
     }
-
+    
     if( defined($cfg->{'unique'}) ) {
         foreach my $name (keys %{$cfg->{'unique'}}) {
             if( $cfg->{'unique'}{$name} and 
