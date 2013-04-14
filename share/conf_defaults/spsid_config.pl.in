@@ -15,19 +15,20 @@ $SPSID::Config::backend = 'SPSID::Backend::SQL';
 
 
 
-@SPSID::Config::object_validators =
-    (sub {
-         my $attr = shift;
-         if( $attr->{'spsid.object.class'} =~ /^SIAM\:\:/o ) {
-             foreach my $name ('siam.object.complete') {
-                 if( not defined($attr->{$name}) ) {
-                     die('Missing attribute: ' . $name .
-                         ' in spsid.object.id=' . $attr->{'spsid.object.id'});
-                 }
-             }
-         }
-     },
-    );
+$SPSID::Config::object_validators =
+{ 'siam.object.complete' =>
+  sub {
+      my $attr = shift;
+      if( $attr->{'spsid.object.class'} =~ /^SIAM/o ) {
+          foreach my $name ('siam.object.complete') {
+              if( not defined($attr->{$name}) ) {
+                  die('Missing attribute: ' . $name .
+                      ' in spsid.object.id=' . $attr->{'spsid.object.id'});
+              }
+          }
+      }
+  },  
+};
 
 
 # spsid.object.id is not listed here because it's validated and created
@@ -195,7 +196,33 @@ $SPSID::Config::class_attributes =
    {
     'siam.device.name' => 'Device name',
     'siam.device.inventory_id' => 'Device ID',
+    'torrus.server' => 'Name of a Torrus server',
+    'torrus.tree' => 'Torrus tree name',
+    'snmp.managed' => 'Check if the device is monitored via SNMP',
+    'snmp.host' => 'DNS name or IP address for the device',
+    'snmp-version' => 'SNMP version supported by device',
+    'snmp-community' => 'SNMP community',
+    'snmp-timeout' => 'SNMP request timeout, seconds',
+    'snmp-retries' => 'Number of SNMP request retries',
+    'torrus.subtree-path' => 'Subtree name for the device in Torrus',
    },
+   'default' =>
+   {
+    'torrus.tree' => 't01',
+    'snmp.managed' => '1',
+    'snmp-version' => '2c',
+    'snmp-community' => 'public',
+    'snmp-timeout' => '3',
+    'snmp-retries' => '2',    
+   },
+   'boolean' =>
+   {
+    'snmp.managed' => 1,
+   },
+   'dictionary' =>
+   {
+    'snmp-version' => ['1', '2c'],
+   }
   },
  },
 

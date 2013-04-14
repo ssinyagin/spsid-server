@@ -358,7 +358,7 @@ sub validate_object
     my $self = shift;
     my $attr = shift;
 
-    foreach my $func (@SPSID::Config::object_validators) {
+    foreach my $func (values %{$SPSID::Config::object_validators}) {
         &{$func}($attr);
     }
 
