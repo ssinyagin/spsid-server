@@ -4,6 +4,7 @@ use utf8;
 use DBI;
 use Time::HiRes;
 use Text::Unidecode;
+use Math::BigFloat;
 use Moose;
 
 
@@ -201,14 +202,16 @@ sub log_object
     my $user_id = shift;
     my $msg = shift;
 
-    my $ts = Time::HiRes::time();
+    my $ts = Math::BigFloat->new(Time::HiRes::time());
+    $ts->bmul(1000);
+    $ts->bfloor();
 
     $self->_dbh->do
         ('INSERT INTO SPSID_OBJECT_LOG ' .
          '  (OBJECT_ID, LOG_TS, USER_ID, MESSAGE) ' .
          'VALUES(?,?,?,?)',
          undef,
-         $id, $ts*1000, $user_id, $msg);
+         $id, $ts, $user_id, $msg);
 
     return;
 }
@@ -229,10 +232,12 @@ sub get_object_log
 
     my $ret = [];
     while( my $r = $sth->fetchrow_arrayref() ) {
+        my $msg = $r->[2];
+        utf8::decode($msg);
         push(@{$ret},
              {'time' => $r->[0],
               'user' => $r->[1],
-              'msg' => $r->[2],});
+              'msg' => $msg});
     }
 
     return $ret;
