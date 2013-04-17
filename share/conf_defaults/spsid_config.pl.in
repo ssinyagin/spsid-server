@@ -200,20 +200,20 @@ $SPSID::Config::class_attributes =
     'torrus.tree' => 'Torrus tree name',
     'snmp.managed' => 'Check if the device is monitored via SNMP',
     'snmp.host' => 'DNS name or IP address for the device',
-    'snmp-version' => 'SNMP version supported by device',
-    'snmp-community' => 'SNMP community',
-    'snmp-timeout' => 'SNMP request timeout, seconds',
-    'snmp-retries' => 'Number of SNMP request retries',
-    'torrus.subtree-path' => 'Subtree name for the device in Torrus',
+    'snmp.version' => 'SNMP version supported by device',
+    'snmp.community' => 'SNMP community',
+    'snmp.timeout' => 'SNMP request timeout, seconds',
+    'snmp.retries' => 'Number of SNMP request retries',
+    'torrus.subtree_path' => 'Subtree name for the device in Torrus',
    },
    'default' =>
    {
     'torrus.tree' => 't01',
     'snmp.managed' => '1',
-    'snmp-version' => '2c',
-    'snmp-community' => 'public',
-    'snmp-timeout' => '3',
-    'snmp-retries' => '2',    
+    'snmp.version' => '2c',
+    'snmp.community' => 'public',
+    'snmp.timeout' => '3',
+    'snmp.retries' => '2',    
    },
    'boolean' =>
    {
@@ -221,7 +221,7 @@ $SPSID::Config::class_attributes =
    },
    'dictionary' =>
    {
-    'snmp-version' => ['1', '2c'],
+    'snmp.version' => ['1', '2c'],
    }
   },
  },
