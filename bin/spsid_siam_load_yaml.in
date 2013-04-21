@@ -81,9 +81,14 @@ my $schema = $client->get_schema();
 my %objref_attribute;
 
 foreach my $objclass (keys %{$schema}) {
-    my $refs = $schema->{$objclass}{'object_ref'};
-    if( defined($refs) ) {
-        $objref_attribute{$objclass} = $refs;
+    if( defined($schema->{$objclass}{'attr'}) ) {
+        foreach my $name (keys %{$schema->{$objclass}{'attr'}}) {
+            my $ref = $schema->{$objclass}{'attr'}{$name};
+            if( defined($ref->{'objref'}) ) {
+                $objref_attribute{$objclass}{$name} =
+                    $ref->{'objref'};
+            }
+        }
     }
 }
 

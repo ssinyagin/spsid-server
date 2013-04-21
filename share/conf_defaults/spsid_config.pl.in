@@ -27,7 +27,7 @@ $SPSID::Config::object_validators =
               }
           }
       }
-  },  
+  },
 };
 
 
@@ -35,13 +35,32 @@ $SPSID::Config::object_validators =
 # explicitly
 $SPSID::Config::common_attributes =
 {
- 'mandatory' =>
+ 'spsid.object.class' =>
  {
-  'spsid.object.class' => 1,
-  'spsid.object.container' => 1,
+  'mandatory' => 1,
+ },
+ 'spsid.object.container' =>
+ {
+  'mandatory' => 1,
+  'hidden' => 1,
  },
 };
 
+
+# Attribute properties:
+#   mandatory => 1|0
+#   unique => 1|0
+#   descr => "description text"
+#   hilite => 1|0
+#   protected => 1|0
+#   hidden => 1|0
+#   dictionary => [list of possible values]
+#   boolean => 1|0
+#   insignificant => 1|0
+#   default => "default value"
+#   templatekey => {value => {attribute property hash}}
+#   objref => "Classname"
+#   reserved_refs => {attrval => 1, ...}
 
 $SPSID::Config::class_attributes =
 {
@@ -55,16 +74,23 @@ $SPSID::Config::class_attributes =
   },
  },
 
+
  'SIAM::Contract' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.contract.inventory_id' => 1,
-   'siam.contract.customer_name' => 1,
-  },
-  'unique' =>
-  {
-   'siam.contract.inventory_id' => 1,
+   'siam.contract.inventory_id' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+    'descr' => 'Contract number in the billing system',
+   },
+   'siam.contract.customer_name' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Customer name',
+   },
   },
   'contained_in' => {'SIAM' => 1},
   'display' =>
@@ -72,26 +98,32 @@ $SPSID::Config::class_attributes =
    'class_descr' => 'Contracts',
    'sequence' => 110,
    'name_attr' => 'siam.contract.inventory_id',
-   'info_attr' => ['siam.contract.customer_name'],
-   'attr_help' =>
-   {
-    'siam.contract.inventory_id' => 'Contract number in the billing system',
-    'siam.contract.customer_name' => 'Customer name',
-   },
   },
  },
 
+
  'SIAM::Service' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.svc.product_name' => 1,
-   'siam.svc.type' => 1,
-   'siam.svc.inventory_id' => 1,
-  },
-  'unique' =>
-  {
-   'siam.svc.inventory_id' => 1,
+   'siam.svc.inventory_id' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+    'descr' => 'Service ID in the billing system',
+   },
+   'siam.svc.type' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Service type',
+   },
+   'siam.svc.product_name' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Service product name',
+   },
   },
   'contained_in' => {'SIAM::Contract' => 1},
   'display' =>
@@ -99,28 +131,32 @@ $SPSID::Config::class_attributes =
    'class_descr' => 'Services',
    'sequence' => 120,
    'name_attr' => 'siam.svc.inventory_id',
-   'info_attr' => ['siam.svc.type',
-                   'siam.svc.product_name'],
-   'attr_help' =>
-   {
-    'siam.svc.product_name' => 'Service product name',
-    'siam.svc.type' => 'Service type',
-    'siam.svc.inventory_id' => 'Service ID in the billing system',
-   },
   },
  },
 
+
  'SIAM::ServiceUnit' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.svcunit.name' => 1,
-   'siam.svcunit.type' => 1,
-   'siam.svcunit.inventory_id' => 1,
-  },
-  'unique' =>
-  {
-   'siam.svcunit.inventory_id' => 1,
+   'siam.svcunit.inventory_id' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+    'descr' => 'Service Unit ID',
+   },
+   'siam.svcunit.type' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Service Unit type',
+   },
+   'siam.svcunit.name' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Service Unit name',
+   },
   },
   'contained_in' => {'SIAM::Service' => 1},
   'display' =>
@@ -128,61 +164,138 @@ $SPSID::Config::class_attributes =
    'class_descr' => 'Service Units',
    'sequence' => 130,
    'name_attr' => 'siam.svcunit.name',
-   'info_attr' => ['siam.svcunit.type',
-                   'siam.svcunit.inventory_id'],
-   'attr_help' =>
-   {
-    'siam.svcunit.name' => 'Service Unit name',
-    'siam.svcunit.type' => 'Service Unit type',
-    'siam.svcunit.inventory_id' => 'Service Unit ID'
-   },
   },
  },
 
+ 
  'SIAM::ServiceComponent' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.svcc.name' => 1,
-   'siam.svcc.type' => 1,
-   'siam.svcc.inventory_id' => 1,
-   'siam.svcc.device_id' => 1,
-  },
-  'unique' =>
-  {
-   'siam.svcc.inventory_id' => 1,
+   'siam.svcc.inventory_id' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+    'descr' => 'Service Component ID',
+   },
+   'siam.svcc.type' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Service Component type',
+    'templatekey' =>
+    {'IFMIB.Port' =>
+     {
+      'torrus.port.name' =>
+      {
+       'mandatory' => 1,
+       'descr' => 'Device port name',
+      },
+      'torrus.port.nodeid' =>
+      {
+       'protected' => 1,
+       'default' => 'Calculated automatically',
+       'descr' => 'Unique NodeID value to be assigned to the interface',
+      },
+      'torrus.port.bandwidth' =>
+      {
+       'descr' => 'Service bandwidth in bit per second',
+      },
+     },
+     'Power.PDU' =>
+     {
+      'torrus.power.nodeid' =>
+      {
+       'descr' => 'PDU NodeID',
+      },
+     },
+    },
+   },
+   'siam.svcc.name' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Service Component name',
+   },
+   'siam.svcc.device_id' =>
+   {
+    'mandatory' => 1,
+    'objref' =>  'SIAM::Device',
+    'descr' => 'Associated device',
+   },
   },
   'contained_in' => {'SIAM::ServiceUnit' => 1},
-  'object_ref' =>  {'siam.svcc.device_id' => 'SIAM::Device'},
   'no_children' => 1,
   'display' =>
   {
    'class_descr' => 'Service Components',
    'sequence' => 140,
    'name_attr' => 'siam.svcc.name',
-   'info_attr' => ['siam.svcc.type',
-                   'siam.svcc.inventory_id'],
-   'attr_help' =>
-   {
-    'siam.svcc.name' => 'Service Component name',
-    'siam.svcc.type' => 'Service Component type',
-    'siam.svcc.inventory_id' => 'Service Component ID',
-    'siam.svcc.device_id' => 'Associated device',
-   },
   },
  },
 
+
  'SIAM::Device' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.device.inventory_id' => 1,
-   'siam.device.name' => 1,
-  },
-  'unique' =>
-  {
-   'siam.device.inventory_id' => 1,
-   'siam.device.name' => 1,
+   'siam.device.inventory_id' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+    'descr' => 'Device ID',
+   },
+   'siam.device.name' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+    'hilite' => 1,
+    'descr' => => 'Device name',
+   },
+   'torrus.server' =>
+   {
+    'descr' => 'Name of a Torrus server',
+   },
+   'torrus.tree' =>
+   {
+    'descr' => 'Torrus tree name',
+    'default' => 't01',
+   },
+   'snmp.managed' =>
+   {
+    'descr' => 'Check if the device is monitored via SNMP',
+    'default' => '1',
+    'boolean' => 1,
+   },
+   'snmp.host' =>
+   {
+    'descr' => 'DNS name or IP address for the device',
+   },
+   'snmp.version' =>
+   {
+    'descr' => 'SNMP version supported by device',
+    'default' => '2c',
+    'dictionary' => ['1', '2c'],
+   },
+   'snmp.community' =>
+   {
+    'descr' => 'SNMP community',
+    'default' => 'public',
+   },
+   'snmp.timeout' =>
+   {
+    'descr' => 'SNMP request timeout, seconds',
+    'default' => '3',
+   },
+   'snmp.retries' =>
+   {
+    'descr' => 'Number of SNMP request retries',
+    'default' => '2',
+   },
+   'torrus.subtree_path' =>
+   {
+    'descr' => 'Subtree name for the device in Torrus',
+   }
   },
   'contained_in' => {'SIAM' => 1},
   'no_children' => 1,
@@ -191,108 +304,90 @@ $SPSID::Config::class_attributes =
    'class_descr' => 'Devices',
    'sequence' => 150,
    'name_attr' => 'siam.device.name',
-   'info_attr' => ['siam.device.inventory_id'],
-   'attr_help' =>
-   {
-    'siam.device.name' => 'Device name',
-    'siam.device.inventory_id' => 'Device ID',
-    'torrus.server' => 'Name of a Torrus server',
-    'torrus.tree' => 'Torrus tree name',
-    'snmp.managed' => 'Check if the device is monitored via SNMP',
-    'snmp.host' => 'DNS name or IP address for the device',
-    'snmp.version' => 'SNMP version supported by device',
-    'snmp.community' => 'SNMP community',
-    'snmp.timeout' => 'SNMP request timeout, seconds',
-    'snmp.retries' => 'Number of SNMP request retries',
-    'torrus.subtree_path' => 'Subtree name for the device in Torrus',
-   },
-   'default' =>
-   {
-    'torrus.tree' => 't01',
-    'snmp.managed' => '1',
-    'snmp.version' => '2c',
-    'snmp.community' => 'public',
-    'snmp.timeout' => '3',
-    'snmp.retries' => '2',    
-   },
-   'boolean' =>
-   {
-    'snmp.managed' => 1,
-   },
-   'dictionary' =>
-   {
-    'snmp.version' => ['1', '2c'],
-   }
   },
  },
 
+ 
  'SIAM::AccessScope' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.scope.name' => 1,
-   'siam.scope.applies_to' => 1,
-  },
-  'unique' =>
-  {
-   'siam.scope.name' => 1,
+   'siam.scope.name' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+   },
+   'siam.scope.applies_to' =>
+   {
+    'mandatory' => 1,
+   },
   },
   'contained_in' => {'SIAM' => 1},
  },
+ 
 
  'SIAM::ScopeMember' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.scmember.object_id' => 1,
+   'siam.scmember.object_id' =>
+   {
+    'mandatory' => 1,
+    'objref' => '*',
+   },
   },
   'contained_in' => {'SIAM::AccessScope' => 1},
-  'object_ref' => {'siam.scmember.object_id' => '*'},
   'no_children' => 1,
  },
 
+ 
  'SIAM::User' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.user.uid' => 1,
-  },
-  'unique' =>
-  {
-   'siam.user.uid' => 1,
+   'siam.user.uid' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+   },
   },
   'contained_in' => {'SIAM' => 1},
  },
 
+
  'SIAM::Privilege' =>
  {
-  'mandatory' =>
-  {
-   'siam.privilege.access_scope_id' => 1,
-   'siam.privilege.type' => 1,
-  },
-  'contained_in' => {'SIAM::User' => 1},
-  'object_ref' => {'siam.privilege.access_scope_id' => 'SIAM::AccessScope'},
-  'no_children' => 1,
-  'reserved_refs' =>
+  'attr' =>
   {
    'siam.privilege.access_scope_id' =>
    {
-    'SIAM.SCOPE.ALL.CONTRACTS' => 1,
-    'SIAM.SCOPE.ALL.ATTRIBUTES' => 1,
+    'mandatory' => 1,
+    'objref' => 'SIAM::AccessScope',
+    'reserved_refs' =>
+    {
+     'SIAM.SCOPE.ALL.CONTRACTS' => 1,
+     'SIAM.SCOPE.ALL.ATTRIBUTES' => 1,
+    },
+   },
+   'siam.privilege.type' =>
+   {
+    'mandatory' => 1,
    },
   },
+  'contained_in' => {'SIAM::User' => 1},
+  'no_children' => 1,
  },
+
 
  'SIAM::Attribute' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.attribute.name' => 1,
-  },
-  'unique' =>
-  {
-   'siam.attribute.name' => 1,
+   'siam.attribute.name' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+   },
   },
   'contained_in' => {'SIAM' => 1},
   'no_children' => 1,
@@ -301,19 +396,32 @@ $SPSID::Config::class_attributes =
 
  'SIAM::Report' =>
  {
-  'mandatory' =>
+  'attr' =>
   {
-   'siam.report.name' => 1,
-   'siam.report.description' => 1,
-   'siam.report.object_class' => 1,
-   'siam.report.type' => 1,
-   'siam.report.last_updated' => 1,
-  },
-  'unique' =>
-  {
-   'siam.report.name' => 1,
+   'siam.report.name' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+   },
+   'siam.report.description' => 
+   {
+    'mandatory' => 1,
+   },
+   'siam.report.object_class' => 
+   {
+    'mandatory' => 1,
+   },
+   'siam.report.type' => 
+   {
+    'mandatory' => 1,
+   },
+   'siam.report.last_updated' => 
+   {
+    'mandatory' => 1,
+   },
   },
  },
+
 
 };
 
@@ -322,12 +430,12 @@ foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
 
     if( $objclass =~ /^SIAM/o ) {
         my $ref = $SPSID::Config::class_attributes->{$objclass};
-        $ref->{'mandatory'}{'siam.object.complete'} = 1;
-        if( defined($ref->{'display'}) ) {
-            $ref->{'display'}{'default'}{'siam.object.complete'} = '1';
-            $ref->{'display'}{'boolean'}{'siam.object.complete'} = 1;           
-            $ref->{'display'}{'attr_help'}{'siam.object.complete'} =
-                "true if object is ready";
+        $ref->{'attr'}{'siam.object.complete'} =
+        {
+         'mandatory' => 1,
+         'default' => '1',
+         'boolean' => 1,
+         'descr' => 'true if object is ready',
         }
     }
 }

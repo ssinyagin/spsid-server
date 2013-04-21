@@ -63,10 +63,16 @@ sub BUILD
     my $objrefs = {};    
     foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
         my $cfg = $SPSID::Config::class_attributes->{$objclass};
-        if( defined($cfg->{'object_ref'}) ) {
-            while( my ($attr_name, $target_class) =
-                   each %{$cfg->{'object_ref'}} ) {
-                $objrefs->{$target_class}{$objclass}{$attr_name} = 1;
+        if( defined($cfg->{'attr'}) )
+        {
+            foreach my $name (keys %{$cfg->{'attr'}})
+            {
+                my $ref = $cfg->{'attr'}{$name};
+                
+                if( defined($ref->{'objref'}) ) {
+                    my $target_class = $ref->{'objref'};
+                    $objrefs->{$target_class}{$objclass}{$name} = 1;
+                }
             }
         }                
     }
@@ -367,9 +373,12 @@ sub validate_object
     my $objclass = $attr->{'spsid.object.class'};
 
     my $cfg = $SPSID::Config::class_attributes;
-    if( defined($cfg->{$objclass}) ) {
-        $self->_verify_attributes($attr, $cfg->{$objclass});
-
+    if( defined($cfg->{$objclass}) )
+    {
+        if( defined($cfg->{$objclass}{'attr'}) ) {
+            $self->_verify_attributes($attr, $cfg->{$objclass}{'attr'});
+        }
+        
         if( defined($cfg->{$objclass}{'contained_in'}) ) {
             my $container_class =
                 $self->_backend->object_class
@@ -394,70 +403,64 @@ sub _verify_attributes
     my $attr = shift;
     my $cfg = shift;
 
-    if( defined($cfg->{'mandatory'}) ) {
-        foreach my $name (keys %{$cfg->{'mandatory'}}) {
-            if( $cfg->{'mandatory'}{$name} ) {
-                if( not defined($attr->{$name}) ) {
-                    die('Missing mandatory attribute ' . $name . ' in ' .
-                        $attr->{'spsid.object.id'});
-                }
-                elsif( $attr->{$name} eq '' ) {
-                    die('Mandatory attribute ' . $name .
-                        ' cannot have empty value in ' .
-                        $attr->{'spsid.object.id'});
-                }
+    foreach my $name (keys %{$cfg})
+    {
+        if( $cfg->{$name}{'mandatory'} )
+        {
+            if( not defined($attr->{$name}) ) {
+                die('Missing mandatory attribute ' . $name . ' in ' .
+                    $attr->{'spsid.object.id'});
+            }
+            elsif( $attr->{$name} eq '' ) {
+                die('Mandatory attribute ' . $name .
+                    ' cannot have empty value in ' .
+                    $attr->{'spsid.object.id'});
             }
         }
-    }
     
-    if( defined($cfg->{'unique'}) ) {
-        foreach my $name (keys %{$cfg->{'unique'}}) {
-            if( $cfg->{'unique'}{$name} and 
-                defined($attr->{$name}) ) {
-                my $found =
-                    $self->search_objects(undef,
-                                          $attr->{'spsid.object.class'},
-                                          $name,
-                                          $attr->{$name});
-                
-                if( scalar(@{$found}) > 0 and
-                    ( $found->[0]->{'spsid.object.id'} ne
-                      $attr->{'spsid.object.id'} ) ) {
-
-                    die('Duplicate value "' . $attr->{$name} .
-                        '" for a unique attribute ' . $name . ' in ' .
-                        $attr->{'spsid.object.id'});
-                }
+        if( $cfg->{$name}{'unique'} and defined($attr->{$name}) )
+        {
+            my $found =
+                $self->search_objects(undef,
+                                      $attr->{'spsid.object.class'},
+                                      $name,
+                                      $attr->{$name});
+            
+            if( scalar(@{$found}) > 0 and
+                ( $found->[0]->{'spsid.object.id'} ne
+                  $attr->{'spsid.object.id'} ) )
+            {
+                die('Duplicate value "' . $attr->{$name} .
+                    '" for a unique attribute ' . $name . ' in ' .
+                    $attr->{'spsid.object.id'});
             }
         }
-    }
-
-    if( defined($cfg->{'object_ref'}) ) {
-        foreach my $name (keys %{$cfg->{'object_ref'}}) {
-            if( defined($attr->{$name}) and $attr->{$name} ne 'NIL' ) {
-
-                my $target = $attr->{$name};
-                my $refclass = $cfg->{'object_ref'}{$name};
+    
+        if( defined($cfg->{$name}{'objref'}) and
+            defined($attr->{$name}) and $attr->{$name} ne 'NIL' )
+        {
+            my $target = $attr->{$name};
+            my $refclass = $cfg->{$name}{'objref'};
+            
+            if( not $cfg->{$name}{'reserved_refs'}{$target} )
+            {
+                if( not $self->object_exists($target) ) {
+                    die('Attribute ' . $name .
+                        ' points to a non-existent object ' . $target .
+                        ' in ' . $attr->{'spsid.object.id'});
+                }
                 
-                if( not $cfg->{'reserved_refs'}{$name}{$target} ) {
+                if( $refclass ne '*' )
+                {
+                    my $target_class =
+                        $self->_backend->object_class($target);
                     
-                    if( not $self->object_exists($target) ) {
+                    if( $target_class ne $refclass ) {
                         die('Attribute ' . $name .
-                            ' points to a non-existent object ' . $target .
+                            ' points to an object ' . $target .
+                            ' of class ' . $target_class . ', but is only' .
+                            ' allowed to point to ' . $refclass .
                             ' in ' . $attr->{'spsid.object.id'});
-                    }
-                    
-                    if( $refclass ne '*' ) {
-                        my $target_class =
-                            $self->_backend->object_class($target);
-                        
-                        if( $target_class ne $refclass ) {
-                            die('Attribute ' . $name .
-                                ' points to an object ' . $target .
-                                ' of class ' . $target_class . ', but is only' .
-                                ' allowed to point to ' . $refclass .
-                                ' in ' . $attr->{'spsid.object.id'});
-                        }
                     }
                 }
             }
