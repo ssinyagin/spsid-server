@@ -5,7 +5,7 @@ use warnings;
 use utf8;
 use Unicode::Normalize;
 
-use Test::More tests => 44;
+use Test::More tests => 47;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
@@ -120,7 +120,7 @@ $r->[0]->{'siam.svcc.device_id'} = "xxxx";
 my $result = $client->validate_object($r->[0]);
 ok((not $result->{'status'}), "validate_object() returns a failure");
 ok((defined($result->{'error'})), "validate_object() returns an error message");
-diag($result->{'error'});
+# diag($result->{'error'});
 $r->[0]->{'siam.svcc.device_id'} = $oldref;
 $result = $client->validate_object($r->[0]);
 ok($result->{'status'}, "validate_object() returns success");
@@ -216,6 +216,63 @@ ok(((scalar(@{$r}) == 1) and ($r->[0] eq 'SIAM::ServiceUnit')),
 my $log = $client->get_object_log($id);
 ok((scalar(@{$log}) == 4), 'get_object_log') or
     diag('get_object_log returned ' . scalar(@{$log}) . ' iems');
+
+
+# create a ServiceComponent with missing a mandatory template member
+my $svcc = undef;
+eval {
+    $svcc = $client->create_object
+        ('SIAM::ServiceComponent',
+         {
+          'spsid.object.container' => $id,
+          'siam.object.complete' => 1,
+          'siam.svcc.name' => 'XX',
+          'siam.svcc.type' => 'IFMIB.Port',
+          'siam.svcc.inventory_id' => 'XX1',
+          'siam.svcc.device_id' => $device,
+         })};
+
+ok((not defined($svcc) and $@),
+   'create an object with missing mandatory template member');
+# diag($@);
+
+# create an object with wrong dictionary attribute
+$svcc = undef;
+eval {
+    $svcc = $client->create_object
+        ('SIAM::ServiceComponent',
+         {
+          'spsid.object.container' => $id,
+          'siam.object.complete' => 1,
+          'siam.svcc.name' => 'XX',
+          'siam.svcc.type' => 'Foobar',
+          'siam.svcc.inventory_id' => 'XX1',
+          'siam.svcc.device_id' => $device,
+         })};
+
+ok((not defined($svcc) and $@),
+   'create an object with wrong dictionary attribute');
+
+# create an object with wrong template member
+$svcc = undef;
+eval {
+    $svcc = $client->create_object
+        ('SIAM::ServiceComponent',
+         {
+          'spsid.object.container' => $id,
+          'siam.object.complete' => 1,
+          'siam.svcc.name' => 'XX',
+          'siam.svcc.type' => 'HOST.Virtual',
+          'torrus.port.name' => 'GigabitEthernet1/0/1',
+          'siam.svcc.inventory_id' => 'XX1',
+          'siam.svcc.device_id' => $device,
+         })};
+
+ok((not defined($svcc) and $@),
+   'create an object with wrong template member');
+# diag($@);
+
+
 
 $client->delete_object($id);
 $r = undef;

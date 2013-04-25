@@ -183,33 +183,31 @@ $SPSID::Config::class_attributes =
     'mandatory' => 1,
     'hilite' => 1,
     'descr' => 'Service Component type',
-    'templatekey' =>
-    {'IFMIB.Port' =>
-     {
-      'torrus.port.name' =>
-      {
-       'mandatory' => 1,
-       'descr' => 'Device port name',
-      },
-      'torrus.port.nodeid' =>
-      {
-       'protected' => 1,
-       'default' => 'Calculated automatically',
-       'descr' => 'Unique NodeID value to be assigned to the interface',
-      },
-      'torrus.port.bandwidth' =>
-      {
-       'descr' => 'Service bandwidth in bit per second',
-      },
-     },
-     'Power.PDU' =>
-     {
-      'torrus.power.nodeid' =>
-      {
-       'descr' => 'PDU NodeID',
-      },
-     },
-    },
+    'templatekey' => 1,
+    'dictionary' => ['IFMIB.Port', 'Power.PDU', 'HOST.Virtual'],
+   },
+   'torrus.port.name' => 
+   {
+    'templatemember' => {'siam.svcc.type' => ['IFMIB.Port']},
+    'mandatory' => 1,
+    'descr' => 'Device port name',
+   },
+   'torrus.port.nodeid' =>
+   {
+    'templatemember' => {'siam.svcc.type' => ['IFMIB.Port']},
+    'protected' => 1,
+    'default' => 'Calculated automatically',
+    'descr' => 'Unique NodeID value to be assigned to the interface',
+   },
+   'torrus.port.bandwidth' =>
+   {
+    'templatemember' => {'siam.svcc.type' => ['IFMIB.Port']},
+    'descr' => 'Service bandwidth in bit per second',
+   },
+   'torrus.power.nodeid' =>
+   {
+    'templatemember' => {'siam.svcc.type' => ['Power.PDU']},
+    'descr' => 'PDU NodeID',
    },
    'siam.svcc.name' =>
    {
@@ -276,25 +274,30 @@ $SPSID::Config::class_attributes =
     'descr' => 'SNMP version supported by device',
     'default' => '2c',
     'dictionary' => ['1', '2c'],
+    'insignificant' => 1,
    },
    'snmp.community' =>
    {
     'descr' => 'SNMP community',
     'default' => 'public',
+    'insignificant' => 1,
    },
    'snmp.timeout' =>
    {
     'descr' => 'SNMP request timeout, seconds',
     'default' => '3',
+    'insignificant' => 1,
    },
    'snmp.retries' =>
    {
     'descr' => 'Number of SNMP request retries',
     'default' => '2',
+    'insignificant' => 1,
    },
    'torrus.subtree_path' =>
    {
     'descr' => 'Subtree name for the device in Torrus',
+    'insignificant' => 1,
    }
   },
   'contained_in' => {'SIAM' => 1},
