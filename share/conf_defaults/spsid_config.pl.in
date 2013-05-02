@@ -61,6 +61,7 @@ $SPSID::Config::common_attributes =
 #   templatekey => {value => {attribute property hash}}
 #   objref => "Classname"
 #   reserved_refs => {attrval => 1, ...}
+#   regexp => "validation regexp"
 
 $SPSID::Config::class_attributes =
 {
@@ -203,6 +204,7 @@ $SPSID::Config::class_attributes =
    {
     'templatemember' => {'siam.svcc.type' => ['IFMIB.Port']},
     'descr' => 'Service bandwidth in bit per second',
+    'regexp' => '^[0-9]+$',
    },
    'torrus.power.nodeid' =>
    {
@@ -268,6 +270,7 @@ $SPSID::Config::class_attributes =
    'snmp.host' =>
    {
     'descr' => 'DNS name or IP address for the device',
+    'regexp' => '^[a-zA-Z0-9][a-zA-Z0-9-.]+[a-zA-Z0-9]$',
    },
    'snmp.version' =>
    {
@@ -287,12 +290,14 @@ $SPSID::Config::class_attributes =
     'descr' => 'SNMP request timeout, seconds',
     'default' => '3',
     'insignificant' => 1,
+    'regexp' => '^[0-9]+$',
    },
    'snmp.retries' =>
    {
     'descr' => 'Number of SNMP request retries',
     'default' => '2',
     'insignificant' => 1,
+    'regexp' => '^[0-9]+$',
    },
    'torrus.subtree_path' =>
    {
