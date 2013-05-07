@@ -79,14 +79,24 @@ if( not defined($root) ) {
 
 my $schema = $client->get_schema();
 my %objref_attribute;
+my %reserved_refs;
 
 foreach my $objclass (keys %{$schema}) {
     if( defined($schema->{$objclass}{'attr'}) ) {
         foreach my $name (keys %{$schema->{$objclass}{'attr'}}) {
             my $ref = $schema->{$objclass}{'attr'}{$name};
+
             if( defined($ref->{'objref'}) ) {
                 $objref_attribute{$objclass}{$name} =
-                    $ref->{'objref'};
+                    $ref->{'objref'};                
+            }
+
+            if( defined($ref->{'reserved_refs'}) ) {
+                foreach my $attr_value (keys %{$ref->{'reserved_refs'}}) {
+                    if( $ref->{'reserved_refs'}{$attr_value} ) {
+                        $reserved_refs{$objclass}{$name}{$attr_value} = 1;
+                    }
+                }
             }
         }
     }
@@ -101,11 +111,6 @@ my %filter_attributes =
 
 my %delayed_refs;
 my %id_translation;
-
-my %reserved_refs =
-    ('SIAM.SCOPE.ALL.CONTRACTS' => 1,
-     'SIAM.SCOPE.ALL.ATTRIBUTES' => 1,
-    );
 
 foreach my $obj (@{$data})
 {
@@ -163,8 +168,8 @@ sub import_object
         if( not $filter_attributes{$key} )
         {
             if( defined($objref_attribute{$objclass}{$key}) and
-                not $reserved_refs{$val} ) {
-                
+                not $reserved_refs{$objclass}{$key}{$val} )
+            {
                 $delayed_refs{$import_id}{$key} = $val;
                 $attr->{$key} = 'NIL';
             }
