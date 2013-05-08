@@ -22,6 +22,7 @@ sub print_usage {
     print STDERR ('Usage: ' . $0 . ' --url=URL [options...]' . "\n",
                   SPSID::Client->getopt_help_string(),
                   "\n");
+    print STDERR SPSID::Client->cli_env_vars();
     print STDERR ("This program initializes the SIAM root\n" .
                   "object in SPSID database.\n");
 }

@@ -32,6 +32,7 @@ sub print_usage
          "  --prefix=NAME:SUBSTR  Optional search criteria\n",
          "  --prefix=:SUBSTR      Search by any attribute\n",
          "\n");
+    print STDERR SPSID::Client->cli_env_vars();
     print STDERR
         ("This program searches SPSID objects. Without container, all\n",
          "matching objects are returned. Either exact match, or\n",

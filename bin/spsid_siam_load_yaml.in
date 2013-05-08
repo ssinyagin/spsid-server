@@ -25,6 +25,7 @@ sub print_usage {
                   SPSID::Client->getopt_help_string(),
                   "  --in=FILE      YAML file for import\n",
                   "\n");
+    print STDERR SPSID::Client->cli_env_vars();
     print STDERR ("This program loads the SIAM database contents ",
                   "from a YAML file\n");    
 }

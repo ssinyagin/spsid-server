@@ -24,6 +24,7 @@ sub print_usage {
                   SPSID::Client->getopt_help_string(),
                   "  --id=ID      SPSID object identifier to delete\n",
                   "\n");
+    print STDERR SPSID::Client->cli_env_vars();
     print STDERR ("This program deletes SPSID objects recursively.\n");    
 }
     

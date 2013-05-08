@@ -54,10 +54,10 @@ sub BUILD
 
 sub new_from_getopt
 {
-    my $url;
-    my $realm;
-    my $username;
-    my $password;
+    my $url = $ENV{'SPSID_URL'};
+    my $realm = $ENV{'SPSID_REALM'};
+    my $username = $ENV{'SPSID_USER'};
+    my $password = $ENV{'SPSID_PW'};
 
     my $p = new Getopt::Long::Parser;
     $p->configure('pass_through');
@@ -99,7 +99,15 @@ sub getopt_help_string
                 "  --pw=X         HTTP authentication password",
                 "");
 }
-            
+
+sub cli_env_vars
+{
+    return join("\n",
+                "Environment variables:",
+                "   SPSID_URL, SPSID_REALM, SPSID_USER, SPSID_PW",
+                "", "");
+}
+    
     
     
 
