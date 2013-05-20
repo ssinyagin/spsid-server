@@ -11,7 +11,7 @@ else {
 
 
 
-$SPSID::Config::backend = 'SPSID::Backend::SQL';
+$SPSID::Config::backend = 'SPSID::Server::Backend::SQL';
 
 
 

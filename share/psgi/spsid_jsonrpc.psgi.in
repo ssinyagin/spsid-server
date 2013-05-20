@@ -12,13 +12,13 @@ BEGIN {
 
 use JSON::RPC::Dispatcher;
 use Try::Tiny;
-use SPSID;
+use SPSID::Server;
 
 use Log::Any::Adapter ('Stderr');
 
 
-my $spsid = SPSID->new();
-$spsid->connect();
+my $server = SPSID::Server->new();
+$server->connect();
 
 
 sub create_object
@@ -31,12 +31,12 @@ sub create_object
     
     my $userid = $plack_request->user();
     if( defined($userid) ) {
-        $spsid->user_id($userid);
+        $server->user_id($userid);
     }
 
-    my $id = $spsid->create_object($arg{'objclass'}, $arg{'attr'});
+    my $id = $server->create_object($arg{'objclass'}, $arg{'attr'});
     
-    $spsid->clear_user_id;
+    $server->clear_user_id;
     return $id;
 }
 
@@ -52,12 +52,12 @@ sub modify_object
 
     my $userid = $plack_request->user();
     if( defined($userid) ) {
-        $spsid->user_id($userid);
+        $server->user_id($userid);
     }
     
-    $spsid->modify_object($arg{'id'}, $arg{'mod_attr'});
+    $server->modify_object($arg{'id'}, $arg{'mod_attr'});
     
-    $spsid->clear_user_id;
+    $server->clear_user_id;
     return;
 }
 
@@ -70,7 +70,7 @@ sub validate_object
 
     my $result = {'status' => 1};
     try {
-        $spsid->validate_object($arg{'attr'});        
+        $server->validate_object($arg{'attr'});        
     } catch {
         $result->{'status'} = 0;
         $result->{'error'} = $_;
@@ -88,12 +88,12 @@ sub delete_object
 
     my $userid = $plack_request->user();
     if( defined($userid) ) {
-        $spsid->user_id($userid);
+        $server->user_id($userid);
     }
     
-    $spsid->delete_object($arg{'id'});
+    $server->delete_object($arg{'id'});
     
-    $spsid->clear_user_id;
+    $server->clear_user_id;
     return;
 }
 
@@ -102,7 +102,7 @@ sub get_object
 {
     my %arg = @_;
     die('id required') unless defined $arg{'id'};
-    return $spsid->get_object($arg{'id'});    
+    return $server->get_object($arg{'id'});    
 }
 
 
@@ -110,7 +110,7 @@ sub get_object_log
 {
     my %arg = @_;
     die('id required') unless defined $arg{'id'};
-    return $spsid->get_object_log($arg{'id'});    
+    return $server->get_object_log($arg{'id'});    
 }
 
 
@@ -129,7 +129,7 @@ sub search_objects
         @search_attrs = @{$arg{'search_attrs'}};
     }
         
-    return $spsid->search_objects($arg{'container'},
+    return $server->search_objects($arg{'container'},
                                   $arg{'objclass'},
                                   @search_attrs);
 }
@@ -143,7 +143,7 @@ sub search_prefix
     die('attr_name required') unless exists $arg{'attr_name'};
     die('attr_prefix required') unless defined $arg{'attr_prefix'};
 
-    return $spsid->search_prefix($arg{'objclass'},
+    return $server->search_prefix($arg{'objclass'},
                                  $arg{'attr_name'},
                                  $arg{'attr_prefix'});
 }
@@ -153,13 +153,13 @@ sub contained_classes
 {
     my %arg = @_;    
     die('container required') unless defined $arg{'container'};
-    return $spsid->contained_classes($arg{'container'});
+    return $server->contained_classes($arg{'container'});
 }
 
 
 sub get_schema
 {
-    return $spsid->get_schema();
+    return $server->get_schema();
 }
 
 

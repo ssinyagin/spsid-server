@@ -1,4 +1,4 @@
-package SPSID::Backend::SQL;
+package SPSID::Server::Backend::SQL;
 
 use utf8;
 use DBI;

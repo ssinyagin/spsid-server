@@ -1,4 +1,4 @@
-package SPSID;
+package SPSID::Server;
 
 use utf8;
 use Digest::MD5 qw(md5_hex);
