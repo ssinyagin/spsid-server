@@ -1,5 +1,7 @@
 #!perl
 
+## Tests for SPSID::Client
+
 use strict;
 use warnings;
 use utf8;
@@ -330,10 +332,3 @@ ok(($r->[0]->{'siam.scmember.object_id'} eq 'NIL'),
 # cperl-brace-offset: 0
 # cperl-label-offset: -2
 # End:
-
-
-
-
-
-
-
