@@ -28,7 +28,8 @@ siteconf_d = @siteconfdir@/spsid_siteconfig.pl
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(plugconfdir)
 	if test ! -e $(siteconf_d); then \
-	  $(INSTALL_DATA) $(siteconf_s) $(siteconf_d); fi
+	  $(mkinstalldirs) $(DESTDIR)$(siteconf_d); \
+	  $(INSTALL_DATA) $(siteconf_s) $(DESTDIR)$(siteconf_d); fi
 
 dist-hook:
 	date >DIST_REVISION
