@@ -23,13 +23,14 @@ EXTRA_DIST = \
 
 
 siteconf_s = etc/spsid_siteconfig.pl
-siteconf_d = @siteconfdir@/spsid_siteconfig.pl
+siteconf_d = @siteconfdir@
+siteconf_df = $(siteconf_d)/spsid_siteconfig.pl
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(plugconfdir)
-	if test ! -e $(siteconf_d); then \
+	if test ! -e $(siteconf_df); then \
 	  $(mkinstalldirs) $(DESTDIR)$(siteconf_d); \
-	  $(INSTALL_DATA) $(siteconf_s) $(DESTDIR)$(siteconf_d); fi
+	  $(INSTALL_DATA) $(siteconf_s) $(DESTDIR)$(siteconf_df); fi
 
 dist-hook:
 	date >DIST_REVISION
