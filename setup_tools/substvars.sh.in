@@ -44,7 +44,6 @@ spsid_config_pl=@pkgdatadir@/conf_defaults/spsid_config.pl
     -e "s,\@perllibdirs\@,@perllibdirs@,g" \
     -e "s,\@pkgdatadir\@,@pkgdatadir@,g" \
     -e "s,\@plugconfdir\@,@plugconfdir@,g" \
-    -e "s,\@plugconfdir\@,@plugconfdir@,g" \
     -e "s,\@siteconfdir\@,@siteconfdir@,g" \
     -e "s,\@spsid_config_pl\@,${spsid_config_pl},g" \
     -e "s,\@PLACKUP\@,@PLACKUP@,g" \
