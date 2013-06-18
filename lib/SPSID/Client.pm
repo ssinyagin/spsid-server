@@ -319,7 +319,7 @@ sub ping
 
     my $r = $self->_call('ping', {'echo' => 'blahblah'});
     die('Ping RPC call returned wrong response')
-        unless $r->{'echo'} ne 'blahblah';
+        unless ($r->{'echo'} eq 'blahblah');
     return;
 }
 
