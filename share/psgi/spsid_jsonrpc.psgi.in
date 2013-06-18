@@ -5,8 +5,8 @@ use utf8;
 
 BEGIN {
     if(defined($ENV{'SPSID_CONFIG'})) {
-        require $ENV{'SPSID_CONFIG'};
-    } else { require '@spsid_config_pl@'; }
+        do $ENV{'SPSID_CONFIG'};
+    } else { do '@spsid_config_pl@'; }
 }
 
 
