@@ -69,24 +69,12 @@ sub new_from_getopt
     }
 
     die("--url option is required\n") unless defined($url);
-    
-    my $uri = URI->new($url);
-    die('Cannot parse URL: ' . $url) unless defined $uri;
 
-    my $ua = LWP::UserAgent->new;
-    $ua->timeout(10);
-    $ua->env_proxy;
-
-    if( defined($realm) or defined($username) or defined($password) ) {
-        if( defined($realm) and defined($username) and defined($password) ) {
-            $ua->credentials($uri->host_port, $realm, $username, $password);
-        }
-        else {
-            die('Realm, user, and password are required at the same time');
-        }
-    }
-
-    return SPSID::Client->new('url' => $url, 'ua' => $ua);
+    return SPSID::Client->new_from_urlparams
+        ({'url' => $url,
+          'realm' => $realm,
+          'username' => $username,
+          'password' => $password});
 }
 
 
@@ -109,7 +97,35 @@ sub cli_env_vars
 }
     
     
-    
+
+sub new_from_urlparams
+{
+    my $class = shift;
+    my $params = shift;
+
+    my $url = $params->{'url'};
+    my $realm = $params->{'realm'};
+    my $username = $params->{'username'};
+    my $password = $params->{'password'};
+
+    my $uri = URI->new($url);
+    die('Cannot parse URL: ' . $url) unless defined $uri;
+
+    my $ua = LWP::UserAgent->new;
+    $ua->timeout(10);
+    $ua->env_proxy;
+
+    if( defined($realm) or defined($username) or defined($password) ) {
+        if( defined($realm) and defined($username) and defined($password) ) {
+            $ua->credentials($uri->host_port, $realm, $username, $password);
+        }
+        else {
+            die('Realm, user, and password are required at the same time');
+        }
+    }
+
+    return SPSID::Client->new('url' => $url, 'ua' => $ua);
+}    
 
 
 sub _call
