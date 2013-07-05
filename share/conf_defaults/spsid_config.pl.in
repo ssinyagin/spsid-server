@@ -92,6 +92,11 @@ $SPSID::Config::class_attributes =
     'hilite' => 1,
     'descr' => 'Customer name',
    },
+   'siam.contract.customer_id' =>
+   {
+    'mandatory' => 1,
+    'descr' => 'Customer ID in the billing system',
+   },
   },
   'contained_in' => {'SIAM' => 1},
   'display' =>
