@@ -56,6 +56,15 @@ sub sync_contained_objects
         $db_uniqref{$key} = $obj;
     }
 
+    # replace all undefs with empty strings
+    foreach my $obj (@{$sync_objects}) {
+        foreach my $key (keys %{$obj}) {
+            if( not defined($obj->{$key}) ) {
+                $obj->{$key} = '';
+            }
+        }
+    }                
+    
     my %sync_uniqref;
     foreach my $obj (@{$sync_objects}) {
         my $key = $obj->{$key_attr};
