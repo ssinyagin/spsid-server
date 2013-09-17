@@ -428,6 +428,10 @@ sub new_object_default_attrs
      'spsid.object.class' => $objclass,
      'spsid.object.container' => $container,
     };
+
+    foreach my $name (keys %{$templatekeys}) {
+        $attr->{$name} = $templatekeys->{$name};
+    }
     
     my $ug = new Data::UUID;
 
@@ -440,6 +444,9 @@ sub new_object_default_attrs
         }
         elsif( $attr_schema->{$name}{'default_autogen'} ) {
             $attr->{$name} = $ug->create_str();
+        }
+        elsif( defined($attr_schema->{$name}{'objref'}) ) {
+            $attr->{$name} = 'NIL';
         }
     }
 
