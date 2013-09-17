@@ -163,6 +163,19 @@ sub get_schema
 }
 
 
+sub new_object_default_attrs
+{
+    my %arg = @_;
+
+    die('container required') unless defined $arg{'container'};
+    die('objclass required') unless defined $arg{'objclass'};
+    die('templatekeys required') unless defined $arg{'templatekeys'};
+        
+    return $server->new_object_default_attrs($arg{'container'},
+                                             $arg{'objclass'},
+                                             $arg{'templatekeys'});
+}
+
     
 my $rpc = JSON::RPC::Dispatcher->new;
 
@@ -176,6 +189,7 @@ $rpc->register('search_objects', \&search_objects);
 $rpc->register('search_prefix', \&search_prefix);
 $rpc->register('contained_classes', \&contained_classes);
 $rpc->register('get_schema', \&get_schema);
+$rpc->register('new_object_default_attrs', \&new_object_default_attrs);
 
 $rpc->register('ping', sub{my %arg = @_; return \%arg});
 

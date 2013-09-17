@@ -2,6 +2,7 @@ package SPSID::Server;
 
 use utf8;
 use Digest::MD5 qw(md5_hex);
+use Data::UUID;
 
 use Moose;
 
@@ -127,7 +128,7 @@ sub create_object
     }
 
     $self->validate_object($attr);
-
+    $self->get_calculated_attributes($attr);
     $self->_backend->create_object($attr);
 
     $self->log_object($id, 'Object created');
@@ -176,6 +177,18 @@ sub modify_object
         }
     }
 
+    my $clone_before_calc = {};
+    while(my ($name, $value) = each %{$mod_attr}) {
+        $clone_before_calc->{$name} = $attr->{$name};
+    }
+        
+    my $calc_attr = $self->get_calculated_attributes($attr);
+    foreach my $name (@{$calc_attr}) {
+        if( $clone_before_calc->{$name} ne $attr->{$name} ) {
+            $modified_attr->{$name} = $attr->{$name};
+        }
+    }
+    
     $self->validate_object($attr);
 
     my @del_attrs = sort keys %{$deleted_attr};
@@ -359,17 +372,157 @@ sub get_schema
 
 
 
+sub get_objclass_schema
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $templatekeys = shift;
+
+    my $attr_schema = {};
+    
+    if( defined($SPSID::Config::class_attributes->{$objclass}{'attr'}) )
+    {
+        my $cfg = $SPSID::Config::class_attributes->{$objclass}{'attr'};
+
+        foreach my $name (keys %{$cfg})
+        {
+            if( defined($cfg->{$name}{'templatemember'}) )
+            {
+                my $template_active = 0;
+                while( my ($templatekeyattr, $keyvalues) =
+                       each %{$cfg->{$name}{'templatemember'}} )
+                {
+                    if( defined($templatekeys->{$templatekeyattr}) )
+                    {
+                        my $key = $templatekeys->{$templatekeyattr};
+                        if( grep {$key eq $_} @{$keyvalues} ) {
+                            $template_active = 1;
+                        }
+                    }
+
+                    last if $template_active;
+                }
+                
+                next unless $template_active;
+            }
+
+            $attr_schema->{$name} = $cfg->{$name};
+        }
+    }
+
+    return $attr_schema;
+}
+
+
+
+
+sub new_object_default_attrs
+{
+    my $self = shift;
+    my $container = shift;
+    my $objclass = shift;
+    my $templatekeys = shift;
+    
+    my $attr =
+    {
+     'spsid.object.class' => $objclass,
+     'spsid.object.container' => $container,
+    };
+    
+    my $ug = new Data::UUID;
+
+    my $attr_schema = $self->get_objclass_schema($objclass, $templatekeys);
+    
+    foreach my $name (keys %{$attr_schema})
+    {
+        if( defined($attr_schema->{$name}{'default'}) ) {
+            $attr->{$name} = $attr_schema->{$name}{'default'};
+        }
+        elsif( $attr_schema->{$name}{'default_autogen'} ) {
+            $attr->{$name} = $ug->create_str();
+        }
+    }
+
+    if( defined($SPSID::Config::new_obj_generators) and
+        defined($SPSID::Config::new_obj_generators->{$objclass}) )
+    {
+        foreach my $func
+            (values %{$SPSID::Config::new_object_generators->{$objclass}}) {
+            &{$func}($self, $container, $objclass, $attr);
+        }
+    }
+        
+    return $attr;
+}
+            
+
+# updates the attributes with calculated values
+# returns arrayref with attribute names
+
+sub get_calculated_attributes
+{
+    my $self = shift;
+    my $attr = shift;
+
+    my $objclass = $attr->{'spsid.object.class'};
+    my $attr_schema = $self->get_objclass_schema($objclass, $attr);
+
+    my $attrlist = {};
+    
+    foreach my $name (keys %{$attr_schema})
+    {
+        if( $attr_schema->{$name}{'calculated'} )
+        {
+            $attr->{$name} = '';
+            $attrlist->{$name} = 1;
+        }
+    }
+
+    if( defined($SPSID::Config::calc_attr_generators) and
+        defined($SPSID::Config::calc_attr_generators->{$objclass}) )
+    {
+        foreach my $func
+            (values %{$SPSID::Config::calc_attr_generators->{$objclass}}) {
+
+            my $gen_attr_list = &{$func}($self, $attr);
+            if( defined($gen_attr_list) )
+            {
+                foreach my $name (keys %{$gen_attr_list}) {
+                    $attrlist->{$name} = 1;
+                }
+            }
+        }
+    }
+    
+    return [keys %{$attrlist}];
+}
+    
+
+
 sub validate_object
 {
     my $self = shift;
     my $attr = shift;
 
+    foreach my $name ('spsid.object.class', 'spsid.object.container')
+    {
+        my $value = $attr->{$name};
+        if( not defined($value) ) {
+            die('Missing mandatory attribute ' . $name . ' in ' .
+                $attr->{'spsid.object.id'});
+        }
+        elsif( $value eq '' ) {
+            die('Mandatory attribute ' . $name .
+                ' cannot have empty value in ' .
+                $attr->{'spsid.object.id'});
+        }
+    }
+
+    
     foreach my $func (values %{$SPSID::Config::object_validators}) {
         &{$func}($attr);
     }
-
-    $self->_verify_attributes($attr, $SPSID::Config::common_attributes);
-
+    
     my $objclass = $attr->{'spsid.object.class'};
 
     my $cfg = $SPSID::Config::class_attributes;
@@ -405,17 +558,22 @@ sub _verify_attributes
 
     foreach my $name (keys %{$cfg})
     {
+        next if $cfg->{$name}{'calculated'};
+
         my $value = $attr->{$name};
-        
+
         if( defined($cfg->{$name}{'templatemember'}) )
         {
             my $template_active = 0;
-            while( my ($templatekeyattr, $keyvalues) =
-                   each %{$cfg->{$name}{'templatemember'}} )
-            {
+            foreach my $templatekeyattr
+                (keys %{$cfg->{$name}{'templatemember'}})  {
+
                 if( defined($attr->{$templatekeyattr}) )
                 {
+                    my $keyvalues =
+                        $cfg->{$name}{'templatemember'}{$templatekeyattr};
                     my $key = $attr->{$templatekeyattr};
+                    
                     if( grep {$key eq $_} @{$keyvalues} ) {
                         $template_active = 1;
                     }

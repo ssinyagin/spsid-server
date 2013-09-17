@@ -296,6 +296,19 @@ sub get_schema
 }
     
 
+sub new_object_default_attrs
+{
+    my $self = shift;
+    my $container = shift;
+    my $objclass = shift;
+    my $templatekeys = shift;
+    
+    return $self->_call('new_object_default_attrs',
+                        {'container' => $container,
+                         'objclass' => $objclass,
+                         'templatekeys' => $templatekeys});
+}
+
 
 sub get_siam_root
 {
@@ -308,6 +321,7 @@ sub get_siam_root
         return;
     }
 }
+
 
 
 
