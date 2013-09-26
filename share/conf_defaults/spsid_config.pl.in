@@ -74,8 +74,11 @@ $SPSID::Config::class_attributes =
   'display' =>
   {
    'class_descr' => 'Contracts',
+   'instance_descr' => 'Contract',
    'sequence' => 110,
    'name_attr' => 'siam.contract.inventory_id',
+   'descr_attr' => ['siam.contract.customer_name'],
+   'tree_browser' => 1,
   },
  },
 
@@ -107,8 +110,11 @@ $SPSID::Config::class_attributes =
   'display' =>
   {
    'class_descr' => 'Services',
+   'instance_descr' => 'Service',
    'sequence' => 120,
    'name_attr' => 'siam.svc.inventory_id',
+   'descr_attr' => ['siam.svc.product_name'],
+   'tree_browser' => 1,
   },
  },
 
@@ -140,8 +146,11 @@ $SPSID::Config::class_attributes =
   'display' =>
   {
    'class_descr' => 'Service Units',
+   'instance_descr' => 'Service Unit',
    'sequence' => 130,
    'name_attr' => 'siam.svcunit.name',
+   'descr_attr' => [],
+   'tree_browser' => 1,
   },
  },
 
@@ -208,8 +217,11 @@ $SPSID::Config::class_attributes =
   'display' =>
   {
    'class_descr' => 'Service Components',
+   'instance_descr' => 'Service Component',
    'sequence' => 140,
    'name_attr' => 'siam.svcc.name',
+   'descr_attr' => [],
+   'tree_browser' => 1,
   },
  },
 
@@ -289,8 +301,11 @@ $SPSID::Config::class_attributes =
   'display' =>
   {
    'class_descr' => 'Devices',
+   'instance_descr' => 'Device',
    'sequence' => 150,
    'name_attr' => 'siam.device.name',
+   'descr_attr' => [],
+   'tree_browser' => 0,
   },
  },
 
