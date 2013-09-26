@@ -221,7 +221,6 @@ $SPSID::Config::class_attributes =
    'sequence' => 140,
    'name_attr' => 'siam.svcc.name',
    'descr_attr' => [],
-   'tree_browser' => 1,
   },
  },
 
@@ -305,7 +304,6 @@ $SPSID::Config::class_attributes =
    'sequence' => 150,
    'name_attr' => 'siam.device.name',
    'descr_attr' => [],
-   'tree_browser' => 0,
   },
  },
 
