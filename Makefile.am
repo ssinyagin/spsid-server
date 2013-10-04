@@ -16,7 +16,7 @@
 
 #
 
-SUBDIRS = . bin lib share
+SUBDIRS = . lib share
 
 EXTRA_DIST = \
 	etc/spsid_siteconfig.pl

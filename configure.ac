@@ -17,7 +17,7 @@
 #
 
 
-AC_INIT([spsid],[1.01dev],[ssinyagin@k-open.com])
+AC_INIT([spsid-server],[1.01dev],[ssinyagin@k-open.com])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(conftools)
 AC_CANONICAL_HOST
@@ -63,8 +63,8 @@ AC_SUBST(perllibdirs, [${perllibdirs}])
 
 if test "$enable_pkgonly" != yes; then
 
-   for module in 'JSON' 'DBI' 'Digest::MD5' 'Moose' 'JSON::RPC::Dispatcher' \
-      'LWP::UserAgent' 'Try::Tiny' 'YAML' 'TAP::Harness' 'Test::More' \
+   for module in 'DBI' 'Digest::MD5' 'Moose' 'JSON::RPC::Dispatcher' \
+      'Try::Tiny' 'TAP::Harness' 'Test::More' \
       'Text::Unidecode' 'Data::UUID'
    do
      AC_MSG_CHECKING([presence of $module])
@@ -97,11 +97,11 @@ AC_ARG_VAR(plugconfdir, [[PKGDATADIR/plugconf] Plugin configuration directory])
 if test -z "$plugconfdir"; then
    plugconfdir='${pkgdatadir}/plugconf'; fi
 
-AC_ARG_VAR(siteconfdir, [[SYSCONFDIR/spsid] Site configuration files])
+AC_ARG_VAR(siteconfdir, [[SYSCONFDIR/PACKAGE] Site configuration files])
 if test -z "$siteconfdir"; then
-   siteconfdir='${sysconfdir}/spsid'; fi
+   siteconfdir='${sysconfdir}/${PACKAGE}'; fi
    
-AC_CONFIG_FILES([Makefile bin/Makefile])
+AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([lib/Makefile share/Makefile])
 AC_CONFIG_FILES([setup_tools/substvars.sh],[chmod +x setup_tools/substvars.sh])
 
