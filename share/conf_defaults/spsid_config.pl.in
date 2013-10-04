@@ -35,6 +35,23 @@ $SPSID::Config::backend = 'SPSID::Server::Backend::SQL';
 #   reserved_refs => {attrval => 1, ...}
 #   regexp => "validation regexp"
 
+# Class properties:
+#   contained_in => {class => 1} [hash of parent classes]
+#   single_instance => 1|0
+#   root_object => 1|0
+#   no_children => 1|0
+
+# Class Display properties:
+#   read_only => 1|0   [if the GUI user allowed to edit the objects]
+#   class_descr => string  [descriptive term for the whole class]
+#   instance_descr => string [descriptive term for a single object]
+#   sequence => N  [sorting order for a list of classes]
+#   name_attr => attrname [attribute which is used as a title for the obkect]
+#   descr_attr => [attrname, ...] [additional attrs for object description]
+#   tree_browser => 1|0 [if tree browser can be used for this class]
+
+
+
 $SPSID::Config::class_attributes =
 {
  'SIAM' =>
@@ -114,7 +131,6 @@ $SPSID::Config::class_attributes =
    'sequence' => 120,
    'name_attr' => 'siam.svc.inventory_id',
    'descr_attr' => ['siam.svc.product_name'],
-   'tree_browser' => 1,
   },
  },
 
@@ -150,7 +166,6 @@ $SPSID::Config::class_attributes =
    'sequence' => 130,
    'name_attr' => 'siam.svcunit.name',
    'descr_attr' => [],
-   'tree_browser' => 1,
   },
  },
 
