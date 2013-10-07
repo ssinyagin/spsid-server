@@ -76,7 +76,19 @@ if test "$enable_pkgonly" != yes; then
    done
 fi
 
+AC_ARG_WITH([clientbindir],
+            [AS_HELP_STRING([--with-clientbindir=PATH],
+                            [path to SPSID Client utilities])],
+            [clientbindir=${withval}])
+AC_SUBST(clientbindir)
 
+
+AC_ARG_WITH([clientlibdir],
+            [AS_HELP_STRING([--with-clientlibdir=PATH],
+                            [path to SPSID::Client library location])],
+            [clientlibdir=${withval}])
+AC_SUBST(clientlibdir)
+              
 AC_ARG_VAR(mansec_usercmd, [[1] User commands man section])
 if test -z "$mansec_usercmd"; then
    mansec_usercmd='1'; fi

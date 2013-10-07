@@ -7,7 +7,7 @@ use warnings;
 use utf8;
 use Unicode::Normalize;
 
-use Test::More tests => 51;
+use Test::More tests => 52;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
@@ -18,6 +18,11 @@ use SPSID::Client;
 
 my $client = SPSID::Client->new(url => $ENV{'SPSID_PLACK_URL'});
 ok($client, 'SPSID::Client->new');
+
+eval {$client->ping()};
+ok((not $@), 'ping()') or
+    BAIL_OUT('Could not ping: ' . $@);
+
 
 my $root = $client->get_siam_root();
 ok($root, '$client->get_siam_root()');

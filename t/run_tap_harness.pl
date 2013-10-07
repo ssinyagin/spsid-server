@@ -6,9 +6,9 @@ use TAP::Harness;
 
 my $harness = TAP::Harness->new
     ({verbosity => 1,
-      lib     => [ $ENV{'SPSID_PERLLIBDIRS'} ]});
+      lib     => [ split(/,/, $ENV{'SPSID_PERLLIBDIRS'}) ]});
 
-my $testsdir = $ENV{'SPSID_TOP'} . '/t/';
+my $testsdir = $ENV{'SPSID_SRV_TOP'} . '/t/';
 
 local *DH;
 opendir(DH, $testsdir) or die($!);

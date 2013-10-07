@@ -39,4 +39,23 @@ dist-hook:
 
 
 test: all
-	SPSID_TOP=@abs_top_builddir@ PERL=$(PERL) $(SHELL) t/run_tests.sh
+	if test x$(clientlibdir) = x; then \
+	echo "--with-clientlibdir is required for tests" 1>&2; \
+	exit 1; fi; \
+	if test ! -d $(clientlibdir); then \
+	echo "No such directory: $(clientlibdir)" 1>&2; \
+	exit 1; fi; \
+	if test ! -f $(clientlibdir)/SPSID/Client.pm; then \
+	echo "No such file: $(clientlibdir)/SPSID/Client.pm" 1>&2; \
+	exit 1; fi; \
+	if test x$(clientbindir) = x; then \
+	echo "--with-clientbindir is required for tests" 1>&2; \
+	exit 1; fi; \
+	if test ! -d $(clientbindir); then \
+	echo "No such directory: $(clientbindir)" 1>&2; \
+	exit 1; fi; \
+	if test ! -f $(clientbindir)/spsid_siam_load_yaml; then \
+	echo "No such file: $(clientbindir)/spsid_siam_load_yaml" 1>&2; \
+	exit 1; fi; \
+	SPSID_SRV_TOP=@abs_top_builddir@ SPSID_CL_BIN=$(clientbindir) \
+	SPSID_CL_LIB=$(clientlibdir) PERL=$(PERL) $(SHELL) t/run_tests.sh

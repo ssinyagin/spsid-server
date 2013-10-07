@@ -4,7 +4,7 @@ echo "Starting Plack server at ${SPSID_PLACK_URL}" 1>&2
 plackup --host ${SPSID_PLACK_HOST} --port ${SPSID_PLACK_PORT} \
     --access-log ${SPSID_PLACK_LOG} \
     -e "close STDERR; open (STDERR, \">${SPSID_PLACK_ERRLOG}\")" \
-    ${SPSID_TOP}/share/psgi/spsid_jsonrpc.psgi &
+    ${SPSID_SRV_TOP}/share/psgi/spsid_jsonrpc.psgi &
 
 PLACK_PID=$!
 
