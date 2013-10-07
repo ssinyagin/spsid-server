@@ -1,7 +1,7 @@
 
 . `dirname $0`/set_env.sh
 
-if test x${SPSID_CONFIG} = x; then
+if test x${SPSID_ENV_OK} != xyes; then
     echo "ERROR: failed to initialize the environment" 1>&2
     exit 1
 fi

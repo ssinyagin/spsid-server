@@ -457,23 +457,35 @@ foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
 
 # Read plugin configurations
 {
-    my $dir = '@plugconfdir@';
+    my $dir;
+    if( defined($ENV{'SPSID_PLUGCONFDIR'}) ) {
+        $dir = $ENV{'SPSID_PLUGCONFDIR'};
+    } else {
+        $dir = '@plugconfdir@';
+    }
     opendir(CFGDIR, $dir) or die("Cannot open directory $dir: $!");
     my @files = grep { /_spsid_config\.pl$/ } readdir(CFGDIR);
     closedir( CFGDIR );
     foreach my $file ( @files )
     {
         do $dir . '/' . $file;
+        die($@) if $@;
     }
 }
 
 
 
-if( defined($ENV{'SPSID_SITECONFIG'}) ) {
-    do $ENV{'SPSID_SITECONFIG'};
-}
-else {
-    do '@siteconfdir@/spsid_siteconfig.pl';
+{
+    my $siteconf;
+    if( defined($ENV{'SPSID_SITECONFIG'}) ) {
+        $siteconf=$ENV{'SPSID_SITECONFIG'};
+    }
+    else {
+        $siteconf = '@siteconfdir@/spsid_siteconfig.pl';
+    }
+    
+    do $siteconf;
+    die("Error reading $siteconf: $@") if $@;
 }
 
 
