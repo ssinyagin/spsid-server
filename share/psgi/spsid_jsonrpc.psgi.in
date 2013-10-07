@@ -193,6 +193,8 @@ $rpc->register('new_object_default_attrs', \&new_object_default_attrs);
 
 $rpc->register('ping', sub{my %arg = @_; return \%arg});
 
+$rpc->register('server_version', sub{return "1.0"});
+
 $rpc->to_app;
 
 
