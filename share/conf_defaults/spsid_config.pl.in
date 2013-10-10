@@ -454,6 +454,29 @@ foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
 }
 
 
+$SPSID::Config::new_service_component_seq_realm = 'SPSID';
+
+
+$SPSID::Config::new_obj_generators =
+{
+ 'SIAM::ServiceComponent' =>
+ {
+  'default' => sub {
+      my $self = shift;
+      my $container = shift;
+      my $objclass = shift;
+      my $attr = shift;
+
+      my $realm = $SPSID::Config::new_service_component_seq_realm;
+      my $id = $self->sequence_next($realm);
+      my $idstr = sprintf('%s%.6d', $realm, $id);
+      
+      $attr->{'siam.svcc.inventory_id'} = $idstr;
+      $attr->{'siam.svcc.name'} = $idstr;
+  },
+ },
+};
+
 
 # Read plugin configurations
 {

@@ -3,6 +3,7 @@ package SPSID::Server;
 use utf8;
 use Digest::MD5 qw(md5_hex);
 use Data::UUID;
+use DBIx::Sequence;
 
 use Moose;
 
@@ -454,7 +455,7 @@ sub new_object_default_attrs
         defined($SPSID::Config::new_obj_generators->{$objclass}) )
     {
         foreach my $func
-            (values %{$SPSID::Config::new_object_generators->{$objclass}}) {
+            (values %{$SPSID::Config::new_obj_generators->{$objclass}}) {
             &{$func}($self, $container, $objclass, $attr);
         }
     }
@@ -701,7 +702,13 @@ sub clear_user_id
 }
 
 
-    
+
+sub sequence_next
+{
+    my $self = shift;
+    my $realm = shift;
+    return $self->_backend->sequence_next($realm);
+}
 
 
 1;

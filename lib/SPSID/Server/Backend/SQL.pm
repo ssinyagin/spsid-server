@@ -511,7 +511,14 @@ sub _ascii_lower
 
 
 
-
+sub sequence_next
+{
+    my $self = shift;
+    my $realm = shift;
+    
+    my $sequence = new DBIx::Sequence({ dbh => $self->_dbh });
+    return $sequence->Next('dataset');
+}
 
 
 

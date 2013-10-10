@@ -51,3 +51,18 @@ CREATE INDEX SPSID_OBJECT_LOG_I01
 
 
 
+ /* DBIx::Sequence backend, the platform-independent inplementation
+    of sequences */
+ CREATE TABLE dbix_sequence_state
+ (
+   dataset varchar(50) NOT NULL, 
+   state_id INTEGER NOT NULL, 
+   CONSTRAINT pk_dbix_sequence PRIMARY KEY (dataset, state_id)
+ );
+
+ CREATE TABLE dbix_sequence_release
+ (
+   dataset varchar(50) NOT NULL,    
+   released_id INTEGER NOT NULL, 
+   CONSTRAINT pk_dbi_release PRIMARY KEY (dataset, released_id)
+ );
