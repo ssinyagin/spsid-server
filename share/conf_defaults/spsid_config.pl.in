@@ -180,6 +180,7 @@ $SPSID::Config::class_attributes =
     'unique' => 1,
     'descr' => 'Service Component ID',
     'default_autogen' => 1,
+    'protected' => 1,
    },
    'siam.svcc.type' =>
    {
@@ -199,6 +200,7 @@ $SPSID::Config::class_attributes =
    {
     'templatemember' => {'siam.svcc.type' => ['IFMIB.Port']},
     'calculated' => 1,
+    'protected' => 1,
     'descr' => 'Unique NodeID value to be assigned to the interface',
    },
    'torrus.port.bandwidth' =>
@@ -211,6 +213,7 @@ $SPSID::Config::class_attributes =
    {
     'templatemember' => {'siam.svcc.type' => ['Power.PDU']},
     'calculated' => 1,
+    'protected' => 1,
     'descr' => 'PDU NodeID',
    },
    'siam.svcc.name' =>
@@ -463,8 +466,6 @@ $SPSID::Config::new_obj_generators =
  {
   'default' => sub {
       my $self = shift;
-      my $container = shift;
-      my $objclass = shift;
       my $attr = shift;
 
       my $realm = $SPSID::Config::new_service_component_seq_realm;
@@ -477,6 +478,33 @@ $SPSID::Config::new_obj_generators =
  },
 };
 
+
+{
+    my $calc_attr_prop =
+    {
+     'IFMIB.Port' => {'attr' => 'torrus.port.nodeid',
+                      'prefix' => 'spsid-port//'},
+     'Power.PDU' => {'attr' => 'torrus.power.nodeid',
+                     'prefix' => 'spsid-pdu//'},
+    };
+    
+    $SPSID::Config::calc_attr_generators =
+    {
+     'SIAM::ServiceComponent' =>
+     {
+      'default' => sub {
+          my $self = shift;
+          my $attr = shift;
+          
+          my $type = $attr->{'siam.svcc.type'};
+          my $calc_attr = $calc_attr_prop->{$type}{'attr'};
+          my $prefix = $calc_attr_prop->{$type}{'prefix'};
+          $attr->{$calc_attr} = $prefix . $attr->{'siam.svcc.inventory_id'};
+          return {$calc_attr => 1};
+      },
+     },
+    };
+}
 
 # Read plugin configurations
 {

@@ -456,7 +456,7 @@ sub new_object_default_attrs
     {
         foreach my $func
             (values %{$SPSID::Config::new_obj_generators->{$objclass}}) {
-            &{$func}($self, $container, $objclass, $attr);
+            &{$func}($self, $attr);
         }
     }
         
