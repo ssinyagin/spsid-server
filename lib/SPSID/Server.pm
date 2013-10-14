@@ -179,13 +179,16 @@ sub modify_object
     }
 
     my $clone_before_calc = {};
-    while(my ($name, $value) = each %{$mod_attr}) {
+    while(my ($name, $value) = each %{$attr}) {
         $clone_before_calc->{$name} = $attr->{$name};
     }
         
     my $calc_attr = $self->get_calculated_attributes($attr);
     foreach my $name (@{$calc_attr}) {
-        if( $clone_before_calc->{$name} ne $attr->{$name} ) {
+        if( not defined($clone_before_calc->{$name}) ) {
+            $added_attr->{$name} = $attr->{$name};
+        }
+        elsif( $clone_before_calc->{$name} ne $attr->{$name} ) {
             $modified_attr->{$name} = $attr->{$name};
         }
     }

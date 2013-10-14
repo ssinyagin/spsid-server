@@ -16,18 +16,8 @@ $SPSID::Config::calc_attr_generators->{'SIAM::ServiceComponent'}{'t1'} =
         my $svctype = $attr->{'siam.svcc.type'};
         my $invid = $attr->{'siam.svcc.inventory_id'};
 
-        if( $svctype eq 'IFMIB.Port' ) {
-            $attr->{'torrus.port.nodeid'} = 'spsid-port//' . $invid ;
-            $ret->{'torrus.port.nodeid'} = 1;
-        }
-        elsif( $svctype eq 'Power.PDU' ) {
-            $attr->{'torrus.power.nodeid'} = 'spsid-pdu//' . $invid ;
-            $ret->{'torrus.power.nodeid'} = 1;
-        }
-        elsif( $svctype eq 'HOST.Virtual' ) {
-            $attr->{'torrus.host.nodeid'} = 'spsid-host//' . $invid ;
-            $ret->{'torrus.host.nodeid'} = 1;
-        }
+        $attr->{'test.calc'} = $svctype . '--' . $invid ;
+        $ret->{'test.calc'} = 1;
         
         return $ret;
     };

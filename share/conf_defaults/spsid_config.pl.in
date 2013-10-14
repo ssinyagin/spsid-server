@@ -324,6 +324,12 @@ $SPSID::Config::class_attributes =
     'hilite' => 1,
     'descr' => 'Device Component name',
    },
+   'siam.devc.description' =>
+   {
+    'calculated' => 1,
+    'protected' => 1,
+    'descr' => 'Device Component description',    
+   },
    'torrus.nodeid' =>
    {
     'calculated' => 1,
@@ -536,7 +542,12 @@ $SPSID::Config::new_obj_generators =
           my $calc_attr = $calc_attr_prop->{$type}{'attr'};
           my $prefix = $calc_attr_prop->{$type}{'prefix'};
           $attr->{$calc_attr} = $prefix . $attr->{'siam.devc.inventory_id'};
-          return {$calc_attr => 1};
+
+          my $dev = $self->get_object($attr->{'spsid.object.container'});
+          $attr->{'siam.devc.description'} =
+              $dev->{'siam.device.name'} . ' ' . $attr->{'siam.devc.name'};
+          
+          return {$calc_attr => 1, 'siam.devc.description' => 1};
       },
      },
     };

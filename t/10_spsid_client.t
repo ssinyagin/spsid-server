@@ -123,10 +123,10 @@ ok((scalar(@{$r} == 1) and defined($r->[0]->{'siam.svcc.devc_id'})),
    'find the ServiceComponent');
 
 # test calculated attribute
-ok(($r->[0]->{'torrus.port.nodeid'} eq 'spsid-port//SRVC0001.01.u02.c01'),
+ok(($r->[0]->{'test.calc'} eq 'IFMIB.Port--SRVC0001.01.u02.c01'),
    "calculated attribute has the expected value") or
-    diag("calculated attr torrus.port.nodeid has unexpected value: " .
-         $r->[0]->{'torrus.port.nodeid'});
+    diag("calculated attr test.calc has unexpected value: " .
+         $r->[0]->{'test.calc'});
 
 # modify the object and see the calculated attribute
 $id = $r->[0]->{'spsid.object.id'};
@@ -134,11 +134,11 @@ $client->modify_object
     ($id, {'siam.svcc.inventory_id' => 'SRVC0001.01.u02.c99'});
 $r = $client->get_object($id);
 
-ok(($r->{'torrus.port.nodeid'} eq 'spsid-port//SRVC0001.01.u02.c99'),
+ok(($r->{'test.calc'} eq 'IFMIB.Port--SRVC0001.01.u02.c99'),
    "[modified] calculated attribute has the expected value") or
     diag("[modified] calculated attr " .
-         "torrus.port.nodeid has unexpected value: " .
-         $r->{'torrus.port.nodeid'});
+         "test.calc has unexpected value: " .
+         $r->{'test.calc'});
 
 
 # test validate_object()
