@@ -504,24 +504,24 @@ $SPSID::Config::new_obj_generators =
 {
     my $calc_attr_prop =
     {
-     'IFMIB.Port' => {'attr' => 'torrus.port.nodeid',
+     'IFMIB.Port' => {'attr' => 'torrus.nodeid',
                       'prefix' => 'spsid-port//'},
-     'Power.PDU' => {'attr' => 'torrus.power.nodeid',
+     'Power.PDU' => {'attr' => 'torrus.nodeid',
                      'prefix' => 'spsid-pdu//'},
     };
     
     $SPSID::Config::calc_attr_generators =
     {
-     'SIAM::ServiceComponent' =>
+     'SIAM::DeviceComponent' =>
      {
       'default' => sub {
           my $self = shift;
           my $attr = shift;
           
-          my $type = $attr->{'siam.svcc.type'};
+          my $type = $attr->{'siam.devc.type'};
           my $calc_attr = $calc_attr_prop->{$type}{'attr'};
           my $prefix = $calc_attr_prop->{$type}{'prefix'};
-          $attr->{$calc_attr} = $prefix . $attr->{'siam.svcc.inventory_id'};
+          $attr->{$calc_attr} = $prefix . $attr->{'siam.devc.inventory_id'};
           return {$calc_attr => 1};
       },
      },
