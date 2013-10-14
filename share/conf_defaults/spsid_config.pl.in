@@ -350,7 +350,7 @@ $SPSID::Config::class_attributes =
    'class_descr' => 'Device Components',
    'instance_descr' => 'Device Component',
    'sequence' => 160,
-   'name_attr' => 'siam.devc.name',
+   'name_attr' => 'siam.devc.description',
    'descr_attr' => [],
   },
  },
