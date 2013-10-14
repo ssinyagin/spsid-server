@@ -187,6 +187,7 @@ $SPSID::Config::class_attributes =
     'mandatory' => 1,
     'hilite' => 1,
     'descr' => 'Service Component type',
+    'templatekey' => 1,
     'dictionary' => ['IFMIB.Port', 'Power.PDU', 'HOST'],
    },
    'siam.svcc.name' =>
@@ -480,6 +481,7 @@ foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
 
 
 $SPSID::Config::new_service_component_seq_realm = 'SPSID';
+$SPSID::Config::new_device_component_seq_realm = 'SPSID';
 
 
 $SPSID::Config::new_obj_generators =
@@ -498,7 +500,19 @@ $SPSID::Config::new_obj_generators =
       $attr->{'siam.svcc.name'} = $idstr;
   },
  },
-};
+ 'SIAM::DeviceComponent' =>
+ {
+  'default' => sub {
+      my $self = shift;
+      my $attr = shift;
+
+      my $realm = $SPSID::Config::new_device_component_seq_realm;
+      my $id = $self->sequence_next($realm);
+      my $idstr = sprintf('%s%.6d', $realm, $id);
+      
+      $attr->{'siam.devc.inventory_id'} = $idstr;
+  },
+ },};
 
 
 {
