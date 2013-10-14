@@ -32,5 +32,16 @@ $SPSID::Config::calc_attr_generators->{'SIAM::ServiceComponent'}{'t1'} =
         return $ret;
     };
 
+# test a mandatory template member
+$SPSID::Config::class_attributes->{'SIAM::DeviceComponent'}->{
+    'attr'}->{'vm.ram'} =
+{
+    'templatemember' => {'siam.devc.type' => ['HOST']},
+    'descr' => 'VM RAM size in MB',
+    'mandatory' => 1,
+};
+                
+
+
 1;
 

@@ -187,34 +187,7 @@ $SPSID::Config::class_attributes =
     'mandatory' => 1,
     'hilite' => 1,
     'descr' => 'Service Component type',
-    'templatekey' => 1,
-    'dictionary' => ['IFMIB.Port', 'Power.PDU', 'HOST.Virtual'],
-   },
-   'torrus.port.name' => 
-   {
-    'templatemember' => {'siam.svcc.type' => ['IFMIB.Port']},
-    'mandatory' => 1,
-    'descr' => 'Device port name',
-   },
-   'torrus.port.nodeid' =>
-   {
-    'templatemember' => {'siam.svcc.type' => ['IFMIB.Port']},
-    'calculated' => 1,
-    'protected' => 1,
-    'descr' => 'Unique NodeID value to be assigned to the interface',
-   },
-   'torrus.port.bandwidth' =>
-   {
-    'templatemember' => {'siam.svcc.type' => ['IFMIB.Port']},
-    'descr' => 'Service bandwidth in bit per second',
-    'regexp' => '^[0-9]+$',
-   },
-   'torrus.power.nodeid' =>
-   {
-    'templatemember' => {'siam.svcc.type' => ['Power.PDU']},
-    'calculated' => 1,
-    'protected' => 1,
-    'descr' => 'PDU NodeID',
+    'dictionary' => ['IFMIB.Port', 'Power.PDU', 'HOST'],
    },
    'siam.svcc.name' =>
    {
@@ -223,11 +196,11 @@ $SPSID::Config::class_attributes =
     'descr' => 'Service Component name',
     'default_autogen' => 1,
    },
-   'siam.svcc.device_id' =>
+   'siam.svcc.devc_id' =>
    {
     'mandatory' => 1,
-    'objref' =>  'SIAM::Device',
-    'descr' => 'Associated device',
+    'objref' =>  'SIAM::DeviceComponent',
+    'descr' => 'Associated device component',
    },
   },
   'contained_in' => {'SIAM::ServiceUnit' => 1},
@@ -314,7 +287,6 @@ $SPSID::Config::class_attributes =
    }
   },
   'contained_in' => {'SIAM' => 1},
-  'no_children' => 1,
   'display' =>
   {
    'class_descr' => 'Devices',
@@ -325,6 +297,56 @@ $SPSID::Config::class_attributes =
   },
  },
 
+ 'SIAM::DeviceComponent' =>
+ {
+  'attr' =>
+  {
+   'siam.devc.inventory_id' =>
+   {
+    'mandatory' => 1,
+    'unique' => 1,
+    'descr' => 'Device Component ID',
+    'default_autogen' => 1,
+    'protected' => 1,
+   },
+   'siam.devc.type' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Device Component type',
+    'templatekey' => 1,
+    'dictionary' => ['IFMIB.Port', 'Power.PDU', 'HOST'],
+   },
+   'siam.devc.name' =>
+   {
+    'mandatory' => 1,
+    'hilite' => 1,
+    'descr' => 'Device Component name',
+   },
+   'torrus.nodeid' =>
+   {
+    'calculated' => 1,
+    'protected' => 1,
+    'descr' => 'Unique Torrus NodeID value',
+   },
+   'torrus.port.bandwidth' =>
+   {
+    'templatemember' => {'siam.devc.type' => ['IFMIB.Port']},
+    'descr' => 'Service bandwidth in bit per second',
+    'regexp' => '^[0-9]+$',
+   },
+  },
+  'contained_in' => {'SIAM::Device' => 1},
+  'no_children' => 1,
+  'display' =>
+  {
+   'class_descr' => 'Device Components',
+   'instance_descr' => 'Device Component',
+   'sequence' => 160,
+   'name_attr' => 'siam.devc.name',
+   'descr_attr' => [],
+  },
+ },
  
  'SIAM::AccessScope' =>
  {

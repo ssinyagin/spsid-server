@@ -119,7 +119,7 @@ ok((($svc eq $r6->[0]->{'spsid.object.id'}) or
 
 $r = $client->search_objects(undef, 'SIAM::ServiceComponent',
                              'siam.svcc.inventory_id', 'SRVC0001.01.u02.c01');
-ok((scalar(@{$r} == 1) and defined($r->[0]->{'siam.svcc.device_id'})),
+ok((scalar(@{$r} == 1) and defined($r->[0]->{'siam.svcc.devc_id'})),
    'find the ServiceComponent');
 
 # test calculated attribute
@@ -142,13 +142,13 @@ ok(($r->{'torrus.port.nodeid'} eq 'spsid-port//SRVC0001.01.u02.c99'),
 
 
 # test validate_object()
-my $oldref = $r->{'siam.svcc.device_id'};
-$r->{'siam.svcc.device_id'} = "xxxx";
+my $oldref = $r->{'siam.svcc.devc_id'};
+$r->{'siam.svcc.devc_id'} = "xxxx";
 my $result = $client->validate_object($r);
 ok((not $result->{'status'}), "validate_object() returns a failure");
 ok((defined($result->{'error'})), "validate_object() returns an error message");
 # diag($result->{'error'});
-$r->{'siam.svcc.device_id'} = $oldref;
+$r->{'siam.svcc.devc_id'} = $oldref;
 $result = $client->validate_object($r);
 ok($result->{'status'}, "validate_object() returns success");
 
@@ -191,7 +191,7 @@ eval {
           'siam.svcc.name' => 'XX',
           'siam.svcc.type' => 'XX',
           'siam.svcc.inventory_id' => 'XX',
-          'siam.svcc.device_id' => $device,
+          'siam.svcc.devc_id' => 'NIL',
          })};
 
 ok((not defined($id) and $@), 'create object with wrong container');
@@ -259,59 +259,58 @@ ok((scalar(@{$log}) == 4), 'get_object_log') or
     diag('get_object_log returned ' . scalar(@{$log}) . ' iems');
 
 
-# create a ServiceComponent with missing a mandatory template member
-my $svcc = undef;
+# create a DeviceComponent with missing a mandatory template member
+# missing attribute vm.ram is defined in t/test_spsid_siteconfig.pl
+my $devc = undef;
 eval {
-    $svcc = $client->create_object
-        ('SIAM::ServiceComponent',
+    $devc = $client->create_object
+        ('SIAM::DeviceComponent',
          {
-          'spsid.object.container' => $id,
+          'spsid.object.container' => $device,
           'siam.object.complete' => 1,
-          'siam.svcc.name' => 'XX',
-          'siam.svcc.type' => 'IFMIB.Port',
-          'siam.svcc.inventory_id' => 'XX1',
-          'siam.svcc.device_id' => $device,
+          'siam.devc.inventory_id' => 'XX1',
+          'siam.devc.type' => 'HOST',
+          'siam.devc.name' => 'XX',
          })};
 
-ok((not defined($svcc) and $@),
+ok((not defined($devc) and $@),
    'create an object with missing mandatory template member');
-# diag($@);
+diag($@);
 
 # create an object with wrong dictionary attribute
-$svcc = undef;
+$devc = undef;
 eval {
-    $svcc = $client->create_object
-        ('SIAM::ServiceComponent',
+    $devc = $client->create_object
+        ('SIAM::DeviceComponent',
          {
-          'spsid.object.container' => $id,
+          'spsid.object.container' => $device,
           'siam.object.complete' => 1,
-          'siam.svcc.name' => 'XX',
-          'siam.svcc.type' => 'Foobar',
-          'siam.svcc.inventory_id' => 'XX1',
-          'siam.svcc.device_id' => $device,
+          'siam.devc.inventory_id' => 'XX1',
+          'siam.devc.type' => 'Foobar',
+          'siam.devc.name' => 'XX',
          })};
 
-ok((not defined($svcc) and $@),
+ok((not defined($devc) and $@),
    'create an object with wrong dictionary attribute');
 
 # create an object with wrong template member
-$svcc = undef;
+$devc = undef;
 eval {
-    $svcc = $client->create_object
-        ('SIAM::ServiceComponent',
+    $devc = $client->create_object
+        ('SIAM::DeviceComponent',
          {
-          'spsid.object.container' => $id,
+          'spsid.object.container' => $device,
           'siam.object.complete' => 1,
-          'siam.svcc.name' => 'XX',
-          'siam.svcc.type' => 'HOST.Virtual',
-          'torrus.port.name' => 'GigabitEthernet1/0/1',
-          'siam.svcc.inventory_id' => 'XX1',
-          'siam.svcc.device_id' => $device,
+          'siam.devc.inventory_id' => 'XX1',
+          'siam.devc.type' => 'HOST',
+          'siam.devc.name' => 'XX',
+          'vm.ram' => 512,
+          'torrus.port.bandwidth' => '1000',
          })};
 
-ok((not defined($svcc) and $@),
+ok((not defined($devc) and $@),
    'create an object with wrong template member');
-# diag($@);
+diag($@);
 
 
 
@@ -321,14 +320,14 @@ eval { $r = $client->get_object($id); };
 ok((not defined($r) and $@), 'fetch a deleted object');
 
 
-# delete a device and check that the referring ServiceComponent got NIL
-# in the reference
+# delete a device and check that the referring
+# ServiceComponent got NIL in the reference
 $client->delete_object($device);
 $r = $client->search_objects(undef, 'SIAM::ServiceComponent',
                              'siam.svcc.inventory_id', 'SRVC0001.01.u01.c01');
 ok((scalar(@{$r}) == 1), 'retrieve ServiceComponent SRVC0001.01.u01.c01');
-ok(($r->[0]->{'siam.svcc.device_id'} eq 'NIL'),
-   'siam.svcc.device_id set to NIL after device is deleted');
+ok(($r->[0]->{'siam.svcc.devc_id'} eq 'NIL'),
+   'siam.svcc.devc_id set to NIL after device is deleted');
 
 
 # delete a contract and check that contained objects are deleted and
