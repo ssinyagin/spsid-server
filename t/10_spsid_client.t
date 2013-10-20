@@ -7,7 +7,7 @@ use warnings;
 use utf8;
 use Unicode::Normalize;
 
-use Test::More tests => 52;
+use Test::More tests => 56;
 
 BEGIN {
     ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
@@ -117,6 +117,15 @@ ok((($svc eq $r6->[0]->{'spsid.object.id'}) or
    'Any-attribute prefix search returns the same object');
 
 
+# get the contract and remember recursive_md5
+my $contracts =
+    $client->search_objects(undef, 'SIAM::Contract',
+                            'siam.contract.inventory_id', 'INVC0001');
+ok((scalar(@{$contracts}) == 1), 'found the contract INVC0001');
+my $md5_1 = $client->recursive_md5($contracts->[0]->{'spsid.object.id'});
+ok((defined($md5_1) and length($md5_1) == 32),
+   'recursive_md5 returned a string of 32 symbols');
+
 $r = $client->search_objects(undef, 'SIAM::ServiceComponent',
                              'siam.svcc.inventory_id', 'SRVC0001.01.u02.c01');
 ok((scalar(@{$r} == 1) and defined($r->[0]->{'siam.svcc.devc_id'})),
@@ -140,6 +149,10 @@ ok(($r->{'test.calc'} eq 'IFMIB.Port--SRVC0001.01.u02.c99'),
          "test.calc has unexpected value: " .
          $r->{'test.calc'});
 
+my $md5_2 = $client->recursive_md5($contracts->[0]->{'spsid.object.id'});
+ok((defined($md5_2) and length($md5_2) == 32),
+   'recursive_md5 returned a string of 32 symbols');
+ok(($md5_2 ne $md5_1), 'recursive_md5 changed after a child is modified');
 
 # test validate_object()
 my $oldref = $r->{'siam.svcc.devc_id'};

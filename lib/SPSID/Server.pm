@@ -677,6 +677,46 @@ sub _verify_attributes
 }
 
 
+sub recursive_md5
+{
+    my $self = shift;
+    my $id = shift;
+
+    my $md5 = new Digest::MD5;
+    $self->_calc_recursive_md5($id, $md5);
+    
+    return $md5->hexdigest();
+}
+
+
+sub _calc_recursive_md5
+{
+    my $self = shift;
+    my $id = shift;
+    my $md5 = shift;
+    my $attr = shift;
+
+    if( not defined($attr) ) {
+        $attr = $self->get_object($id);
+    }
+
+    foreach my $name (sort keys %{$attr}) {
+        $md5->add('#' . $name . '//' . $attr->{$name} . '#');
+    }
+
+    foreach my $objclass ( sort @{$self->contained_classes($id)} )
+    {
+        foreach my $obj
+            ( sort {$a->{'spsid.object.id'} <=> $b->{'spsid.object.id'}}
+              @{$self->search_objects($id, $objclass)} ) {
+            
+            $self->_calc_recursive_md5($obj->{'spsid.object.id'},
+                                       $md5, $obj);
+        }
+    }
+    
+    return;
+}
 
 
 

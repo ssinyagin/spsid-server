@@ -177,7 +177,14 @@ sub new_object_default_attrs
                                              $arg{'templatekeys'});
 }
 
-    
+sub recursive_md5
+{
+    my %arg = @_;
+    die('id required') unless defined $arg{'id'};
+    return $server->recursive_md5($arg{'id'});
+}
+
+
 my $rpc = JSON::RPC::Dispatcher->new;
 
 $rpc->register('create_object', \&create_object, { with_plack_request => 1 });
@@ -191,6 +198,7 @@ $rpc->register('search_prefix', \&search_prefix);
 $rpc->register('contained_classes', \&contained_classes);
 $rpc->register('get_schema', \&get_schema);
 $rpc->register('new_object_default_attrs', \&new_object_default_attrs);
+$rpc->register('recursive_md5', \&recursive_md5);
 
 $rpc->register('ping', sub{my %arg = @_; return \%arg});
 
