@@ -6,11 +6,10 @@ use strict;
 use warnings;
 use utf8;
 
-use Test::More tests => 56;
+use Test::More tests => 55;
 
 BEGIN {
-    ok(defined($ENV{'SPSID_CONFIG'})) or BAIL_OUT('');
-    require_ok($ENV{'SPSID_CONFIG'})  or BAIL_OUT('');
+    ok(defined($ENV{'SPSID_PLACK_URL'})) or BAIL_OUT('');
 }
 
 use SPSID::Client;
