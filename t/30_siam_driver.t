@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use YAML ();
+use JSON;
 
 use Test::More;
 
@@ -17,7 +18,7 @@ BEGIN {
     }
     else
     {
-        plan tests => 33;
+        plan tests => 35;
     }    
 }
 
@@ -186,6 +187,39 @@ ok((scalar(@{$dc}) == 2), '$dev->get_components()'), or
     diag('Expected 2 device components for ZUR8050AN33, got ' .
          scalar(@{$dc}));
 
+my $new_dc =
+    [
+     {
+      'siam.devc.inventory_id' => 'ZUR8050AN33_p01',
+      'siam.devc.type' => 'IFMIB.Port',
+      'siam.devc.name' => 'GigabitEthernet0/1',
+      'siam.object.complete' => 1,
+     },
+     {
+      'siam.devc.inventory_id' => 'ZUR8050AN33_p02',
+      'siam.devc.type' => 'IFMIB.Port',
+      'siam.devc.name' => 'GigabitEthernet0/2',
+      'siam.object.complete' => 1,
+     },
+     {
+      'siam.devc.inventory_id' => 'ZUR8050AN33_p03',
+      'siam.devc.type' => 'IFMIB.Port',
+      'siam.devc.name' => 'GigabitEthernet0/3',
+      'siam.object.complete' => 1,
+     },
+    ];
+
+$dev->set_condition('siam.device.set_components', encode_json($new_dc));
+$dc = $dev->get_components();
+ok((scalar(@{$dc}) == 3), '$dev->get_components() after set_comopnents'), or
+    diag('Expected 3 device components for ZUR8050AN33, got ' .
+         scalar(@{$dc}));
+     
+$dev->set_condition('xxx.test1', 'foobar');
+$dev = $siam->get_device('ZUR8050AN33');
+ok(($dev->attr('xxx.test1') eq 'foobar'), 'set_condition');
+
+              
 ### User privileges to see attributes
 note('testing user privileges to see attributes');
 my $filtered = $siam->filter_visible_attributes($user2, $u->attributes());
