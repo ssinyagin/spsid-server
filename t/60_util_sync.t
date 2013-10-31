@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 19;
+use Test::More tests => 20;
 
 BEGIN {
     ok(defined($ENV{'SPSID_PLACK_URL'})) or BAIL_OUT('');
@@ -60,6 +60,9 @@ $util->sync_contained_objects($root, 'SIAM::Device', $devices);
 
     ok((scalar(keys %{$dev01}) == 8 and scalar(keys %{$dev02}) == 6),
        'DEV01 has 8 attributes and DEV02 has 6');
+
+    $client->modify_object($dev01->{'spsid.object.id'},
+                           {'torrus.imported' => 1});
 }
 
 # add, modify and delete attributes
@@ -104,6 +107,10 @@ $util->sync_contained_objects($root, 'SIAM::Device', $devices);
     
     ok((not $dev02->{'siam.object.complete'}),
        'not $dev02->{\'siam.object.complete\'}');    
+
+    ok((defined($dev01->{'torrus.imported'}) and
+        $dev01->{'torrus.imported'}==1),
+       '$dev01->{\'torrus.imported\'} defined and set to 1');
 }
 
 

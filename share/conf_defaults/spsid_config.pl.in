@@ -34,6 +34,7 @@ $SPSID::Config::backend = 'SPSID::Server::Backend::SQL';
 #   objref => "Classname"
 #   reserved_refs => {attrval => 1, ...}
 #   regexp => "validation regexp"
+#   sync_ignore => 1|0 [if sync_contained_objects should ignore this attr]
 
 # Class properties:
 #   contained_in => {class => 1} [hash of parent classes]
@@ -285,7 +286,13 @@ $SPSID::Config::class_attributes =
    {
     'descr' => 'Subtree name for the device in Torrus',
     'insignificant' => 1,
-   }
+   },
+   'torrus.imported' =>
+   {
+    'descr' => 'Status of Torrus discovery',
+    'protected' => 1,
+    'sync_ignore' => 1,
+   },
   },
   'contained_in' => {'SIAM' => 1},
   'display' =>
@@ -341,6 +348,18 @@ $SPSID::Config::class_attributes =
     'templatemember' => {'siam.devc.type' => ['IFMIB.Port']},
     'descr' => 'Service bandwidth in bit per second',
     'regexp' => '^[0-9]+$',
+   },
+   'torrus.imported' =>
+   {
+    'descr' => 'Status of Torrus discovery',
+    'protected' => 1,
+    'sync_ignore' => 1,
+   },
+   'torrus.warning' =>
+   {
+    'descr' => 'Warning during Torrus discovery',
+    'protected' => 1,
+    'sync_ignore' => 1,
    },
   },
   'contained_in' => {'SIAM::Device' => 1},
