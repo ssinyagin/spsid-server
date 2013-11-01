@@ -517,7 +517,7 @@ sub sequence_next
     my $realm = shift;
     
     my $sequence = new DBIx::Sequence({ dbh => $self->_dbh });
-    return $sequence->Next('dataset');
+    return $sequence->Next($realm);
 }
 
 
