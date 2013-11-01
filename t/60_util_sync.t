@@ -5,7 +5,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;
+use Test::More tests => 31;
 
 BEGIN {
     ok(defined($ENV{'SPSID_PLACK_URL'})) or BAIL_OUT('');
@@ -170,7 +170,92 @@ $util->sync_contained_objects($root, 'SIAM::Device', $devices);
        'DEV02 and DEV03 are found in DB');    
 }
 
+# test default_autogen attributes
+{
+    my $r = $client->search_objects($root, 'SIAM::Device',
+                                    'siam.device.inventory_id', 'DEV02');
 
+    ok(scalar(@{$r} == 1), 'selected DEV02');
+    my $device = $r->[0]->{'spsid.object.id'};
+
+    my $ports =
+        [
+         {
+          'siam.devc.type' => 'IFMIB.Port',
+          'siam.devc.name' => 'GigabitEthernet0/1',
+          'torrus.nodeid' => 'xxx1',
+          'torrus.imported' => 1,
+          'siam.object.complete' => 1,
+         },
+         {
+          'siam.devc.type' => 'IFMIB.Port',
+          'siam.devc.name' => 'GigabitEthernet0/2',
+          'torrus.nodeid' => 'xxx2',
+          'torrus.imported' => 1,
+          'siam.object.complete' => 1,
+         },
+        ];
+
+    $util->sync_contained_objects($device, 'SIAM::DeviceComponent', $ports);
+    
+    $r = $client->search_objects($device, 'SIAM::DeviceComponent',
+                                 'siam.devc.name', 'GigabitEthernet0/2');
+    ok(scalar(@{$r} == 1), 'selected GigabitEthernet0/2');
+    my $p = $r->[0];
+
+    ok(($p->{'torrus.nodeid'} ne 'xxx2'), 'torrus.nodeid ne xxx2');
+    ok((not defined $p->{'torrus.imported'}), 'not defined torrus.imported');
+    ok(($p->{'siam.devc.inventory_id'} =~ /^SPSID\d+$/),
+       'siam.devc.inventory_id is auto-generated');
+    
+    # modify the auto-generated value
+    $ports->[1]->{'siam.devc.inventory_id'} = 'XXXX111';
+    $util->sync_contained_objects($device, 'SIAM::DeviceComponent', $ports);
+    
+    $r = $client->search_objects($device, 'SIAM::DeviceComponent',
+                                 'siam.devc.name', 'GigabitEthernet0/2');
+    ok(scalar(@{$r} == 1), 'selected GigabitEthernet0/2');
+    $p = $r->[0];
+
+    ok(($p->{'siam.devc.inventory_id'} eq 'XXXX111'),
+       'siam.devc.inventory_id is modified');
+
+    # auto-generated attribut is not deleted and keeps its value
+    delete $ports->[1]->{'siam.devc.inventory_id'};
+    $util->sync_contained_objects($device, 'SIAM::DeviceComponent', $ports);
+
+    $r = $client->search_objects($device, 'SIAM::DeviceComponent',
+                                 'siam.devc.name', 'GigabitEthernet0/2');
+    ok(scalar(@{$r} == 1), 'selected GigabitEthernet0/2');
+    $p = $r->[0];
+
+    ok(($p->{'siam.devc.inventory_id'} eq 'XXXX111'),
+       'siam.devc.inventory_id staus untouched');
+
+    # test unique_child uniqueness
+    
+    my $new_port = {
+                    'siam.devc.type' => 'IFMIB.Port',
+                    'siam.devc.name' => 'GigabitEthernet0/2',
+                    'torrus.nodeid' => 'xxx2',
+                    'torrus.imported' => 1,
+                    'siam.object.complete' => 1,
+                   };
+    
+    push(@{$ports}, $new_port);
+    eval {
+        $util->sync_contained_objects($device, 'SIAM::DeviceComponent', $ports);
+    };
+    ok($@, 'unique_child uniqueness in sync_contained_objects');
+
+    $new_port = $client->new_object_default_attrs
+        ($device, 'SIAM::DeviceComponent', $new_port);
+
+    eval {
+        $client->create_object('SIAM::DeviceComponent', $new_port);
+    };
+    ok($@, 'unique_child uniqueness in create_object');
+}
 
 
 
