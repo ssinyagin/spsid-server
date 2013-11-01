@@ -18,7 +18,8 @@ $SPSID::Config::backend = 'SPSID::Server::Backend::SQL';
 
 # Attribute properties:
 #   mandatory => 1|0
-#   unique => 1|0
+#   unique => 1|0      [value globally unique]
+#   unique_child => 1|0  [value unique within container]
 #   descr => "description text"
 #   hilite => 1|0
 #   protected => 1|0
@@ -328,6 +329,7 @@ $SPSID::Config::class_attributes =
    'siam.devc.name' =>
    {
     'mandatory' => 1,
+    'unique_child' => 1,
     'hilite' => 1,
     'descr' => 'Device Component name',
    },

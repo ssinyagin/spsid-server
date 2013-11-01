@@ -642,7 +642,26 @@ sub _verify_attributes
                     $attr->{'spsid.object.id'});
             }
         }
-    
+
+        if( $cfg->{$name}{'unique_child'} and defined($value) )
+        {
+            my $found =
+                $self->search_objects($attr->{'spsid.object.container'},
+                                      $attr->{'spsid.object.class'},
+                                      $name,
+                                      $value);
+            
+            if( scalar(@{$found}) > 0 and
+                ( $found->[0]->{'spsid.object.id'} ne
+                  $attr->{'spsid.object.id'} ) )
+            {
+                die('Duplicate value "' . $value .
+                    '" within the container for a unique_child attribute ' .
+                    $name . ' in ' .
+                    $attr->{'spsid.object.id'});
+            }
+        }
+        
         if( defined($cfg->{$name}{'objref'}) and
             defined($value) and $value ne 'NIL' )
         {
