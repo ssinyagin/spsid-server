@@ -303,6 +303,7 @@ $SPSID::Config::class_attributes =
    'sequence' => 150,
    'name_attr' => 'siam.device.name',
    'descr_attr' => [],
+   'tree_browser' => 1,
   },
  },
 
