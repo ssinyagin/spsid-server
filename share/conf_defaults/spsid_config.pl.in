@@ -364,6 +364,11 @@ $SPSID::Config::class_attributes =
     'protected' => 1,
     'sync_ignore' => 1,
    },
+   'display.sort.string' =>
+   {
+    'protected' => 1,
+    'hidden' => 1,    
+   }
   },
   'contained_in' => {'SIAM::Device' => 1},
   'no_children' => 1,

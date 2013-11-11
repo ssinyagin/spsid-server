@@ -303,6 +303,61 @@ sub get_object_log
 }
 
 
+sub _obj_sort_name
+{
+    my $self = shift;
+    my $attr = shift;
+
+    my $objclass = $attr->{'spsid.object.class'};
+    my $s = $self->get_schema();
+
+    if( not defined($s->{$objclass}) or
+        not defined($s->{$objclass}{'display'}) )
+    {
+        return $attr->{'spsid.object.id'};
+    }
+
+    my $prop = $s->{$objclass}{'display'};
+
+    if( defined($prop->{'display.sort.string'}) ) {
+        return $attr->{$prop->{'display.sort.string'}};
+    }
+    
+    if( defined($prop->{'name_attr'}) ) {
+        return $attr->{$prop->{'name_attr'}};
+    }
+
+    if( defined($prop->{'descr_attr'}) and
+        scalar(@{$prop->{'descr_attr'}}) > 0 )
+    {
+        my @parts;
+        foreach my $attr_name (@{$prop->{'descr_attr'}}) {
+            push(@parts, $attr->{$attr_name});
+        }
+
+        return join(' ', @parts);
+    }
+
+    $attr->{'spsid.object.id'};
+}
+    
+        
+
+sub _sort_objects
+{
+    my $self = shift;
+    my $unsorted = shift;
+
+    my $sorted = [];
+   
+    push(@{$sorted},
+         sort {$self->_obj_sort_name($a) cmp $self->_obj_sort_name($b)}
+         @{$unsorted});
+
+    return $sorted;
+}
+
+
 # input: attribute names and values for AND condition
 # output: arrayref of objects found
 
@@ -313,7 +368,8 @@ sub search_objects
     my $objclass = shift;
 
     if( scalar(@_) == 0 ) {
-        return $self->_backend->contained_objects($container, $objclass);
+        return $self->_sort_objects
+            ( $self->_backend->contained_objects($container, $objclass) );
     }
 
     if( scalar(@_) % 2 != 0 ) {
@@ -343,7 +399,7 @@ sub search_objects
         }
     }
 
-    return $results;
+    return $self->_sort_objects($results);
 }
 
 
@@ -355,7 +411,8 @@ sub search_prefix
     my $attr_name = shift;
     my $attr_prefix = shift;
 
-    return $self->_backend->search_prefix($objclass,$attr_name, $attr_prefix);
+    return $self->_sort_objects
+        ($self->_backend->search_prefix($objclass,$attr_name, $attr_prefix));
 }
 
 
@@ -364,7 +421,20 @@ sub contained_classes
     my $self = shift;
     my $container = shift;
 
-    return $self->_backend->contained_classes($container);
+    my $result = $self->_backend->contained_classes($container);
+
+    my $sorted = [];
+    my $s = $self->get_schema();
+    
+    push(@{$sorted},
+         sort {( defined($s->{$a}{'display'}{'sequence'}) and
+                 defined($s->{$b}{'display'}{'sequence'}) )
+                   ?
+                       ($s->{$a}{'display'}{'sequence'} -
+                        $s->{$b}{'display'}{'sequence'})
+                           :
+                               ($a cmp $b)} @{$result});    
+    return $sorted;
 }
 
 
