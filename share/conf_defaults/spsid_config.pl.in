@@ -384,6 +384,7 @@ $SPSID::Config::class_attributes =
    'sequence' => 160,
    'name_attr' => 'siam.devc.full_name',
    'descr_attr' => ['siam.devc.description'],
+   'display.sort.string' => 'display.sort.string',
   },
  },
  
