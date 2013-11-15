@@ -48,7 +48,8 @@ $SPSID::Config::backend = 'SPSID::Server::Backend::SQL';
 #   class_descr => string  [descriptive term for the whole class]
 #   instance_descr => string [descriptive term for a single object]
 #   sequence => N  [sorting order for a list of classes]
-#   name_attr => attrname [attribute which is used as a title for the obkect]
+#   name_attr => attrname [attribute which is used as a title for the object]
+#   fullname_attr => attrname [attribute for a long title]
 #   descr_attr => [attrname, ...] [additional attrs for object description]
 #   tree_browser => 1|0 [if tree browser can be used for this class]
 
@@ -382,7 +383,8 @@ $SPSID::Config::class_attributes =
    'class_descr' => 'Device Components',
    'instance_descr' => 'Device Component',
    'sequence' => 160,
-   'name_attr' => 'siam.devc.full_name',
+   'name_attr' => 'siam.devc.name',
+   'fullname_attr' => 'siam.devc.full_name',
    'descr_attr' => ['siam.devc.description'],
    'display.sort.string' => 'display.sort.string',
   },
