@@ -334,9 +334,14 @@ $SPSID::Config::class_attributes =
     'hilite' => 1,
     'descr' => 'Device Component name',
    },
-   'siam.devc.description' =>
+   'siam.devc.full_name' =>
    {
     'calculated' => 1,
+    'protected' => 1,
+    'descr' => 'Full name of the Device Component',
+   },
+   'siam.devc.description' =>
+   {
     'protected' => 1,
     'descr' => 'Device Component description',    
    },
@@ -377,8 +382,8 @@ $SPSID::Config::class_attributes =
    'class_descr' => 'Device Components',
    'instance_descr' => 'Device Component',
    'sequence' => 160,
-   'name_attr' => 'siam.devc.description',
-   'descr_attr' => [],
+   'name_attr' => 'siam.devc.full_name',
+   'descr_attr' => ['siam.devc.description'],
   },
  },
  
@@ -571,7 +576,7 @@ $SPSID::Config::new_obj_generators =
           $attr->{$calc_attr} = $prefix . $attr->{'siam.devc.inventory_id'};
 
           my $dev = $self->get_object($attr->{'spsid.object.container'});
-          $attr->{'siam.devc.description'} =
+          $attr->{'siam.devc.full_name'} =
               $dev->{'siam.device.name'} . ' ' . $attr->{'siam.devc.name'};
           
           return {$calc_attr => 1, 'siam.devc.description' => 1};

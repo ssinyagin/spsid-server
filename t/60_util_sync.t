@@ -183,6 +183,7 @@ $util->sync_contained_objects($root, 'SIAM::Device', $devices);
          {
           'siam.devc.type' => 'IFMIB.Port',
           'siam.devc.name' => 'GigabitEthernet0/1',
+          'siam.devc.description' => 'SAP200001',
           'torrus.nodeid' => 'xxx1',
           'torrus.imported' => 1,
           'siam.object.complete' => 1,
@@ -190,6 +191,7 @@ $util->sync_contained_objects($root, 'SIAM::Device', $devices);
          {
           'siam.devc.type' => 'IFMIB.Port',
           'siam.devc.name' => 'GigabitEthernet0/2',
+          'siam.devc.description' => 'SAP200001',
           'torrus.nodeid' => 'xxx2',
           'torrus.imported' => 1,
           'siam.object.complete' => 1,
@@ -237,6 +239,7 @@ $util->sync_contained_objects($root, 'SIAM::Device', $devices);
     my $new_port = {
                     'siam.devc.type' => 'IFMIB.Port',
                     'siam.devc.name' => 'GigabitEthernet0/2',
+                    'siam.devc.description' => 'SAP200001',
                     'torrus.nodeid' => 'xxx2',
                     'torrus.imported' => 1,
                     'siam.object.complete' => 1,

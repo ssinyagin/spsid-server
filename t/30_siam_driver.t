@@ -193,18 +193,21 @@ my $new_dc =
       'siam.devc.inventory_id' => 'ZUR8050AN33_p01',
       'siam.devc.type' => 'IFMIB.Port',
       'siam.devc.name' => 'GigabitEthernet0/1',
+      'siam.devc.description' => 'SAP200001',
       'siam.object.complete' => 1,
      },
      {
       'siam.devc.inventory_id' => 'ZUR8050AN33_p02',
       'siam.devc.type' => 'IFMIB.Port',
       'siam.devc.name' => 'GigabitEthernet0/2',
+      'siam.devc.description' => 'SAP200002',
       'siam.object.complete' => 1,
      },
      {
       'siam.devc.inventory_id' => 'ZUR8050AN33_p03',
       'siam.devc.type' => 'IFMIB.Port',
       'siam.devc.name' => 'GigabitEthernet0/3',
+      'siam.devc.description' => 'SAP200001',
       'siam.object.complete' => 1,
      },
     ];

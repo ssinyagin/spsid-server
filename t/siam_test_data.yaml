@@ -149,13 +149,15 @@
       siam.object.class:         SIAM::DeviceComponent
       siam.devc.inventory_id:    ZUR8050AN33_p01
       siam.devc.type:            IFMIB.Port
-      siam.devc.name:            GigabitEthernet0/1     
+      siam.devc.name:            GigabitEthernet0/1
+      siam.devc.description:     SAP102210
     -
       siam.object.id:            DEV_ZUR8050AN33_p02
       siam.object.class:         SIAM::DeviceComponent
       siam.devc.inventory_id:    ZUR8050AN33_p02
       siam.devc.type:            IFMIB.Port
       siam.devc.name:            GigabitEthernet0/2
+      siam.devc.description:     SAP102211
   
 -
   siam.object.id:            DEV_OLT4600AN03
@@ -171,12 +173,14 @@
       siam.devc.inventory_id:    OLT4600AN03_p01
       siam.devc.type:            IFMIB.Port
       siam.devc.name:            GigabitEthernet0/1     
+      siam.devc.description:     SAP102212
     -
       siam.object.id:            DEV_OLT4600AN03_p02
       siam.object.class:         SIAM::DeviceComponent
       siam.devc.inventory_id:    OLT4600AN03_p02
       siam.devc.type:            IFMIB.Port
       siam.devc.name:            GigabitEthernet0/2
+      siam.devc.description:     SAP102213
   
 -
   siam.object.id:            DEV_DUB8600AN04
@@ -192,12 +196,14 @@
       siam.devc.inventory_id:    DUB8600AN04_p01
       siam.devc.type:            IFMIB.Port
       siam.devc.name:            GigabitEthernet0/1     
+      siam.devc.description:     SAP102214
     -
       siam.object.id:            DEV_DUB8600AN04_p02
       siam.object.class:         SIAM::DeviceComponent
       siam.devc.inventory_id:    DUB8600AN04_p02
       siam.devc.type:            IFMIB.Port
       siam.devc.name:            GigabitEthernet0/2
+      siam.devc.description:     SAP102215
 
 -
   siam.object.id:            DEV_DUB8600VH05
@@ -213,6 +219,7 @@
       siam.devc.inventory_id:    DUB8600VH05_h
       siam.devc.type:            HOST
       siam.devc.name:            DUB8600VH05
+      siam.devc.description:     SAP102216      
       vm.name:                   VPH.8788.99.01
       vm.ram:                    1024
       vm.disk.size:              40
