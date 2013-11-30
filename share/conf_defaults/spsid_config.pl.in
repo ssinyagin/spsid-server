@@ -206,6 +206,12 @@ $SPSID::Config::class_attributes =
     'objref' =>  'SIAM::DeviceComponent',
     'descr' => 'Associated device component',
    },
+   'siam.svcc.devc_description' =>
+   {
+    'calculated' => 1,
+    'protected' => 1,
+    'descr' => 'Description of associated device component',
+   },
   },
   'contained_in' => {'SIAM::ServiceUnit' => 1},
   'no_children' => 1,
@@ -215,7 +221,7 @@ $SPSID::Config::class_attributes =
    'instance_descr' => 'Service Component',
    'sequence' => 140,
    'name_attr' => 'siam.svcc.name',
-   'descr_attr' => [],
+   'descr_attr' => ['siam.svcc.devc_description'],
   },
  },
 
@@ -583,6 +589,24 @@ $SPSID::Config::new_obj_generators =
               $dev->{'siam.device.name'} . ' ' . $attr->{'siam.devc.name'};
           
           return {$calc_attr => 1, 'siam.devc.description' => 1};
+      },
+     },
+
+     'SIAM::ServiceComponent' =>
+     {
+      'default' => sub {
+          my $self = shift;
+          my $attr = shift;
+
+          my $devc_descr = '';
+
+          if( $attr->{'siam.svcc.devc_id'} ne 'NIL' ) {
+              my $devc = $self->get_object($attr->{'siam.svcc.devc_id'});
+              $devc_descr = $devc->{'siam.devc.full_name'};
+          }
+          
+          $attr->{'siam.svcc.devc_description'} = $devc_descr;
+          return {'siam.svcc.devc_description' => 1};
       },
      },
     };
