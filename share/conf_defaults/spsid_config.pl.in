@@ -252,6 +252,10 @@ $SPSID::Config::class_attributes =
     'descr' => 'Torrus tree name',
     'default' => 't01',
    },
+   'torrus.tree-url' =>
+   {
+    'descr' => 'Torrus URL',
+   },
    'snmp.managed' =>
    {
     'descr' => 'Check if the device is monitored via SNMP',
