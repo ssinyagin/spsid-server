@@ -796,7 +796,7 @@ sub _calc_recursive_md5
     foreach my $objclass ( sort @{$self->contained_classes($id)} )
     {
         foreach my $obj
-            ( sort {$a->{'spsid.object.id'} <=> $b->{'spsid.object.id'}}
+            ( sort {$a->{'spsid.object.id'} cmp $b->{'spsid.object.id'}}
               @{$self->search_objects($id, $objclass)} ) {
             
             $self->_calc_recursive_md5($obj->{'spsid.object.id'},
