@@ -14,8 +14,9 @@ BEGIN {
 use SPSID::Client;
 use SPSID::Util;
 
-my $client = SPSID::Client->new(url => $ENV{'SPSID_PLACK_URL'});
-ok($client, 'SPSID::Client->new');
+my $client = SPSID::Client->new_from_urlparams
+    ({url => $ENV{'SPSID_PLACK_URL'}});
+ok($client, 'SPSID::Client->new_from_urlparams');
 
 my $util = SPSID::Util->new(client => $client);
 ok($util, 'SPSID::Util->new');
