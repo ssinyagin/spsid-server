@@ -415,6 +415,33 @@ sub search_prefix
         ($self->_backend->search_prefix($objclass,$attr_name, $attr_prefix));
 }
 
+sub search_fulltext
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $search_string = shift;
+
+    my $attrlist = [];
+    my $s = $self->get_schema();
+
+    if( defined($s->{$objclass}) and
+        defined($s->{$objclass}{'display'}) and
+        defined($s->{$objclass}{'display'}{'fullsearch_attr'}) )
+    {
+        push( @{$attrlist}, @{$s->{$objclass}{'display'}{'fullsearch_attr'}} );
+    }
+
+    if( scalar(@{$attrlist}) == 0 )
+    {
+        return [];
+    }
+
+    return $self->_backend->search_fulltext
+        ($objclass, $search_string, $attrlist);
+}
+        
+    
+
 
 sub contained_classes
 {

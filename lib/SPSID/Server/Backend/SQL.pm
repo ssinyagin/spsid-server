@@ -435,6 +435,33 @@ sub search_prefix
 }
 
 
+sub search_fulltext
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $search_string = shift;
+    my $attrlist = shift;
+
+    my $sth = $self->_dbh->prepare
+        ('SELECT DISTINCT ' .
+         ' SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
+         'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
+         'WHERE ' .
+         'ATTR_NAME IN ('. join(',', map {'\'' . $_ . '\''}
+                                @{$attrlist}) . ') AND ' .
+         'ATTR_LOWER LIKE ? AND ' .
+         'OBJECT_CLASS=? AND ' .
+         'OBJECT_DELETED=0 AND ' .
+         'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
+    
+    $sth->execute('%' . $self->_ascii_lower($search_string) . '%',
+                  $objclass);
+    
+    my $object_tbl_fetch = $sth->fetchall_arrayref();
+    return $self->_retrieve_objects($object_tbl_fetch);
+}
+
+
 
 
 # input: arrayref of arrayrefs: OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER

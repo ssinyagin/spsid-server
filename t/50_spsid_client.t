@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use utf8;
 
-use Test::More tests => 55;
+use Test::More tests => 56;
 
 BEGIN {
     ok(defined($ENV{'SPSID_PLACK_URL'})) or BAIL_OUT('');
@@ -115,6 +115,11 @@ ok((($svc eq $r6->[0]->{'spsid.object.id'}) or
     ($svc eq $r6->[1]->{'spsid.object.id'})),
    'Any-attribute prefix search returns the same object');
 
+# fulltext search
+my $r7 = $client->search_fulltext('SIAM::Contract', 'vishbi');
+ok(((scalar(@{$r7}) == 1) and
+    ($r7->[0]->{'siam.contract.inventory_id'} eq 'INVC0001')),
+   'Fulltext search the contracts');
 
 # get the contract and remember recursive_md5
 my $contracts =

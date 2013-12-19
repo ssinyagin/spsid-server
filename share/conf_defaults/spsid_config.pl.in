@@ -98,6 +98,8 @@ $SPSID::Config::class_attributes =
    'sequence' => 110,
    'name_attr' => 'siam.contract.inventory_id',
    'descr_attr' => ['siam.contract.customer_name'],
+   'fullsearch_attr' => ['siam.contract.inventory_id',
+                         'siam.contract.customer_name'],
    'tree_browser' => 1,
   },
  },
@@ -134,6 +136,7 @@ $SPSID::Config::class_attributes =
    'sequence' => 120,
    'name_attr' => 'siam.svc.inventory_id',
    'descr_attr' => ['siam.svc.product_name'],
+   'fullsearch_attr' => ['siam.svc.inventory_id'],                        
   },
  },
 
@@ -169,6 +172,8 @@ $SPSID::Config::class_attributes =
    'sequence' => 130,
    'name_attr' => 'siam.svcunit.name',
    'descr_attr' => [],
+   'fullsearch_attr' => ['siam.svcunit.inventory_id',
+                         'siam.svcunit.name'],
   },
  },
 
@@ -222,6 +227,9 @@ $SPSID::Config::class_attributes =
    'sequence' => 140,
    'name_attr' => 'siam.svcc.name',
    'descr_attr' => ['siam.svcc.devc_description'],
+   'fullsearch_attr' => ['siam.svcc.inventory_id',
+                         'siam.svcc.name',
+                         'siam.svcc.devc_description'],
   },
  },
 
@@ -315,6 +323,9 @@ $SPSID::Config::class_attributes =
    'name_attr' => 'siam.device.name',
    'descr_attr' => [],
    'tree_browser' => 1,
+   'fullsearch_attr' => ['siam.device.inventory_id',
+                         'siam.device.name',
+                         'snmp.host'],
   },
  },
 
@@ -397,6 +408,9 @@ $SPSID::Config::class_attributes =
    'fullname_attr' => 'siam.devc.full_name',
    'descr_attr' => ['siam.devc.description'],
    'display.sort.string' => 'display.sort.string',
+   'fullsearch_attr' => ['siam.devc.inventory_id',
+                         'siam.devc.full_name',
+                         'siam.devc.description'],
   },
  },
  

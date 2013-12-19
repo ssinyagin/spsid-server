@@ -150,6 +150,18 @@ sub search_prefix
 }
 
 
+sub search_fulltext
+{
+    my %arg = @_;
+    
+    die('objclass required') unless defined $arg{'objclass'};
+    die('search_string required') unless exists $arg{'search_string'};
+
+    return $server->search_fulltext($arg{'objclass'},
+                                    $arg{'search_string'});
+}
+
+
 sub contained_classes
 {
     my %arg = @_;    
@@ -195,6 +207,7 @@ $rpc->register('get_object', \&get_object);
 $rpc->register('get_object_log', \&get_object_log);
 $rpc->register('search_objects', \&search_objects);
 $rpc->register('search_prefix', \&search_prefix);
+$rpc->register('search_fulltext', \&search_fulltext);
 $rpc->register('contained_classes', \&contained_classes);
 $rpc->register('get_schema', \&get_schema);
 $rpc->register('new_object_default_attrs', \&new_object_default_attrs);
