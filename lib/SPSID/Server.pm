@@ -435,9 +435,10 @@ sub search_fulltext
     {
         return [];
     }
-
-    return $self->_backend->search_fulltext
-        ($objclass, $search_string, $attrlist);
+    
+    return $self->_sort_objects
+        ($self->_backend->search_fulltext($objclass,
+                                          $search_string, $attrlist));
 }
         
     
