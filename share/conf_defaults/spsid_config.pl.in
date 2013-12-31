@@ -196,7 +196,7 @@ $SPSID::Config::class_attributes =
     'hilite' => 1,
     'descr' => 'Service Component type',
     'templatekey' => 1,
-    'dictionary' => ['IFMIB.Port', 'Power.PDU', 'HOST'],
+    'dictionary' => ['IFMIB.Port', 'Power.PDU'],
    },
    'siam.svcc.name' =>
    {
@@ -347,7 +347,7 @@ $SPSID::Config::class_attributes =
     'hilite' => 1,
     'descr' => 'Device Component type',
     'templatekey' => 1,
-    'dictionary' => ['IFMIB.Port', 'Power.PDU', 'HOST'],
+    'dictionary' => ['IFMIB.Port', 'Power.PDU'],
    },
    'siam.devc.name' =>
    {
