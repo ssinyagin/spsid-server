@@ -31,6 +31,12 @@ $SPSID::Config::class_attributes->{'SIAM::DeviceComponent'}->{
     'mandatory' => 1,
 };
                 
+push(@{$SPSID::Config::class_attributes->{'SIAM::DeviceComponent'}->{
+    'attr'}->{'siam.devc.type'}{'dictionary'}}, 'HOST');
+
+
+push(@{$SPSID::Config::class_attributes->{'SIAM::ServiceComponent'}->{
+    'attr'}->{'siam.svcc.type'}{'dictionary'}}, 'HOST');
 
 
 1;
