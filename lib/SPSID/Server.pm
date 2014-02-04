@@ -4,6 +4,7 @@ use utf8;
 use Digest::MD5 qw(md5_hex);
 use Data::UUID;
 use DBIx::Sequence;
+use Text::Unidecode;
 
 use Moose;
 
@@ -105,7 +106,7 @@ sub create_object
     # random string to take md5 as the new object ID
     my $id_seed = scalar(localtime(time())) . rand(1e8);
     while( my ($name, $value) = each %{$attr} ) {
-        $id_seed .= $name . ':' . $value;
+        $id_seed .= $name . ':' . unidecode($value);
     }
 
     my $id = md5_hex($id_seed);
