@@ -819,7 +819,7 @@ sub _calc_recursive_md5
     }
 
     foreach my $name (sort keys %{$attr}) {
-        $md5->add('#' . $name . '//' . $attr->{$name} . '#');
+        $md5->add('#' . $name . '//' . unidecode($attr->{$name}) . '#');
     }
 
     foreach my $objclass ( sort @{$self->contained_classes($id)} )
