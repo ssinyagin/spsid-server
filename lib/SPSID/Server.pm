@@ -378,17 +378,19 @@ sub search_objects
     }
 
     my $results = [];
-
+    my $firstmatch = 1;
+        
     while( scalar(@_) > 0 ) {
         my $name = shift;
         my $value = shift;
 
-        if( scalar(@{$results}) == 0 ) {
+        if( $firstmatch ) {
             $results =
                 $self->_backend->search_objects($container, $objclass,
                                                 $name, $value);
+            $firstmatch = 0;
         }
-        else {
+        elsif( scalar(@{$results}) > 0 ) {
             my $old_results = $results;
             $results = [];
 
