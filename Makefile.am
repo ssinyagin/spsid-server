@@ -18,13 +18,23 @@
 
 SUBDIRS = . lib share
 
-EXTRA_DIST = \
-	etc/spsid_siteconfig.pl
+SUBST = @abs_top_builddir@/setup_tools/substvars.sh
 
+EXTRA_DIST = \
+	etc/spsid_siteconfig.pl \
+	spsid-server.pc.in
 
 siteconf_s = etc/spsid_siteconfig.pl
 siteconf_d = @siteconfdir@
 siteconf_df = $(siteconf_d)/spsid_siteconfig.pl
+
+
+pkgconf_DATA = spsid-server.pc
+pkgconfdir = @pkgconfigdir@
+
+spsid-server.pc: spsid-server.pc.in
+	$(SUBST) spsid-server.pc.in > spsid-server.pc
+
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(plugconfdir)

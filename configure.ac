@@ -28,6 +28,7 @@ AC_PATH_PROG(SED, sed, no)
 AC_PATH_PROG(RM, rm, no)
 AC_PATH_PROG(RMDIR, rmdir, no)
 AC_PATH_PROG(FIND, find, no)
+AC_PATH_PROG(PKGCONFIG, pkg-config, no)
 
 AC_PATH_PROG(PLACKUP, plackup, no)
 
@@ -76,6 +77,30 @@ if test "$enable_pkgonly" != yes; then
    done
 fi
 
+AC_ARG_VAR(pkgconfigdir,  [[DATAROOTDIR/pkgconfig] pkg-config directory])
+if test -z "$pkgconfigdir"; then
+   pkgconfigdir=${datarootdir}/pkgconfig; fi
+
+eval PKG_CONFIG_PATH=${pkgconfigdir}
+PKG_CONFIG_PATH=`echo $PKG_CONFIG_PATH | \
+    ${SED} -e "s,^NONE,${ac_default_prefix},"`
+export PKG_CONFIG_PATH
+AC_MSG_RESULT([Using PKG_CONFIG_PATH=${PKG_CONFIG_PATH}])
+
+if test ${PKGCONFIG} != no; then
+  if ${PKGCONFIG} --exists spsid-client; then
+    clientbindir=`pkg-config spsid-client --variable=bindir`
+    AC_MSG_RESULT([setting clientbindir=${clientbindir}])
+    clientlibdir=`pkg-config spsid-client --variable=perllibdir`
+    AC_MSG_RESULT([setting clientlibdir=${clientlibdir}])
+  else
+    AC_MSG_WARN([pkg-config cannot find spsid-client])
+  fi
+else
+  AC_MSG_WARN([pkg-config was not found])
+fi
+
+   
 AC_ARG_WITH([clientbindir],
             [AS_HELP_STRING([--with-clientbindir=PATH],
                             [path to SPSID Client utilities])],

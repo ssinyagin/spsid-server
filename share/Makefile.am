@@ -36,7 +36,8 @@ psgi_SCRIPTS = \
 sqldir = @pkgdatadir@/sql
 
 dist_sql_DATA = \
-	sql/spsid_schema.ansi.sql
+	sql/spsid_schema.ansi.sql \
+	sql/spsid_schema.mysql.sql
 
 
 EXTRA_DIST = \

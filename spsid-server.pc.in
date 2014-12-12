@@ -1,0 +1,10 @@
+plugconfdir=@plugconfdir@
+siteconfdir=@siteconfdir@
+perllibdir=@perllibdir@
+psgidir=@pkgdatadir@/psgi
+schema_ansi=@pkgdatadir@/sql/spsid_schema.ansi.sql
+schema_mysql=@pkgdatadir@/sql/spsid_schema.mysql.sql
+
+Name: spsid-server
+Description: The SPSID database server
+Version: @VERSION@
