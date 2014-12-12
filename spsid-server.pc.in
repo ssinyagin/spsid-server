@@ -2,6 +2,7 @@ plugconfdir=@plugconfdir@
 siteconfdir=@siteconfdir@
 perllibdir=@perllibdir@
 psgidir=@pkgdatadir@/psgi
+psgi=${psgidir}/spsid_jsonrpc.psgi
 schema_ansi=@pkgdatadir@/sql/spsid_schema.ansi.sql
 schema_mysql=@pkgdatadir@/sql/spsid_schema.mysql.sql
 
