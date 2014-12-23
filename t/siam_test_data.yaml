@@ -293,23 +293,15 @@
 
   
 # Users
-# hashed passwords are the result of:
-#  echo -n `echo -n "secretsalt" | openssl sha`salt | openssl base64 -A
+# inline passwords are the result of:
+#  echo -n `echo -n "secretsalt" | openssl sha`salt | openssl base64
 -
   siam.object.id:            USER0001
   siam.object.class:         SIAM::User
-  siam.user.uid:             superuser@domain.com
-  user.uuid:                 e0e9da0f-976c-4b1c-af43-6f249ea31296
-  user.login:                superuser
+  siam.user.uid:             root
   user.cn:                   Administrator
-  user.description:          The sysadmin
-  user.locale:               en
-  user.organization:         The Matrix
-  user.contact_phone:        +18005550199
-  user.sms_phone:            +18005550199
-  user.auth.sms_phone:       +18005550199
-  user.active:               1
-  user.auth.password: "{SSHA}KHN0ZGluKT0gNWE5MDg0MWU0ODY3Y2VjMTQ2NzU0NjNhOWEzZDFmMjI4MTFiZDQ2YnNhbHQ="
+  user.auth.method:          inline
+  user.auth.password: "{SSHA}NWE5MDg0MWU0ODY3Y2VjMTQ2NzU0NjNhOWEzZDFmMjI4MTFiZDQ2YnNhbHQ="
   _contains_:
     -
       siam.object.id:                 PRIV0001.01
@@ -327,16 +319,10 @@
 -
   siam.object.id:            USER0002
   siam.object.class:         SIAM::User
-  siam.user.uid:             perpetualair@domain.com
-  user.uuid:                 7526c4f2-e45f-4d6c-9d4f-114865f676d2
-  user.login:                perpetualair
+  siam.user.uid:             perpetualair
   user.cn:                   Perpetualair Lavishbison
-  user.organization:         World Government
-  user.contact_phone:        +18005550199
-  user.sms_phone:            +18005550199
-  user.auth.sms_phone:       +18005550199
-  user.active:               1  
-  user.auth.password: "{SSHA}KHN0ZGluKT0gNWE5MDg0MWU0ODY3Y2VjMTQ2NzU0NjNhOWEzZDFmMjI4MTFiZDQ2YnNhbHQ="
+  user.auth.method:          inline
+  user.auth.password: "{SSHA}NWE5MDg0MWU0ODY3Y2VjMTQ2NzU0NjNhOWEzZDFmMjI4MTFiZDQ2YnNhbHQ="
     
   _contains_:
     -
@@ -353,15 +339,9 @@
 -
   siam.object.id:            USER0003
   siam.object.class:         SIAM::User
-  siam.user.uid:             zetamouse@domain.com
-  user.uuid:                 9a972a06-23c9-46da-ae7f-8bef6590587c
-  user.login:                zetamouse
+  siam.user.uid:             zetamouse
   user.cn:                   Zetamouse Ecosysteminfo
-  user.organization:         World Government
-  user.contact_phone:        +18005550199
-  user.sms_phone:            +18005550199
-  user.auth.sms_phone:       +18005550199
-  user.active:               1    
+  user.auth.method:          inline
   user.auth.password: "{SSHA}NWE5MDg0MWU0ODY3Y2VjMTQ2NzU0NjNhOWEzZDFmMjI4MTFiZDQ2YnNhbHQ="
   _contains_:
     -
