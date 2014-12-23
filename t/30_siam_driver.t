@@ -54,10 +54,10 @@ my $component = $siam->get_objects_by_attribute
      'SRVC0002.01.u02.c01')->[0];
 ok(defined($component), '$siam->get_objects_by_attribute');
 
-### user: root
-note('testing the root user');
-my $user1 = $siam->get_user('root');
-ok(defined($user1), 'get_user root');
+### user: superuser@domain.com
+note('testing the user: superuser@domain.com');
+my $user1 = $siam->get_user('superuser@domain.com');
+ok(defined($user1), 'get_user superuser@domain.com');
 
 
 note('checking that we retrieve all contracts');
@@ -66,51 +66,52 @@ ok(scalar(@{$all_contracts}) == 2, 'get_all_contracts') or
     diag('Expected 2 contracts, got ' . scalar(@{$all_contracts}));
 
 
-note('checking that root sees all contracts');
+note('checking that superuser@domain.com sees all contracts');
 my $user1_contracts =
     $siam->get_contracts_by_user_privilege($user1, 'ViewContract');
 ok(scalar(@{$all_contracts}) == scalar(@{$user1_contracts}),
-   'get_contracts_by_user_privilege root') or
+   'get_contracts_by_user_privilege superuser@domain.com') or
     diag('Expected ' . scalar(@{$all_contracts}) .
          ' contracts, got ' . scalar(@{$user1_contracts}));
 
 
-### user: perpetualair
-note('testing the user perpetualair');
-my $user2 = $siam->get_user('perpetualair');
-ok(defined($user1), 'get_user perpetualair');
+### user: perpetualair@domain.com
+note('testing the user perpetualair@domain.com');
+my $user2 = $siam->get_user('perpetualair@domain.com');
+ok(defined($user1), 'get_user perpetualair@domain.com');
 
 
-note('checking that perpetualair sees only his contract');
+note('checking that perpetualair@domain.com sees only his contract');
 my $user2_contracts =
     $siam->get_contracts_by_user_privilege($user2, 'ViewContract');
 ok(scalar(@{$user2_contracts}) == 1,
-   'get_contracts_by_user_privilege perpetualair') or
+   'get_contracts_by_user_privilege perpetualair@domain.com') or
     diag('Expected 1 contract, got ' . scalar(@{$user2_contracts}));
 
 
 my $x = $user2_contracts->[0]->attr('siam.contract.inventory_id');
-ok(($x eq 'INVC0001'), 'get_contracts_by_user_privilege perpetualair') or
+ok(($x eq 'INVC0001'),
+   'get_contracts_by_user_privilege perpetualair@domain.com') or
     diag('Expected siam.contract.inventory_id: INVC0001, got: ' . $x);
 
 
 
-### user: zetamouse
-note('testing the user zetamouse');
-my $user3 = $siam->get_user('zetamouse');
-ok(defined($user1), 'get_user zetamouse');
+### user: zetamouse@domain.com
+note('testing the user zetamouse@domain.com');
+my $user3 = $siam->get_user('zetamouse@domain.com');
+ok(defined($user1), 'get_user zetamouse@domain.com');
 
 
-note('checking that zetamouse sees only his contract');
+note('checking that zetamouse@domain.com sees only his contract');
 my $user3_contracts =
     $siam->get_contracts_by_user_privilege($user3, 'ViewContract');
 ok(scalar(@{$user3_contracts}) == 1,
-   'get_contracts_by_user_privilege zetamouse') or
+   'get_contracts_by_user_privilege zetamouse@domain.com') or
     diag('Expected 1 contract, got ' . scalar(@{$user3_contracts}));
 
 
 $x = $user3_contracts->[0]->attr('siam.contract.inventory_id');
-ok($x eq 'INVC0002', 'get_contracts_by_user_privilege zetamouse') or
+ok($x eq 'INVC0002', 'get_contracts_by_user_privilege zetamouse@domain.com') or
     diag('Expected siam.contract.inventory_id: INVC0002, got: ' . $x);
 
 
@@ -118,8 +119,8 @@ ok($x eq 'INVC0002', 'get_contracts_by_user_privilege zetamouse') or
 note('verifying privileges');
 ok($user1->has_privilege('ViewContract', $user2_contracts->[0]) and
    $user1->has_privilege('ViewContract', $user3_contracts->[0]),
-   'root->has_privilege') or
-    diag('Root does not see a contract');
+   'superuser@domain.com -> has_privilege') or
+    diag('superuser@domain.com does not see a contract');
 
 ok($user2->has_privilege('ViewContract', $user2_contracts->[0]) and
    $user3->has_privilege('ViewContract', $user3_contracts->[0]),
@@ -127,12 +128,14 @@ ok($user2->has_privilege('ViewContract', $user2_contracts->[0]) and
     diag('one of users does not see his contract');
 
 ok((not $user2->has_privilege('ViewContract', $user3_contracts->[0])),
-   'perpetualair should not see contracts of zetamouse') or
-    diag('perpetualair sees a contract of zetamouse');
+   'perpetualair@domain.com should not see contracts ' .
+   'of zetamouse@domain.com') or
+    diag('perpetualair@domain.com sees a contract of zetamouse@domain.com');
 
 ok((not $user3->has_privilege('ViewContract', $user2_contracts->[0])),
-   'zetamouse should not see contracts of perpetualair') or
-    diag('zetamouse sees a contract of perpetualair');
+   'zetamouse@domain.com should not see contracts of perpetualair@domain.com')
+    or
+    diag('zetamouse@domain.com sees a contract of perpetualair@domain.com');
 
 
 
@@ -228,10 +231,11 @@ note('testing user privileges to see attributes');
 my $filtered = $siam->filter_visible_attributes($user2, $u->attributes());
 
 ok((not defined($filtered->{'xyz.serviceclass'}))) or
-    diag('User perpetualair is not supposed to see xyz.serviceclass');
+    diag('User perpetualair@domain.com is not supposed to see xyz.serviceclass');
 
 ok( defined($filtered->{'xyz.access.redundant'})) or
-    diag('User perpetualair is supposed to see xyz.access.redundant');
+    diag('User perpetualair@domain.com is supposed ' .
+         'to see xyz.access.redundant');
 
 
 ### $object->contained_in()
