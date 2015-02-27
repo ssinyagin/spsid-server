@@ -866,6 +866,25 @@ sub log_object
 }
 
 
+sub add_application_log
+{
+    my $self = shift;
+    my $id = shift;
+    my $app = shift;
+    my $userid = shift;
+    my $msg = shift;
+
+    $self->_backend->log_object($id, $userid, $msg, $app);
+
+    my $logger = $self->logger;
+    if( defined($logger) ) {
+        $logger->info($id . ' - ' . $app . ' - ' . $userid . ': ' . $msg);
+    }
+
+    return;
+}
+
+
 sub clear_user_id
 {
     my $self = shift;

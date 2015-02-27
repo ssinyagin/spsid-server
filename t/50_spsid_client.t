@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use utf8;
 
-use Test::More tests => 56;
+use Test::More tests => 58;
 
 BEGIN {
     ok(defined($ENV{'SPSID_PLACK_URL'})) or BAIL_OUT('');
@@ -275,6 +275,12 @@ my $log = $client->get_object_log($id);
 ok((scalar(@{$log}) == 4), 'get_object_log') or
     diag('get_object_log returned ' . scalar(@{$log}) . ' iems');
 
+$client->add_application_log($id, 'TEST', 'tester', 'blahblah');
+$log = $client->get_object_log($id);
+ok((scalar(@{$log}) == 5), 'add_application_log') or
+    diag('get_object_log returned ' . scalar(@{$log}) . ' iems');
+ok(($log->[4]{'msg'} eq 'blahblah'), 'add_application_log') or
+    diag('last message returned: ' . $log->[4]{'msg'});
 
 # create a DeviceComponent with missing a mandatory template member
 # missing attribute vm.ram is defined in t/test_spsid_siteconfig.pl

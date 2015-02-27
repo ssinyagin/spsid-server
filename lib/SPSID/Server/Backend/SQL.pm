@@ -201,17 +201,20 @@ sub log_object
     my $id = shift;
     my $user_id = shift;
     my $msg = shift;
+    my $app = shift;
 
+    $app = 'SPSID' unless defined($app);
+    
     my $ts = Math::BigFloat->new(Time::HiRes::time());
     $ts->bmul(1000);
     $ts->bfloor();
 
     $self->_dbh->do
         ('INSERT INTO SPSID_OBJECT_LOG ' .
-         '  (OBJECT_ID, LOG_TS, USER_ID, MESSAGE) ' .
-         'VALUES(?,?,?,?)',
+         '  (OBJECT_ID, LOG_TS, APPLICATION, USER_ID, MESSAGE) ' .
+         'VALUES(?,?,?,?,?)',
          undef,
-         $id, $ts, $user_id, $msg);
+         $id, $ts, $app, $user_id, $msg);
 
     return;
 }
@@ -223,7 +226,7 @@ sub get_object_log
     my $id = shift;
 
     my $sth = $self->_dbh->prepare
-        ('SELECT LOG_TS, USER_ID, MESSAGE ' .
+        ('SELECT LOG_TS, APPLICATION, USER_ID, MESSAGE ' .
          'FROM SPSID_OBJECT_LOG ' .
          'WHERE OBJECT_ID=? ' .
          'ORDER BY LOG_TS');
@@ -232,12 +235,13 @@ sub get_object_log
 
     my $ret = [];
     while( my $r = $sth->fetchrow_arrayref() ) {
-        my $msg = $r->[2];
+        my $msg = $r->[3];
         utf8::decode($msg);
         push(@{$ret},
              {'time' => $r->[0],
-              'user' => $r->[1],
-              'msg' => $msg});
+              'app'  => $r->[1],
+              'user' => $r->[2],
+              'msg'  => $msg});
     }
 
     return $ret;
