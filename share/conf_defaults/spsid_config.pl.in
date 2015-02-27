@@ -42,6 +42,10 @@ $SPSID::Config::backend = 'SPSID::Server::Backend::SQL';
 #   single_instance => 1|0
 #   root_object => 1|0
 #   no_children => 1|0
+#   delete_permanently => 1|0 [by default, deleted objects are not purged
+#                              from the database, but only marked as deleted.
+#                              This flag tells the server to delete the object
+#                              forever]
 
 # Class Display properties:
 #   read_only => 1|0   [if the GUI user allowed to edit the objects]
@@ -399,6 +403,7 @@ $SPSID::Config::class_attributes =
   },
   'contained_in' => {'SIAM::Device' => 1},
   'no_children' => 1,
+  'delete_permanently' => 1,
   'display' =>
   {
    'class_descr' => 'Device Components',

@@ -320,6 +320,20 @@ sub delete_object
 }
 
 
+sub delete_object_permanently
+{
+    my $self = shift;
+    my $id = shift;
+
+    $self->_dbh->do
+        ('DELETE FROM SPSID_OBJECTS WHERE OBJECT_ID=?', undef, $id);
+    $self->_dbh->do
+        ('DELETE FROM SPSID_OBJECT_ATTR WHERE OBJECT_ID=?', undef, $id);
+    $self->_dbh->do
+        ('DELETE FROM SPSID_OBJECT_LOG WHERE OBJECT_ID=?', undef, $id);
+    
+    return;
+}
 
 
 sub contained_objects

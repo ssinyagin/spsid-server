@@ -279,9 +279,17 @@ sub delete_object
             }
         }
     }
-            
-    $self->log_object($id, 'Object deleted');
-    $self->_backend->delete_object($id);
+
+    my $cfg = $SPSID::Config::class_attributes;
+    if( defined($cfg->{$thisclass}) and
+        $cfg->{$thisclass}{'delete_permanently'} ) {
+        $self->_backend->delete_object_permanently($id);
+    }
+    else {
+        $self->log_object($id, 'Object deleted');
+        $self->_backend->delete_object($id);
+    }
+    
     return;
 }
 
