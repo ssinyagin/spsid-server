@@ -635,6 +635,9 @@ $SPSID::Config::new_obj_generators =
     };
 }
 
+
+$SPSID::Plugin::rpc = {};
+
 # Read plugin configurations
 {
     my $dir;

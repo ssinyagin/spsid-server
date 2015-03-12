@@ -231,6 +231,11 @@ $rpc->register('ping', sub{my %arg = @_; return \%arg});
 
 $rpc->register('server_version', sub{return "1.0"});
 
+foreach my $reg (values %{$SPSID::Plugin::rpc})
+{
+    &{$reg}($rpc, $server);
+}
+    
 $rpc->to_app;
 
 
