@@ -140,7 +140,7 @@ $SPSID::Config::class_attributes =
    'sequence' => 120,
    'name_attr' => 'siam.svc.inventory_id',
    'descr_attr' => ['siam.svc.product_name'],
-   'fullsearch_attr' => ['siam.svc.inventory_id'],                        
+   'fullsearch_attr' => ['siam.svc.inventory_id'],
   },
  },
 
@@ -369,7 +369,7 @@ $SPSID::Config::class_attributes =
    'siam.devc.description' =>
    {
     'protected' => 1,
-    'descr' => 'Device Component description',    
+    'descr' => 'Device Component description',
    },
    'torrus.nodeid' =>
    {
@@ -565,7 +565,7 @@ $SPSID::Config::new_obj_generators =
       my $realm = $SPSID::Config::new_service_component_seq_realm;
       my $id = $self->sequence_next($realm);
       my $idstr = sprintf('%s%.6d', $realm, $id);
-      
+
       $attr->{'siam.svcc.inventory_id'} = $idstr;
       $attr->{'siam.svcc.name'} = $idstr;
   },
@@ -579,7 +579,7 @@ $SPSID::Config::new_obj_generators =
       my $realm = $SPSID::Config::new_device_component_seq_realm;
       my $id = $self->sequence_next($realm);
       my $idstr = sprintf('%s%.6d', $realm, $id);
-      
+
       $attr->{'siam.devc.inventory_id'} = $idstr;
   },
  },};
@@ -601,7 +601,7 @@ $SPSID::Config::new_obj_generators =
       'default' => sub {
           my $self = shift;
           my $attr = shift;
-          
+
           my $type = $attr->{'siam.devc.type'};
           my $calc_attr = $calc_attr_prop->{$type}{'attr'};
           my $prefix = $calc_attr_prop->{$type}{'prefix'};
@@ -610,7 +610,7 @@ $SPSID::Config::new_obj_generators =
           my $dev = $self->get_object($attr->{'spsid.object.container'});
           $attr->{'siam.devc.full_name'} =
               $dev->{'siam.device.name'} . ' ' . $attr->{'siam.devc.name'};
-          
+
           return {$calc_attr => 1, 'siam.devc.description' => 1};
       },
      },
@@ -627,7 +627,7 @@ $SPSID::Config::new_obj_generators =
               my $devc = $self->get_object($attr->{'siam.svcc.devc_id'});
               $devc_descr = $devc->{'siam.devc.full_name'};
           }
-          
+
           $attr->{'siam.svcc.devc_description'} = $devc_descr;
           return {'siam.svcc.devc_description' => 1};
       },
