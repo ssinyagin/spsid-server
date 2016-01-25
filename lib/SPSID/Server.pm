@@ -752,7 +752,8 @@ sub _verify_attributes
             }
         }
 
-        if( $cfg->{$name}{'unique_child'} and defined($value) )
+        if( $cfg->{$name}{'unique_child'} and defined($value) and
+            (not defined($cfg->{$name}{'objref'}) or $value ne 'NIL') )
         {
             my $found =
                 $self->search_objects($attr->{'spsid.object.container'},
