@@ -46,7 +46,7 @@ EXTRA_DIST = \
 	psgi/spsid_jsonrpc.fcgi.in
 
 
-CLEANFILES = $(psgi_DATA) $(psgi_SCRIPTS)
+CLEANFILES = $(psgi_DATA) $(psgi_SCRIPTS) $(dist_defaults_DATA)
 
 
 
