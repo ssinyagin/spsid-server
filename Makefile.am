@@ -32,6 +32,8 @@ siteconf_df = $(siteconf_d)/spsid_siteconfig.pl
 pkgconf_DATA = spsid-server.pc
 pkgconfdir = @pkgconfigdir@
 
+CLEANFILES = $(pkgconf_DATA)
+
 spsid-server.pc: spsid-server.pc.in
 	$(SUBST) spsid-server.pc.in > spsid-server.pc
 
