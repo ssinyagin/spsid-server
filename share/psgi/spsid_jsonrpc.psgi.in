@@ -14,8 +14,19 @@ BEGIN {
 use JSON::RPC::Dispatcher;
 use Try::Tiny;
 use SPSID::Server;
+use Log::Any::Adapter;
 
-use Log::Any::Adapter ('Stderr');
+if( defined($SPSID::log4perlconf) )
+{
+    require Log::Log4perl;
+    Log::Log4perl::init($SPSID::log4perlconf);
+    Log::Any::Adapter->set('Log4perl');
+}
+else
+{
+    Log::Any::Adapter->set('Stderr');
+}
+
 
 
 my $server = SPSID::Server->new();
