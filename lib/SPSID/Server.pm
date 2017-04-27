@@ -347,7 +347,7 @@ sub _obj_sort_name
         return join(' ', @parts);
     }
 
-    $attr->{'spsid.object.id'};
+    return $attr->{'spsid.object.id'};
 }
     
         
