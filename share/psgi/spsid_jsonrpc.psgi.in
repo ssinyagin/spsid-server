@@ -186,6 +186,18 @@ sub search_fulltext
 }
 
 
+sub get_attr_values
+{
+    my %arg = @_;
+    
+    die('objclass required') unless defined $arg{'objclass'};
+    die('attr_name required') unless exists $arg{'attr_name'};
+    
+    return $server->get_attr_values($arg{'objclass'},
+                                    $arg{'attr_name'});
+}
+
+    
 sub contained_classes
 {
     my %arg = @_;    
@@ -233,6 +245,7 @@ $rpc->register('get_object_log', \&get_object_log);
 $rpc->register('search_objects', \&search_objects);
 $rpc->register('search_prefix', \&search_prefix);
 $rpc->register('search_fulltext', \&search_fulltext);
+$rpc->register('get_attr_values', \&get_attr_values);
 $rpc->register('contained_classes', \&contained_classes);
 $rpc->register('get_schema', \&get_schema);
 $rpc->register('new_object_default_attrs', \&new_object_default_attrs);

@@ -426,6 +426,7 @@ sub search_prefix
         ($self->_backend->search_prefix($objclass,$attr_name, $attr_prefix));
 }
 
+
 sub search_fulltext
 {
     my $self = shift;
@@ -453,6 +454,14 @@ sub search_fulltext
 }
         
     
+sub get_attr_values
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $attr_name = shift;
+
+    return [sort @{$self->_backend->get_attr_values($objclass,$attr_name)}];
+}
 
 
 sub contained_classes

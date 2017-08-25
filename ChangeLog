@@ -1,3 +1,7 @@
+2017-08-25  Stanislav Sinyagin  <ssinyagin@users.sourceforge.net>
+
+	* lib/SPSID/Server.pm: new RPC method: get_attr_values
+
 2015-02-27  Stanislav Sinyagin  <ssinyagin@users.sourceforge.net>
 
 	* share/sql/spsid_schema.ansi.sql:

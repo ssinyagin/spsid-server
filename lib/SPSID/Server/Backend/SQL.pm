@@ -480,6 +480,24 @@ sub search_fulltext
 }
 
 
+sub get_attr_values
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $attr_name = shift;
+
+    my $sth = $self->_dbh->prepare
+        ('SELECT DISTINCT ATTR_VALUE ' .
+         'FROM SPSID_OBJECT_ATTR, SPSID_OBJECTS ' .
+         'WHERE ' .
+         'ATTR_NAME=? AND ' .
+         'OBJECT_CLASS=? AND ' .
+         'OBJECT_DELETED=0 AND ' .
+         'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
+    $sth->execute($attr_name, $objclass);
+    my $r = $sth->fetchall_arrayref();
+    return [map {$_->[0]} @{$r}];
+}
 
 
 # input: arrayref of arrayrefs: OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER
