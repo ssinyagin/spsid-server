@@ -5,7 +5,7 @@ use Digest::MD5 qw(md5_hex);
 use Data::UUID;
 use DBIx::Sequence;
 use Text::Unidecode;
-
+use JSON;
 use Moose;
 
 has 'user_id' =>
@@ -21,7 +21,7 @@ has 'logger' =>
      is  => 'rw',
      isa => 'Object',
     );
-    
+
 
 has '_backend' =>
     (
@@ -51,19 +51,19 @@ sub BUILD
         if( not defined($SPSID::Config::backend) ) {
             die('$SPSID::Config::backend is undefined');
         }
-        
+
         eval(sprintf('require %s', $SPSID::Config::backend));
         if( $@ )
         {
             die($@);
         }
-        
+
         $self->_backend($SPSID::Config::backend->new
                         (user_id => $self->user_id));
     }
 
     # build the hash of object reference attributes
-    my $objrefs = {};    
+    my $objrefs = {};
     foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
         my $cfg = $SPSID::Config::class_attributes->{$objclass};
         if( defined($cfg->{'attr'}) )
@@ -71,17 +71,17 @@ sub BUILD
             foreach my $name (keys %{$cfg->{'attr'}})
             {
                 my $ref = $cfg->{'attr'}{$name};
-                
+
                 if( defined($ref->{'objref'}) ) {
                     my $target_class = $ref->{'objref'};
                     $objrefs->{$target_class}{$objclass}{$name} = 1;
                 }
             }
-        }                
+        }
     }
 
     $self->_objrefs($objrefs);
-    
+
     return;
 }
 
@@ -121,7 +121,7 @@ sub create_object
 
     my $cfg = $SPSID::Config::class_attributes;
     if( defined($cfg->{$objclass}) and
-        $cfg->{$objclass}{'single_instance'} ) {        
+        $cfg->{$objclass}{'single_instance'} ) {
         my $r = $self->search_objects(undef, $objclass);
         if( scalar(@{$r}) > 0 ) {
             die('Only one instance of object class ' . $objclass .
@@ -133,7 +133,7 @@ sub create_object
     $self->get_calculated_attributes($attr);
     $self->_backend->create_object($attr);
 
-    $self->log_object($id, 'Object created');
+    $self->log_object($id, 'create_object', $attr);
 
     return $id;
 }
@@ -183,7 +183,7 @@ sub modify_object
     while(my ($name, $value) = each %{$attr}) {
         $clone_before_calc->{$name} = $attr->{$name};
     }
-        
+
     my $calc_attr = $self->get_calculated_attributes($attr);
     foreach my $name (@{$calc_attr}) {
         if( not defined($clone_before_calc->{$name}) ) {
@@ -193,7 +193,7 @@ sub modify_object
             $modified_attr->{$name} = $attr->{$name};
         }
     }
-    
+
     $self->validate_object($attr);
 
     my @del_attrs = sort keys %{$deleted_attr};
@@ -202,11 +202,8 @@ sub modify_object
         $self->_backend->delete_object_attributes($id, \@del_attrs);
 
         foreach my $name (@del_attrs) {
-
             $self->log_object
-                ($id,
-                 'Deleted attribute: ' . $name .
-                 ', value: ' . $deleted_attr->{$name});
+                ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
         }
     }
 
@@ -216,11 +213,8 @@ sub modify_object
         $self->_backend->add_object_attributes($id, $added_attr);
 
         foreach my $name (@add_attrs) {
-
             $self->log_object
-                ($id,
-                 'Added attribute: ' . $name .
-                 ', value: ' . $added_attr->{$name});
+                ($id, 'add_attr', {'name' => $name, 'new_val' => $added_attr->{$name}});
         }
     }
 
@@ -230,12 +224,9 @@ sub modify_object
         $self->_backend->modify_object_attributes($id, $modified_attr);
 
         foreach my $name (@mod_attrs) {
-
             $self->log_object
-                ($id,
-                 'Modified attribute: ' . $name .
-                 ', old value: ' . $old_attr->{$name} .
-                 ', new value: ' . $modified_attr->{$name});
+                ($id, 'mod_attr', {'name' => $name, 'old_val' => $old_attr->{$name},
+                                   'new_val' => $modified_attr->{$name}});
         }
     }
     return;
@@ -286,10 +277,10 @@ sub delete_object
         $self->_backend->delete_object_permanently($id);
     }
     else {
-        $self->log_object($id, 'Object deleted');
+        $self->log_object($id, 'delete_object', undef);
         $self->_backend->delete_object($id);
     }
-    
+
     return;
 }
 
@@ -331,7 +322,7 @@ sub _obj_sort_name
     if( defined($prop->{'display.sort.string'}) ) {
         return $attr->{$prop->{'display.sort.string'}};
     }
-    
+
     if( defined($prop->{'name_attr'}) ) {
         return $attr->{$prop->{'name_attr'}};
     }
@@ -349,8 +340,8 @@ sub _obj_sort_name
 
     return $attr->{'spsid.object.id'};
 }
-    
-        
+
+
 
 sub _sort_objects
 {
@@ -358,7 +349,7 @@ sub _sort_objects
     my $unsorted = shift;
 
     my $sorted = [];
-   
+
     push(@{$sorted},
          sort {$self->_obj_sort_name($a) cmp $self->_obj_sort_name($b)}
          @{$unsorted});
@@ -387,7 +378,7 @@ sub search_objects
 
     my $results = [];
     my $firstmatch = 1;
-        
+
     while( scalar(@_) > 0 ) {
         my $name = shift;
         my $value = shift;
@@ -447,13 +438,13 @@ sub search_fulltext
     {
         return [];
     }
-    
+
     return $self->_sort_objects
         ($self->_backend->search_fulltext($objclass,
                                           $search_string, $attrlist));
 }
-        
-    
+
+
 sub get_attr_values
 {
     my $self = shift;
@@ -473,7 +464,7 @@ sub contained_classes
 
     my $sorted = [];
     my $s = $self->get_schema();
-    
+
     push(@{$sorted},
          sort {( defined($s->{$a}{'display'}{'sequence'}) and
                  defined($s->{$b}{'display'}{'sequence'}) )
@@ -481,7 +472,7 @@ sub contained_classes
                        ($s->{$a}{'display'}{'sequence'} -
                         $s->{$b}{'display'}{'sequence'})
                            :
-                               ($a cmp $b)} @{$result});    
+                               ($a cmp $b)} @{$result});
     return $sorted;
 }
 
@@ -501,7 +492,7 @@ sub get_objclass_schema
     my $templatekeys = shift;
 
     my $attr_schema = {};
-    
+
     if( defined($SPSID::Config::class_attributes->{$objclass}{'attr'}) )
     {
         my $cfg = $SPSID::Config::class_attributes->{$objclass}{'attr'};
@@ -524,7 +515,7 @@ sub get_objclass_schema
 
                     last if $template_active;
                 }
-                
+
                 next unless $template_active;
             }
 
@@ -544,7 +535,7 @@ sub new_object_default_attrs
     my $container = shift;
     my $objclass = shift;
     my $templatekeys = shift;
-    
+
     my $attr =
     {
      'spsid.object.class' => $objclass,
@@ -554,11 +545,11 @@ sub new_object_default_attrs
     foreach my $name (keys %{$templatekeys}) {
         $attr->{$name} = $templatekeys->{$name};
     }
-    
+
     my $ug = new Data::UUID;
 
     my $attr_schema = $self->get_objclass_schema($objclass, $templatekeys);
-    
+
     foreach my $name (keys %{$attr_schema})
     {
         if( defined($attr_schema->{$name}{'default'}) ) {
@@ -580,10 +571,10 @@ sub new_object_default_attrs
             &{$func}($self, $attr);
         }
     }
-        
+
     return $attr;
 }
-            
+
 
 # updates the attributes with calculated values
 # returns arrayref with attribute names
@@ -597,7 +588,7 @@ sub get_calculated_attributes
     my $attr_schema = $self->get_objclass_schema($objclass, $attr);
 
     my $attrlist = {};
-    
+
     foreach my $name (keys %{$attr_schema})
     {
         if( $attr_schema->{$name}{'calculated'} )
@@ -622,10 +613,10 @@ sub get_calculated_attributes
             }
         }
     }
-    
+
     return [keys %{$attrlist}];
 }
-    
+
 
 
 sub validate_object
@@ -647,11 +638,11 @@ sub validate_object
         }
     }
 
-    
+
     foreach my $func (values %{$SPSID::Config::object_validators}) {
         &{$func}($attr);
     }
-    
+
     my $objclass = $attr->{'spsid.object.class'};
 
     my $cfg = $SPSID::Config::class_attributes;
@@ -660,7 +651,7 @@ sub validate_object
         if( defined($cfg->{$objclass}{'attr'}) ) {
             $self->_verify_attributes($attr, $cfg->{$objclass}{'attr'});
         }
-        
+
         if( defined($cfg->{$objclass}{'contained_in'}) ) {
             my $container_class =
                 $self->_backend->object_class
@@ -673,11 +664,11 @@ sub validate_object
             }
         }
     }
-    
+
     return;
 }
 
-    
+
 
 sub _verify_attributes
 {
@@ -702,11 +693,11 @@ sub _verify_attributes
                     my $keyvalues =
                         $cfg->{$name}{'templatemember'}{$templatekeyattr};
                     my $key = $attr->{$templatekeyattr};
-                    
+
                     if( grep {$key eq $_} @{$keyvalues} ) {
                         $template_active = 1;
                     }
-                }                        
+                }
             }
 
             if( not $template_active ) {
@@ -728,7 +719,7 @@ sub _verify_attributes
                     'but the value ' . $value . ' is outside of dictionary ' .
                     'in ' . $attr->{'spsid.object.id'});
             }
-        }                
+        }
 
         if( $cfg->{$name}{'mandatory'} )
         {
@@ -742,7 +733,7 @@ sub _verify_attributes
                     $attr->{'spsid.object.id'});
             }
         }
-    
+
         if( $cfg->{$name}{'unique'} and defined($value) )
         {
             my $found =
@@ -750,7 +741,7 @@ sub _verify_attributes
                                       $attr->{'spsid.object.class'},
                                       $name,
                                       $value);
-            
+
             if( scalar(@{$found}) > 0 and
                 ( $found->[0]->{'spsid.object.id'} ne
                   $attr->{'spsid.object.id'} ) )
@@ -769,7 +760,7 @@ sub _verify_attributes
                                       $attr->{'spsid.object.class'},
                                       $name,
                                       $value);
-            
+
             if( scalar(@{$found}) > 0 and
                 ( $found->[0]->{'spsid.object.id'} ne
                   $attr->{'spsid.object.id'} ) )
@@ -780,12 +771,12 @@ sub _verify_attributes
                     $attr->{'spsid.object.id'});
             }
         }
-        
+
         if( defined($cfg->{$name}{'objref'}) and
             defined($value) and $value ne 'NIL' )
         {
             my $refclass = $cfg->{$name}{'objref'};
-            
+
             if( not $cfg->{$name}{'reserved_refs'}{$value} )
             {
                 if( not $self->object_exists($value) ) {
@@ -793,12 +784,12 @@ sub _verify_attributes
                         ' points to a non-existent object ' . $value .
                         ' in ' . $attr->{'spsid.object.id'});
                 }
-                
+
                 if( $refclass ne '*' )
                 {
                     my $target_class =
                         $self->_backend->object_class($value);
-                    
+
                     if( $target_class ne $refclass ) {
                         die('Attribute ' . $name .
                             ' points to an object ' . $value .
@@ -810,7 +801,7 @@ sub _verify_attributes
             }
         }
     }
-    
+
     return;
 }
 
@@ -822,7 +813,7 @@ sub recursive_md5
 
     my $md5 = new Digest::MD5;
     $self->_calc_recursive_md5($id, $md5);
-    
+
     return $md5->hexdigest();
 }
 
@@ -847,12 +838,12 @@ sub _calc_recursive_md5
         foreach my $obj
             ( sort {$a->{'spsid.object.id'} cmp $b->{'spsid.object.id'}}
               @{$self->search_objects($id, $objclass)} ) {
-            
+
             $self->_calc_recursive_md5($obj->{'spsid.object.id'},
                                        $md5, $obj);
         }
     }
-    
+
     return;
 }
 
@@ -863,9 +854,13 @@ sub log_object
 {
     my $self = shift;
     my $id = shift;
-    my $msg = shift;
+    my $event = shift;
+    my $data = shift;
+    my $app = shift;
 
-    $self->_backend->log_object($id, $self->user_id, $msg);
+    my $msg = encode_json({'event' => $event, 'data' => $data});
+
+    $self->_backend->log_object($id, $self->user_id, $msg, $app);
 
     my $logger = $self->logger;
     if( defined($logger) ) {
@@ -884,7 +879,7 @@ sub add_application_log
     my $userid = shift;
     my $msg = shift;
 
-    $self->_backend->log_object($id, $userid, $msg, $app);
+    $self->_backend->log_object($id, $userid, encode_json({'event' => 'message', 'data' => $msg}), $app);
 
     my $logger = $self->logger;
     if( defined($logger) ) {
