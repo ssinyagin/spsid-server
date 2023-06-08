@@ -44,6 +44,14 @@ has 'dbi_attr' =>
     );
 
 
+has 'tsn_admin_env' =>
+    (
+     is  => 'ro',
+     isa => 'Str',
+     default => $SPSID::Config::Backend::SQL::tsn_admin_env,
+    );
+
+
 has '_dbh' =>
     (
      is  => 'rw',
@@ -65,6 +73,10 @@ my %spsid_attr_filter =
 sub connect
 {
     my $self = shift;
+
+    if( defined($self->tsn_admin_env) ) {
+        $ENV{'TNS_ADMIN'} = $self->tsn_admin_env;
+    }
 
     my $dbi_final_attr = {'RaiseError' => 1,
                           'AutoCommit' => 1};
@@ -204,7 +216,7 @@ sub log_object
     my $app = shift;
 
     $app = 'SPSID' unless defined($app);
-    
+
     my $ts = Math::BigFloat->new(Time::HiRes::time());
     $ts->bmul(1000);
     $ts->bfloor();
@@ -230,7 +242,7 @@ sub get_object_log
          'FROM SPSID_OBJECT_LOG ' .
          'WHERE OBJECT_ID=? ' .
          'ORDER BY LOG_TS');
-    
+
     $sth->execute($id);
 
     my $ret = [];
@@ -246,9 +258,9 @@ sub get_object_log
 
     return $ret;
 }
-        
-        
-        
+
+
+
 sub delete_object_attributes
 {
     my $self = shift;
@@ -335,7 +347,7 @@ sub delete_object_permanently
         ('DELETE FROM SPSID_OBJECT_ATTR WHERE OBJECT_ID=?', undef, $id);
     $self->_dbh->do
         ('DELETE FROM SPSID_OBJECT_LOG WHERE OBJECT_ID=?', undef, $id);
-    
+
     return;
 }
 
@@ -403,7 +415,7 @@ sub search_objects
     }
     else {
         $sth->execute($attr_name, $attr_value, $objclass);
-    }    
+    }
 
     my $object_tbl_fetch = $sth->fetchall_arrayref();
     return $self->_retrieve_objects($object_tbl_fetch);
@@ -418,7 +430,7 @@ sub search_prefix
     my $attr_name = shift;
     my $attr_prefix = shift;
 
-    my $attr_name_condition = '';    
+    my $attr_name_condition = '';
     if( defined($attr_name) ) {
         if( $spsid_attr_filter{$attr_name} ) {
             die('Prefix search on ' . $attr_name . ' is not allowed');
@@ -426,7 +438,7 @@ sub search_prefix
 
         $attr_name_condition = ' ATTR_NAME=? AND ';
     }
-    
+
     my $sth = $self->_dbh->prepare
         ('SELECT DISTINCT ' .
          ' SPSID_OBJECTS.OBJECT_ID, OBJECT_CLASS, OBJECT_CONTAINER ' .
@@ -445,7 +457,7 @@ sub search_prefix
     }
     else {
         $sth->execute($self->_ascii_lower($attr_prefix) . '%',
-                      $objclass);        
+                      $objclass);
     }
 
     my $object_tbl_fetch = $sth->fetchall_arrayref();
@@ -471,10 +483,10 @@ sub search_fulltext
          'OBJECT_CLASS=? AND ' .
          'OBJECT_DELETED=0 AND ' .
          'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
-    
+
     $sth->execute('%' . $self->_ascii_lower($search_string) . '%',
                   $objclass);
-    
+
     my $object_tbl_fetch = $sth->fetchall_arrayref();
     return $self->_retrieve_objects($object_tbl_fetch);
 }
@@ -509,7 +521,7 @@ sub _retrieve_objects
     if( scalar(@{$object_tbl_fetch}) == 0 ) {
         return [];
     }
-    
+
     my @ids = map {'\'' . $_->[0] . '\''} @{$object_tbl_fetch};
 
     my $sth = $self->_dbh->prepare
@@ -518,7 +530,7 @@ sub _retrieve_objects
          'WHERE OBJECT_ID IN (' . join(',', @ids) . ')');
 
     $sth->execute();
-    
+
     my %attributes;
     while( my $r = $sth->fetchrow_arrayref() ) {
         my $val = $r->[2];
@@ -534,11 +546,11 @@ sub _retrieve_objects
         $attributes{$r->[0]}->{'spsid.object.container'} = $r->[2];
         push(@{$ret}, $attributes{$r->[0]});
     }
-            
+
     return $ret;
 }
-    
-    
+
+
 
 
 
@@ -558,7 +570,7 @@ sub contained_classes
     while( my $r = $sth->fetchrow_arrayref() ) {
         push(@{$ret}, $r->[0]);
     }
-    
+
     return $ret;
 }
 
@@ -578,7 +590,7 @@ sub sequence_next
 {
     my $self = shift;
     my $realm = shift;
-    
+
     my $sequence = new DBIx::Sequence({ dbh => $self->_dbh });
     return $sequence->Next($realm);
 }
@@ -600,5 +612,3 @@ sub sequence_next
 # cperl-brace-offset: 0
 # cperl-label-offset: -2
 # End:
-
-
