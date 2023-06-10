@@ -638,6 +638,11 @@ sub validate_object
         }
     }
 
+    if( $attr->{'spsid.object.container'} ne 'NIL' and
+        not $self->_backend->object_exists($attr->{'spsid.object.container'}) ) {
+        die('Container object ' . $attr->{'spsid.object.container'} .
+            ' does not exist for ' .  $attr->{'spsid.object.id'});
+    }
 
     foreach my $func (values %{$SPSID::Config::object_validators}) {
         &{$func}($attr);
