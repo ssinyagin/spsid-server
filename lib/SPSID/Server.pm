@@ -726,6 +726,14 @@ sub _verify_attributes
             }
         }
 
+        if( defined($cfg->{$name}{'regexp'}) and defined($value) )
+        {
+            if( $value !~ $cfg->{$name}{'regexp'} ) {
+                die('Attribute ' . $name . ' in ' . $attr->{'spsid.object.id'} .
+                    ' does not match the regexp: ' . $cfg->{$name}{'regexp'});
+            }
+        }
+
         if( $cfg->{$name}{'mandatory'} )
         {
             if( not defined($value) ) {
