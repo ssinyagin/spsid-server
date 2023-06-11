@@ -131,9 +131,16 @@ sub create_object
 
     $self->validate_object($attr);
     $self->get_calculated_attributes($attr);
-    $self->_backend->create_object($attr);
 
-    $self->log_object($id, 'create_object', $attr);
+    eval {
+        $self->_backend->create_object($attr);
+        $self->log_object($id, 'create_object', $attr);
+        $self->_backend->commit();
+    };
+    if( $@ ) {
+        $self->_backend->rollback();
+        die($@);
+    }
 
     return $id;
 }
@@ -195,40 +202,48 @@ sub modify_object
     }
 
     $self->validate_object($attr);
+    eval {
+        my @del_attrs = sort keys %{$deleted_attr};
+        if ( scalar(@del_attrs) > 0 ) {
 
-    my @del_attrs = sort keys %{$deleted_attr};
-    if( scalar(@del_attrs) > 0 ) {
+            $self->_backend->delete_object_attributes($id, \@del_attrs);
 
-        $self->_backend->delete_object_attributes($id, \@del_attrs);
-
-        foreach my $name (@del_attrs) {
-            $self->log_object
-                ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
+            foreach my $name (@del_attrs) {
+                $self->log_object
+                    ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
+            }
         }
+
+        my @add_attrs = sort keys %{$added_attr};
+        if ( scalar(@add_attrs) > 0 ) {
+
+            $self->_backend->add_object_attributes($id, $added_attr);
+
+            foreach my $name (@add_attrs) {
+                $self->log_object
+                    ($id, 'add_attr', {'name' => $name, 'new_val' => $added_attr->{$name}});
+            }
+        }
+
+        my @mod_attrs = sort keys %{$modified_attr};
+        if ( scalar(@mod_attrs) > 0 ) {
+
+            $self->_backend->modify_object_attributes($id, $modified_attr);
+
+            foreach my $name (@mod_attrs) {
+                $self->log_object
+                    ($id, 'mod_attr', {'name' => $name, 'old_val' => $old_attr->{$name},
+                                       'new_val' => $modified_attr->{$name}});
+            }
+        }
+
+        $self->_backend->commit();
+    };
+    if( $@ ) {
+        $self->_backend->rollback();
+        die($@);
     }
 
-    my @add_attrs = sort keys %{$added_attr};
-    if( scalar(@add_attrs) > 0 ) {
-
-        $self->_backend->add_object_attributes($id, $added_attr);
-
-        foreach my $name (@add_attrs) {
-            $self->log_object
-                ($id, 'add_attr', {'name' => $name, 'new_val' => $added_attr->{$name}});
-        }
-    }
-
-    my @mod_attrs = sort keys %{$modified_attr};
-    if( scalar(@mod_attrs) > 0 ) {
-
-        $self->_backend->modify_object_attributes($id, $modified_attr);
-
-        foreach my $name (@mod_attrs) {
-            $self->log_object
-                ($id, 'mod_attr', {'name' => $name, 'old_val' => $old_attr->{$name},
-                                   'new_val' => $modified_attr->{$name}});
-        }
-    }
     return;
 }
 
@@ -244,41 +259,47 @@ sub delete_object
     }
 
     # recursively delete all contained objects
-
-    foreach my $objclass ( @{$self->contained_classes($id)} ) {
-        foreach my $obj ( @{$self->search_objects($id, $objclass)} ) {
-            $self->delete_object($obj->{'spsid.object.id'});
+    eval {
+        foreach my $objclass ( @{$self->contained_classes($id)} ) {
+            foreach my $obj ( @{$self->search_objects($id, $objclass)} ) {
+                $self->delete_object($obj->{'spsid.object.id'});
+            }
         }
-    }
 
-    # set all references to this object to NIL
-    my $thisclass = $self->_backend->object_class($id);
-    my $objrefs = $self->_objrefs;
+        # set all references to this object to NIL
+        my $thisclass = $self->_backend->object_class($id);
+        my $objrefs = $self->_objrefs;
 
-    foreach my $target_class ('*', $thisclass) {
-        if( defined($objrefs->{$target_class}) ) {
-            foreach my $objclass (keys %{$objrefs->{$target_class}}) {
-                foreach my $attr_name
-                    (keys %{$objrefs->{$target_class}{$objclass}}) {
-                    my $r = $self->search_objects(undef, $objclass,
-                                                  $attr_name, $id);
-                    foreach my $obj (@{$r}) {
-                        $self->modify_object($obj->{'spsid.object.id'},
-                                             {$attr_name => 'NIL'});
+        foreach my $target_class ('*', $thisclass) {
+            if ( defined($objrefs->{$target_class}) ) {
+                foreach my $objclass (keys %{$objrefs->{$target_class}}) {
+                    foreach my $attr_name
+                        (keys %{$objrefs->{$target_class}{$objclass}}) {
+                        my $r = $self->search_objects(undef, $objclass,
+                                                      $attr_name, $id);
+                        foreach my $obj (@{$r}) {
+                            $self->modify_object($obj->{'spsid.object.id'},
+                                                 {$attr_name => 'NIL'});
+                        }
                     }
                 }
             }
         }
-    }
 
-    my $cfg = $SPSID::Config::class_attributes;
-    if( defined($cfg->{$thisclass}) and
-        $cfg->{$thisclass}{'delete_permanently'} ) {
-        $self->_backend->delete_object_permanently($id);
-    }
-    else {
-        $self->log_object($id, 'delete_object', undef);
-        $self->_backend->delete_object($id);
+        my $cfg = $SPSID::Config::class_attributes;
+        if ( defined($cfg->{$thisclass}) and
+             $cfg->{$thisclass}{'delete_permanently'} ) {
+            $self->_backend->delete_object_permanently($id);
+        } else {
+            $self->log_object($id, 'delete_object', undef);
+            $self->_backend->delete_object($id);
+        }
+
+        $self->_backend->commit();
+    };
+    if( $@ ) {
+        $self->_backend->rollback();
+        die($@);
     }
 
     return;
@@ -608,6 +629,10 @@ sub get_calculated_attributes
             if( defined($gen_attr_list) )
             {
                 foreach my $name (keys %{$gen_attr_list}) {
+                    if( not defined($attr->{$name}) ) {
+                        die('Calculated attribute ' . $name . ' is undefined for ' .
+                            $attr->{'spsid.object.id'});
+                    }
                     $attrlist->{$name} = 1;
                 }
             }

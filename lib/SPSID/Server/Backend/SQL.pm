@@ -78,8 +78,7 @@ sub connect
         $ENV{'TNS_ADMIN'} = $self->tsn_admin_env;
     }
 
-    my $dbi_final_attr = {'RaiseError' => 1,
-                          'AutoCommit' => 1};
+    my $dbi_final_attr = {'RaiseError' => 1, 'AutoCommit' => 0};
 
     my $dbi_attr = $self->dbi_attr;
 
@@ -108,6 +107,19 @@ sub DEMOLISH
     my $self = shift;
     $self->disconnect();
     return;
+}
+
+
+sub commit
+{
+    my $self = shift;
+    $self->_dbh->commit();
+}
+
+sub rollback
+{
+    my $self = shift;
+    $self->_dbh->rollback();
 }
 
 
