@@ -74,7 +74,7 @@ sub connect
 {
     my $self = shift;
 
-    if( defined($self->tsn_admin_env) ) {
+    if ( defined($self->tsn_admin_env) ) {
         $ENV{'TNS_ADMIN'} = $self->tsn_admin_env;
     }
 
@@ -82,8 +82,8 @@ sub connect
 
     my $dbi_attr = $self->dbi_attr;
 
-    if( defined($dbi_attr) ) {
-        while( my ($name, $value) = each %{$dbi_attr} ) {
+    if ( defined($dbi_attr) ) {
+        while ( my ($name, $value) = each %{$dbi_attr} ) {
             $dbi_final_attr->{$name} = $value;
         }
     }
@@ -92,7 +92,7 @@ sub connect
                            $self->dbi_user,
                            $self->dbi_password,
                            $dbi_final_attr);
-    if( not $dbh ) {
+    if ( not $dbh ) {
         die('Cannot connect to the database: ' . $DBI::errstr);
     }
 
@@ -169,10 +169,9 @@ sub fetch_object
          'FROM SPSID_OBJECTS WHERE OBJECT_ID=?',
          undef, $id);
 
-    if( not defined($r) ) {
+    if ( not defined($r) ) {
         die('Object does not exist: ' . $id);
-    }
-    elsif( $r->[0] ) {
+    } elsif ( $r->[0] ) {
         die('Object is deleted: ' . $id);
     }
 
@@ -185,7 +184,7 @@ sub fetch_object
          'WHERE OBJECT_ID=?');
     $sth->execute($id);
 
-    while( $r = $sth->fetchrow_arrayref() ) {
+    while ( $r = $sth->fetchrow_arrayref() ) {
         my $val = $r->[1];
         utf8::decode($val);
         $attr->{$r->[0]} = $val;
@@ -206,10 +205,9 @@ sub object_class
          'FROM SPSID_OBJECTS WHERE OBJECT_ID=?',
          undef, $id);
 
-    if( not defined($r) ) {
+    if ( not defined($r) ) {
         die('Object does not exist: ' . $id);
-    }
-    elsif( $r->[0] ) {
+    } elsif ( $r->[0] ) {
         die('Object is deleted: ' . $id);
     }
 
@@ -258,7 +256,7 @@ sub get_object_log
     $sth->execute($id);
 
     my $ret = [];
-    while( my $r = $sth->fetchrow_arrayref() ) {
+    while ( my $r = $sth->fetchrow_arrayref() ) {
         my $msg = $r->[3];
         utf8::decode($msg);
         push(@{$ret},
@@ -303,8 +301,8 @@ sub add_object_attributes
          '  (OBJECT_ID, ATTR_NAME, ATTR_VALUE, ATTR_LOWER) ' .
          'VALUES(?,?,?,?)');
 
-    while( my ($name, $value) = each %{$add_attr} ) {
-        if( not $spsid_attr_filter{$name} ) {
+    while ( my ($name, $value) = each %{$add_attr} ) {
+        if ( not $spsid_attr_filter{$name} ) {
             $sth->execute($id, $name, $value, $self->_ascii_lower($value));
         }
     }
@@ -324,8 +322,8 @@ sub modify_object_attributes
         ('UPDATE SPSID_OBJECT_ATTR ' .
          '  SET ATTR_VALUE=?, ATTR_LOWER=? WHERE OBJECT_ID=? AND ATTR_NAME=?');
 
-    while( my ($name, $value) = each %{$mod_attr} ) {
-        if( not $spsid_attr_filter{$name} ) {
+    while ( my ($name, $value) = each %{$mod_attr} ) {
+        if ( not $spsid_attr_filter{$name} ) {
             $sth->execute($value, $self->_ascii_lower($value), $id, $name);
         }
     }
@@ -381,10 +379,9 @@ sub contained_objects
          ' OBJECT_CLASS=? AND ' .
          ' OBJECT_DELETED=0');
 
-    if( defined($container) ) {
+    if ( defined($container) ) {
         $sth->execute($container, $objclass);
-    }
-    else {
+    } else {
         $sth->execute($objclass);
     }
 
@@ -407,7 +404,7 @@ sub search_objects
     my $container_cond = defined($container) ?
         ' OBJECT_CONTAINER=? AND ' : '';
 
-    if( $spsid_attr_filter{$attr_name} ) {
+    if ( $spsid_attr_filter{$attr_name} ) {
         die('Object search on ' . $attr_name . ' is not allowed');
     }
 
@@ -422,10 +419,9 @@ sub search_objects
          'OBJECT_DELETED=0 AND ' .
          'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
 
-    if( defined($container) ) {
+    if ( defined($container) ) {
         $sth->execute($attr_name, $attr_value, $container, $objclass);
-    }
-    else {
+    } else {
         $sth->execute($attr_name, $attr_value, $objclass);
     }
 
@@ -443,8 +439,8 @@ sub search_prefix
     my $attr_prefix = shift;
 
     my $attr_name_condition = '';
-    if( defined($attr_name) ) {
-        if( $spsid_attr_filter{$attr_name} ) {
+    if ( defined($attr_name) ) {
+        if ( $spsid_attr_filter{$attr_name} ) {
             die('Prefix search on ' . $attr_name . ' is not allowed');
         }
 
@@ -462,12 +458,11 @@ sub search_prefix
          'OBJECT_DELETED=0 AND ' .
          'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
 
-    if( defined($attr_name) ) {
+    if ( defined($attr_name) ) {
         $sth->execute($attr_name,
                       $self->_ascii_lower($attr_prefix) . '%',
                       $objclass);
-    }
-    else {
+    } else {
         $sth->execute($self->_ascii_lower($attr_prefix) . '%',
                       $objclass);
     }
@@ -530,33 +525,34 @@ sub _retrieve_objects
     my $self = shift;
     my $object_tbl_fetch = shift;
 
-    if( scalar(@{$object_tbl_fetch}) == 0 ) {
-        return [];
-    }
-
-    my @ids = map {'\'' . $_->[0] . '\''} @{$object_tbl_fetch};
-
-    my $sth = $self->_dbh->prepare
-        ('SELECT OBJECT_ID, ATTR_NAME, ATTR_VALUE ' .
-         'FROM SPSID_OBJECT_ATTR ' .
-         'WHERE OBJECT_ID IN (' . join(',', @ids) . ')');
-
-    $sth->execute();
-
-    my %attributes;
-    while( my $r = $sth->fetchrow_arrayref() ) {
-        my $val = $r->[2];
-        utf8::decode($val);
-        $attributes{$r->[0]}{$r->[1]} = $val;
-    }
-
     my $ret = [];
 
-    foreach my $r (@{$object_tbl_fetch}) {
-        $attributes{$r->[0]}->{'spsid.object.id'} = $r->[0];
-        $attributes{$r->[0]}->{'spsid.object.class'} = $r->[1];
-        $attributes{$r->[0]}->{'spsid.object.container'} = $r->[2];
-        push(@{$ret}, $attributes{$r->[0]});
+    while ( scalar(@{$object_tbl_fetch}) > 0 ) {
+        my @batch;
+        while ( scalar(@{$object_tbl_fetch}) > 0 and scalar(@batch) < 100 ) {
+            push(@batch, shift(@{$object_tbl_fetch}));
+        }
+
+        my $sth = $self->_dbh->prepare
+            ('SELECT OBJECT_ID, ATTR_NAME, ATTR_VALUE ' .
+             'FROM SPSID_OBJECT_ATTR ' .
+             'WHERE OBJECT_ID IN (' . join(',', map {'\'' . $_->[0] . '\''} @batch) . ')');
+
+        $sth->execute();
+
+        my %attributes;
+        while ( my $r = $sth->fetchrow_arrayref() ) {
+            my $val = $r->[2];
+            utf8::decode($val);
+            $attributes{$r->[0]}{$r->[1]} = $val;
+        }
+
+        foreach my $r (@batch) {
+            $attributes{$r->[0]}->{'spsid.object.id'} = $r->[0];
+            $attributes{$r->[0]}->{'spsid.object.class'} = $r->[1];
+            $attributes{$r->[0]}->{'spsid.object.container'} = $r->[2];
+            push(@{$ret}, $attributes{$r->[0]});
+        }
     }
 
     return $ret;
@@ -579,7 +575,7 @@ sub contained_classes
     $sth->execute($container);
 
     my $ret = [];
-    while( my $r = $sth->fetchrow_arrayref() ) {
+    while ( my $r = $sth->fetchrow_arrayref() ) {
         push(@{$ret}, $r->[0]);
     }
 
