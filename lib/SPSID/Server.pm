@@ -393,8 +393,13 @@ sub _retrieve_objrefs
     if ( scalar(@objref_attrs) > 0 ) {
         foreach my $obj (@{$objects}) {
             foreach my $name (@objref_attrs) {
-                if ( defined($obj->{$name}) and $obj->{$name} ne 'NIL' ) {
-                    $obj->{$name} = $self->_backend->fetch_object($obj->{$name});
+                if ( defined($obj->{$name}) ) {
+                    if( $obj->{$name} ne 'NIL' ) {
+                        $obj->{$name} = $self->_backend->fetch_object($obj->{$name});
+                    }
+                    else {
+                        $obj->{$name} = {};
+                    }
                 }
             }
         }
