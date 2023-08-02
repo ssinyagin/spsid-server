@@ -47,14 +47,13 @@ sub BUILD
 {
     my $self = shift;
 
-    if( not defined($self->_backend) ) {
-        if( not defined($SPSID::Config::backend) ) {
+    if ( not defined($self->_backend) ) {
+        if ( not defined($SPSID::Config::backend) ) {
             die('$SPSID::Config::backend is undefined');
         }
 
         eval(sprintf('require %s', $SPSID::Config::backend));
-        if( $@ )
-        {
+        if ( $@ ) {
             die($@);
         }
 
@@ -66,13 +65,11 @@ sub BUILD
     my $objrefs = {};
     foreach my $objclass (keys %{$SPSID::Config::class_attributes}) {
         my $cfg = $SPSID::Config::class_attributes->{$objclass};
-        if( defined($cfg->{'attr'}) )
-        {
-            foreach my $name (keys %{$cfg->{'attr'}})
-            {
+        if ( defined($cfg->{'attr'}) ) {
+            foreach my $name (keys %{$cfg->{'attr'}}) {
                 my $ref = $cfg->{'attr'}{$name};
 
-                if( defined($ref->{'objref'}) ) {
+                if ( defined($ref->{'objref'}) ) {
                     my $target_class = $ref->{'objref'};
                     $objrefs->{$target_class}{$objclass}{$name} = 1;
                 }
@@ -105,13 +102,13 @@ sub create_object
 
     # random string to take md5 as the new object ID
     my $id_seed = scalar(localtime(time())) . rand(1e8);
-    while( my ($name, $value) = each %{$attr} ) {
+    while ( my ($name, $value) = each %{$attr} ) {
         $id_seed .= $name . ':' . unidecode($value);
     }
 
     my $id = md5_hex($id_seed);
 
-    if( $self->object_exists($id) ) {
+    if ( $self->object_exists($id) ) {
         die('Something really wrong happened: object id ' . $id .
             ' already exists in the database');
     }
@@ -120,10 +117,10 @@ sub create_object
     $attr->{'spsid.object.class'} = $objclass;
 
     my $cfg = $SPSID::Config::class_attributes;
-    if( defined($cfg->{$objclass}) and
-        $cfg->{$objclass}{'single_instance'} ) {
+    if ( defined($cfg->{$objclass}) and
+         $cfg->{$objclass}{'single_instance'} ) {
         my $r = $self->search_objects(undef, $objclass);
-        if( scalar(@{$r}) > 0 ) {
+        if ( scalar(@{$r}) > 0 ) {
             die('Only one instance of object class ' . $objclass .
                 ' is allowed');
         }
@@ -137,7 +134,7 @@ sub create_object
         $self->log_object($id, 'create_object', $attr);
         $self->_backend->commit();
     };
-    if( $@ ) {
+    if ( $@ ) {
         $self->_backend->rollback();
         die($@);
     }
@@ -161,24 +158,22 @@ sub modify_object
     my $modified_attr = {};
     my $old_attr = {};
 
-    while(my ($name, $value) = each %{$mod_attr}) {
-        if( $name eq 'spsid.object.id' or
-            $name eq 'spsid.object.class' ) {
+    while (my ($name, $value) = each %{$mod_attr}) {
+        if ( $name eq 'spsid.object.id' or
+             $name eq 'spsid.object.class' ) {
 
             die('SPSID::modify_object cannot modify ' . $name);
         }
 
-        if( not defined($value) and defined($attr->{$name})) {
+        if ( not defined($value) and defined($attr->{$name})) {
 
             $deleted_attr->{$name} = $attr->{$name};
             delete $attr->{$name};
-        }
-        elsif( not defined($attr->{$name}) ) {
+        } elsif ( not defined($attr->{$name}) ) {
 
             $added_attr->{$name} = $value;
             $attr->{$name} = $value;
-        }
-        elsif( $value ne $attr->{$name} ) {
+        } elsif ( $value ne $attr->{$name} ) {
 
             $old_attr->{$name} = $attr->{$name};
             $attr->{$name} = $value;
@@ -187,16 +182,15 @@ sub modify_object
     }
 
     my $clone_before_calc = {};
-    while(my ($name, $value) = each %{$attr}) {
+    while (my ($name, $value) = each %{$attr}) {
         $clone_before_calc->{$name} = $attr->{$name};
     }
 
     my $calc_attr = $self->get_calculated_attributes($attr);
     foreach my $name (@{$calc_attr}) {
-        if( not defined($clone_before_calc->{$name}) ) {
+        if ( not defined($clone_before_calc->{$name}) ) {
             $added_attr->{$name} = $attr->{$name};
-        }
-        elsif( $clone_before_calc->{$name} ne $attr->{$name} ) {
+        } elsif ( $clone_before_calc->{$name} ne $attr->{$name} ) {
             $modified_attr->{$name} = $attr->{$name};
         }
     }
@@ -239,7 +233,7 @@ sub modify_object
 
         $self->_backend->commit();
     };
-    if( $@ ) {
+    if ( $@ ) {
         $self->_backend->rollback();
         die($@);
     }
@@ -254,7 +248,7 @@ sub delete_object
     my $self = shift;
     my $id = shift;
 
-    if( not $self->object_exists($id) ) {
+    if ( not $self->object_exists($id) ) {
         die("Object does not exist: $id");
     }
 
@@ -297,7 +291,7 @@ sub delete_object
 
         $self->_backend->commit();
     };
-    if( $@ ) {
+    if ( $@ ) {
         $self->_backend->rollback();
         die($@);
     }
@@ -333,25 +327,23 @@ sub _obj_sort_name
     my $objclass = $attr->{'spsid.object.class'};
     my $s = $self->get_schema();
 
-    if( not defined($s->{$objclass}) or
-        not defined($s->{$objclass}{'display'}) )
-    {
+    if ( not defined($s->{$objclass}) or
+         not defined($s->{$objclass}{'display'}) ) {
         return $attr->{'spsid.object.id'};
     }
 
     my $prop = $s->{$objclass}{'display'};
 
-    if( defined($prop->{'display.sort.string'}) ) {
+    if ( defined($prop->{'display.sort.string'}) ) {
         return $attr->{$prop->{'display.sort.string'}};
     }
 
-    if( defined($prop->{'name_attr'}) ) {
+    if ( defined($prop->{'name_attr'}) ) {
         return $attr->{$prop->{'name_attr'}};
     }
 
-    if( defined($prop->{'descr_attr'}) and
-        scalar(@{$prop->{'descr_attr'}}) > 0 )
-    {
+    if ( defined($prop->{'descr_attr'}) and
+         scalar(@{$prop->{'descr_attr'}}) > 0 ) {
         my @parts;
         foreach my $attr_name (@{$prop->{'descr_attr'}}) {
             push(@parts, $attr->{$attr_name});
@@ -390,18 +382,18 @@ sub _retrieve_objrefs
     my @objref_attrs;
     my $s = $self->get_schema();
     my $attr_schema = $s->{$objclass}{'attr'};
-    if( defined($attr_schema) ) {
+    if ( defined($attr_schema) ) {
         foreach my $name (keys %{$attr_schema}) {
-            if( defined($attr_schema->{$name}{'objref'}) ) {
+            if ( defined($attr_schema->{$name}{'objref'}) ) {
                 push(@objref_attrs, $name);
             }
         }
     }
 
-    if( scalar(@objref_attrs) > 0 ) {
+    if ( scalar(@objref_attrs) > 0 ) {
         foreach my $obj (@{$objects}) {
             foreach my $name (@objref_attrs) {
-                if( defined($obj->{$name}) and $obj->{$name} ne 'NIL' ) {
+                if ( defined($obj->{$name}) and $obj->{$name} ne 'NIL' ) {
                     $obj->{$name} = $self->_backend->fetch_object($obj->{$name});
                 }
             }
@@ -422,12 +414,12 @@ sub search_objects
     my $container = shift;
     my $objclass = shift;
 
-    if( scalar(@_) % 2 != 0 ) {
+    if ( scalar(@_) % 2 != 0 ) {
         die('Odd number of attributes and values in search_objects()');
     }
 
     my $results = [];
-    if( scalar(@_) == 0 ) {
+    if ( scalar(@_) == 0 ) {
         $results = $self->_sort_objects($self->_backend->contained_objects($container, $objclass));
     } else {
         my $firstmatch = 1;
@@ -482,15 +474,13 @@ sub search_fulltext
     my $attrlist = [];
     my $s = $self->get_schema();
 
-    if( defined($s->{$objclass}) and
-        defined($s->{$objclass}{'display'}) and
-        defined($s->{$objclass}{'display'}{'fullsearch_attr'}) )
-    {
+    if ( defined($s->{$objclass}) and
+         defined($s->{$objclass}{'display'}) and
+         defined($s->{$objclass}{'display'}{'fullsearch_attr'}) ) {
         push( @{$attrlist}, @{$s->{$objclass}{'display'}{'fullsearch_attr'}} );
     }
 
-    if( scalar(@{$attrlist}) == 0 )
-    {
+    if ( scalar(@{$attrlist}) == 0 ) {
         return [];
     }
 
@@ -525,10 +515,10 @@ sub contained_classes
          sort {( defined($s->{$a}{'display'}{'sequence'}) and
                  defined($s->{$b}{'display'}{'sequence'}) )
                    ?
-                       ($s->{$a}{'display'}{'sequence'} -
-                        $s->{$b}{'display'}{'sequence'})
-                           :
-                               ($a cmp $b)} @{$result});
+                   ($s->{$a}{'display'}{'sequence'} -
+                    $s->{$b}{'display'}{'sequence'})
+                   :
+                   ($a cmp $b)} @{$result});
     return $sorted;
 }
 
@@ -549,22 +539,17 @@ sub get_objclass_schema
 
     my $attr_schema = {};
 
-    if( defined($SPSID::Config::class_attributes->{$objclass}{'attr'}) )
-    {
+    if ( defined($SPSID::Config::class_attributes->{$objclass}{'attr'}) ) {
         my $cfg = $SPSID::Config::class_attributes->{$objclass}{'attr'};
 
-        foreach my $name (keys %{$cfg})
-        {
-            if( defined($cfg->{$name}{'templatemember'}) )
-            {
+        foreach my $name (keys %{$cfg}) {
+            if ( defined($cfg->{$name}{'templatemember'}) ) {
                 my $template_active = 0;
-                while( my ($templatekeyattr, $keyvalues) =
-                       each %{$cfg->{$name}{'templatemember'}} )
-                {
-                    if( defined($templatekeys->{$templatekeyattr}) )
-                    {
+                while ( my ($templatekeyattr, $keyvalues) =
+                        each %{$cfg->{$name}{'templatemember'}} ) {
+                    if ( defined($templatekeys->{$templatekeyattr}) ) {
                         my $key = $templatekeys->{$templatekeyattr};
-                        if( grep {$key eq $_} @{$keyvalues} ) {
+                        if ( grep {$key eq $_} @{$keyvalues} ) {
                             $template_active = 1;
                         }
                     }
@@ -606,22 +591,18 @@ sub new_object_default_attrs
 
     my $attr_schema = $self->get_objclass_schema($objclass, $templatekeys);
 
-    foreach my $name (keys %{$attr_schema})
-    {
-        if( defined($attr_schema->{$name}{'default'}) ) {
+    foreach my $name (keys %{$attr_schema}) {
+        if ( defined($attr_schema->{$name}{'default'}) ) {
             $attr->{$name} = $attr_schema->{$name}{'default'};
-        }
-        elsif( $attr_schema->{$name}{'default_autogen'} ) {
+        } elsif ( $attr_schema->{$name}{'default_autogen'} ) {
             $attr->{$name} = $ug->create_str();
-        }
-        elsif( defined($attr_schema->{$name}{'objref'}) ) {
+        } elsif ( defined($attr_schema->{$name}{'objref'}) ) {
             $attr->{$name} = 'NIL';
         }
     }
 
-    if( defined($SPSID::Config::new_obj_generators) and
-        defined($SPSID::Config::new_obj_generators->{$objclass}) )
-    {
+    if ( defined($SPSID::Config::new_obj_generators) and
+         defined($SPSID::Config::new_obj_generators->{$objclass}) ) {
         foreach my $func
             (values %{$SPSID::Config::new_obj_generators->{$objclass}}) {
             &{$func}($self, $attr);
@@ -645,26 +626,22 @@ sub get_calculated_attributes
 
     my $attrlist = {};
 
-    foreach my $name (keys %{$attr_schema})
-    {
-        if( $attr_schema->{$name}{'calculated'} )
-        {
+    foreach my $name (keys %{$attr_schema}) {
+        if ( $attr_schema->{$name}{'calculated'} ) {
             $attr->{$name} = '';
             $attrlist->{$name} = 1;
         }
     }
 
-    if( defined($SPSID::Config::calc_attr_generators) and
-        defined($SPSID::Config::calc_attr_generators->{$objclass}) )
-    {
+    if ( defined($SPSID::Config::calc_attr_generators) and
+         defined($SPSID::Config::calc_attr_generators->{$objclass}) ) {
         foreach my $func
             (values %{$SPSID::Config::calc_attr_generators->{$objclass}}) {
 
             my $gen_attr_list = &{$func}($self, $attr);
-            if( defined($gen_attr_list) )
-            {
+            if ( defined($gen_attr_list) ) {
                 foreach my $name (keys %{$gen_attr_list}) {
-                    if( not defined($attr->{$name}) ) {
+                    if ( not defined($attr->{$name}) ) {
                         die('Calculated attribute ' . $name . ' is undefined for ' .
                             $attr->{'spsid.object.id'});
                     }
@@ -684,22 +661,20 @@ sub validate_object
     my $self = shift;
     my $attr = shift;
 
-    foreach my $name ('spsid.object.class', 'spsid.object.container')
-    {
+    foreach my $name ('spsid.object.class', 'spsid.object.container') {
         my $value = $attr->{$name};
-        if( not defined($value) ) {
+        if ( not defined($value) ) {
             die('Missing mandatory attribute ' . $name . ' in ' .
                 $attr->{'spsid.object.id'});
-        }
-        elsif( $value eq '' ) {
+        } elsif ( $value eq '' ) {
             die('Mandatory attribute ' . $name .
                 ' cannot have empty value in ' .
                 $attr->{'spsid.object.id'});
         }
     }
 
-    if( $attr->{'spsid.object.container'} ne 'NIL' and
-        not $self->_backend->object_exists($attr->{'spsid.object.container'}) ) {
+    if ( $attr->{'spsid.object.container'} ne 'NIL' and
+         not $self->_backend->object_exists($attr->{'spsid.object.container'}) ) {
         die('Container object ' . $attr->{'spsid.object.container'} .
             ' does not exist for ' .  $attr->{'spsid.object.id'});
     }
@@ -711,18 +686,17 @@ sub validate_object
     my $objclass = $attr->{'spsid.object.class'};
 
     my $cfg = $SPSID::Config::class_attributes;
-    if( defined($cfg->{$objclass}) )
-    {
-        if( defined($cfg->{$objclass}{'attr'}) ) {
+    if ( defined($cfg->{$objclass}) ) {
+        if ( defined($cfg->{$objclass}{'attr'}) ) {
             $self->_verify_attributes($attr, $cfg->{$objclass}{'attr'});
         }
 
-        if( defined($cfg->{$objclass}{'contained_in'}) ) {
+        if ( defined($cfg->{$objclass}{'contained_in'}) ) {
             my $container_class =
                 $self->_backend->object_class
-                    ($attr->{'spsid.object.container'});
+                ($attr->{'spsid.object.container'});
 
-            if( not $cfg->{$objclass}{'contained_in'}{$container_class} ) {
+            if ( not $cfg->{$objclass}{'contained_in'}{$container_class} ) {
                 die('Object ' . $attr->{'spsid.object.id'} .
                     ' of class ' . $objclass . ' cannot be contained inside ' .
                     'of an object of class ' . $container_class);
@@ -741,103 +715,91 @@ sub _verify_attributes
     my $attr = shift;
     my $cfg = shift;
 
-    foreach my $name (keys %{$cfg})
-    {
+    foreach my $name (keys %{$cfg}) {
         next if $cfg->{$name}{'calculated'};
 
         my $value = $attr->{$name};
 
-        if( defined($cfg->{$name}{'templatemember'}) )
-        {
+        if ( defined($cfg->{$name}{'templatemember'}) ) {
             my $template_active = 0;
             foreach my $templatekeyattr
                 (keys %{$cfg->{$name}{'templatemember'}})  {
 
-                if( defined($attr->{$templatekeyattr}) )
-                {
+                if ( defined($attr->{$templatekeyattr}) ) {
                     my $keyvalues =
                         $cfg->{$name}{'templatemember'}{$templatekeyattr};
                     my $key = $attr->{$templatekeyattr};
 
-                    if( grep {$key eq $_} @{$keyvalues} ) {
+                    if ( grep {$key eq $_} @{$keyvalues} ) {
                         $template_active = 1;
                     }
                 }
             }
 
-            if( not $template_active ) {
-                if( defined($value) ) {
+            if ( not $template_active ) {
+                if ( defined($value) ) {
                     die('Attribute ' . $name . ' is a template member, ' .
                         'but none of template keys matched in ' .
                         $attr->{'spsid.object.id'});
-                }
-                else {
+                } else {
                     next;
                 }
             }
         }
 
-        if( defined($cfg->{$name}{'dictionary'}) and defined($value) )
-        {
-            if( not grep {$value eq $_} @{$cfg->{$name}{'dictionary'}} ) {
+        if ( defined($cfg->{$name}{'dictionary'}) and defined($value) ) {
+            if ( not grep {$value eq $_} @{$cfg->{$name}{'dictionary'}} ) {
                 die('Attribute ' . $name . ' is a dictionary attribute, ' .
                     'but the value ' . $value . ' is outside of dictionary ' .
                     'in ' . $attr->{'spsid.object.id'});
             }
         }
 
-        if( defined($cfg->{$name}{'regexp'}) and defined($value) )
-        {
-            if( $value !~ $cfg->{$name}{'regexp'} ) {
+        if ( defined($cfg->{$name}{'regexp'}) and defined($value) ) {
+            if ( $value !~ $cfg->{$name}{'regexp'} ) {
                 die('Attribute ' . $name . ' in ' . $attr->{'spsid.object.id'} . '(' . $value . ')' .
                     ' does not match the regexp: ' . $cfg->{$name}{'regexp'});
             }
         }
 
-        if( $cfg->{$name}{'mandatory'} )
-        {
-            if( not defined($value) ) {
+        if ( $cfg->{$name}{'mandatory'} ) {
+            if ( not defined($value) ) {
                 die('Missing mandatory attribute ' . $name . ' in ' .
                     $attr->{'spsid.object.id'});
-            }
-            elsif( $value eq '' ) {
+            } elsif ( $value eq '' ) {
                 die('Mandatory attribute ' . $name .
                     ' cannot have empty value in ' .
                     $attr->{'spsid.object.id'});
             }
         }
 
-        if( $cfg->{$name}{'unique'} and defined($value) )
-        {
+        if ( $cfg->{$name}{'unique'} and defined($value) ) {
             my $found =
                 $self->search_objects(undef,
                                       $attr->{'spsid.object.class'},
                                       $name,
                                       $value);
 
-            if( scalar(@{$found}) > 0 and
-                ( $found->[0]->{'spsid.object.id'} ne
-                  $attr->{'spsid.object.id'} ) )
-            {
+            if ( scalar(@{$found}) > 0 and
+                 ( $found->[0]->{'spsid.object.id'} ne
+                   $attr->{'spsid.object.id'} ) ) {
                 die('Duplicate value "' . $value .
                     '" for a unique attribute ' . $name . ' in ' .
                     $attr->{'spsid.object.id'});
             }
         }
 
-        if( $cfg->{$name}{'unique_child'} and defined($value) and
-            (not defined($cfg->{$name}{'objref'}) or $value ne 'NIL') )
-        {
+        if ( $cfg->{$name}{'unique_child'} and defined($value) and
+             (not defined($cfg->{$name}{'objref'}) or $value ne 'NIL') ) {
             my $found =
                 $self->search_objects($attr->{'spsid.object.container'},
                                       $attr->{'spsid.object.class'},
                                       $name,
                                       $value);
 
-            if( scalar(@{$found}) > 0 and
-                ( $found->[0]->{'spsid.object.id'} ne
-                  $attr->{'spsid.object.id'} ) )
-            {
+            if ( scalar(@{$found}) > 0 and
+                 ( $found->[0]->{'spsid.object.id'} ne
+                   $attr->{'spsid.object.id'} ) ) {
                 die('Duplicate value "' . $value .
                     '" within the container for a unique_child attribute ' .
                     $name . ' in ' .
@@ -845,25 +807,22 @@ sub _verify_attributes
             }
         }
 
-        if( defined($cfg->{$name}{'objref'}) and
-            defined($value) and $value ne 'NIL' )
-        {
+        if ( defined($cfg->{$name}{'objref'}) and
+             defined($value) and $value ne 'NIL' ) {
             my $refclass = $cfg->{$name}{'objref'};
 
-            if( not $cfg->{$name}{'reserved_refs'}{$value} )
-            {
-                if( not $self->object_exists($value) ) {
+            if ( not $cfg->{$name}{'reserved_refs'}{$value} ) {
+                if ( not $self->object_exists($value) ) {
                     die('Attribute ' . $name .
                         ' points to a non-existent object ' . $value .
                         ' in ' . $attr->{'spsid.object.id'});
                 }
 
-                if( $refclass ne '*' )
-                {
+                if ( $refclass ne '*' ) {
                     my $target_class =
                         $self->_backend->object_class($value);
 
-                    if( $target_class ne $refclass ) {
+                    if ( $target_class ne $refclass ) {
                         die('Attribute ' . $name .
                             ' points to an object ' . $value .
                             ' of class ' . $target_class . ', but is only' .
@@ -898,7 +857,7 @@ sub _calc_recursive_md5
     my $md5 = shift;
     my $attr = shift;
 
-    if( not defined($attr) ) {
+    if ( not defined($attr) ) {
         $attr = $self->get_object($id);
     }
 
@@ -906,8 +865,7 @@ sub _calc_recursive_md5
         $md5->add('#' . $name . '//' . unidecode($attr->{$name}) . '#');
     }
 
-    foreach my $objclass ( sort @{$self->contained_classes($id)} )
-    {
+    foreach my $objclass ( sort @{$self->contained_classes($id)} ) {
         foreach my $obj
             ( sort {$a->{'spsid.object.id'} cmp $b->{'spsid.object.id'}}
               @{$self->search_objects($id, $objclass)} ) {
@@ -936,7 +894,7 @@ sub log_object
     $self->_backend->log_object($id, $self->user_id, $msg, $app);
 
     my $logger = $self->logger;
-    if( defined($logger) ) {
+    if ( defined($logger) ) {
         $logger->info($id . ':' . $self->user_id . ': ' . $msg);
     }
 
@@ -955,7 +913,7 @@ sub add_application_log
     $self->_backend->log_object($id, $userid, encode_json({'event' => 'message', 'data' => $msg}), $app);
 
     my $logger = $self->logger;
-    if( defined($logger) ) {
+    if ( defined($logger) ) {
         $logger->info($id . ' - ' . $app . ' - ' . $userid . ': ' . $msg);
     }
 
