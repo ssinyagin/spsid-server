@@ -311,7 +311,8 @@ sub get_object
     my $self = shift;
     my $id = shift;
 
-    return $self->_backend->fetch_object($id);
+    my $obj = $self->_backend->fetch_object($id);
+    return $self->_retrieve_objrefs($obj->{'spsid.object.class'}, [$obj])->[0];
 }
 
 
@@ -379,6 +380,39 @@ sub _sort_objects
 }
 
 
+# if an obect contains objrefs, we fetch them non-recursively
+sub _retrieve_objrefs
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $objects = shift;
+
+    my @objref_attrs;
+    my $s = $self->get_schema();
+    my $attr_schema = $s->{$objclass}{'attr'};
+    if( defined($attr_schema) ) {
+        foreach my $name (keys %{$attr_schema}) {
+            if( defined($attr_schema->{$name}{'objref'}) ) {
+                push(@objref_attrs, $name);
+            }
+        }
+    }
+
+    if( scalar(@objref_attrs) > 0 ) {
+        foreach my $obj (@{$objects}) {
+            foreach my $name (@objref_attrs) {
+                if( defined($obj->{$name}) and $obj->{$name} ne 'NIL' ) {
+                    $obj->{$name} = $self->_backend->fetch_object($obj->{$name});
+                }
+            }
+        }
+    }
+
+    return $objects;
+}
+
+
+
 # input: attribute names and values for AND condition
 # output: arrayref of objects found
 
@@ -388,41 +422,40 @@ sub search_objects
     my $container = shift;
     my $objclass = shift;
 
-    if( scalar(@_) == 0 ) {
-        return $self->_sort_objects
-            ( $self->_backend->contained_objects($container, $objclass) );
-    }
-
     if( scalar(@_) % 2 != 0 ) {
         die('Odd number of attributes and values in search_objects()');
     }
 
     my $results = [];
-    my $firstmatch = 1;
+    if( scalar(@_) == 0 ) {
+        $results = $self->_sort_objects($self->_backend->contained_objects($container, $objclass));
+    } else {
+        my $firstmatch = 1;
+        while ( scalar(@_) > 0 ) {
+            my $name = shift;
+            my $value = shift;
 
-    while( scalar(@_) > 0 ) {
-        my $name = shift;
-        my $value = shift;
+            if ( $firstmatch ) {
+                $results =
+                    $self->_backend->search_objects($container, $objclass,
+                                                    $name, $value);
+                $firstmatch = 0;
+            } elsif ( scalar(@{$results}) > 0 ) {
+                my $old_results = $results;
+                $results = [];
 
-        if( $firstmatch ) {
-            $results =
-                $self->_backend->search_objects($container, $objclass,
-                                                $name, $value);
-            $firstmatch = 0;
-        }
-        elsif( scalar(@{$results}) > 0 ) {
-            my $old_results = $results;
-            $results = [];
-
-            foreach my $obj (@{$old_results}) {
-                if( defined($obj->{$name}) and $obj->{$name} eq $value ) {
-                    push(@{$results}, $obj);
+                foreach my $obj (@{$old_results}) {
+                    if ( defined($obj->{$name}) and $obj->{$name} eq $value ) {
+                        push(@{$results}, $obj);
+                    }
                 }
             }
         }
+
+        $results = $self->_sort_objects($results);
     }
 
-    return $self->_sort_objects($results);
+    return $self->_retrieve_objrefs($objclass, $results);
 }
 
 
@@ -434,8 +467,9 @@ sub search_prefix
     my $attr_name = shift;
     my $attr_prefix = shift;
 
-    return $self->_sort_objects
-        ($self->_backend->search_prefix($objclass,$attr_name, $attr_prefix));
+    my $results = $self->_sort_objects
+        ($self->_backend->search_prefix($objclass, $attr_name, $attr_prefix));
+    return $self->_retrieve_objrefs($objclass, $results);
 }
 
 
@@ -460,9 +494,10 @@ sub search_fulltext
         return [];
     }
 
-    return $self->_sort_objects
+    my $results = $self->_sort_objects
         ($self->_backend->search_fulltext($objclass,
                                           $search_string, $attrlist));
+    return $self->_retrieve_objrefs($objclass, $results);
 }
 
 
