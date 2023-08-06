@@ -110,6 +110,24 @@ sub DEMOLISH
 }
 
 
+sub ping
+{
+    my $self = shift;
+    while( not $self->_dbh->ping() ) {
+        print STDERR "Database handle is invalid. Reconnecting\n";
+        sleep(1);
+        eval { $self->connect(); };
+        if ( $@ ) {
+            print STDERR "Error reconnecting: " . $@ . "\n";
+        }
+    }
+    return 1;
+}
+
+
+
+
+
 sub commit
 {
     my $self = shift;

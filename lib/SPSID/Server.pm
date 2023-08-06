@@ -83,6 +83,13 @@ sub BUILD
 }
 
 
+sub ping
+{
+    my $self = shift;
+    return $self->_backend->ping();
+}
+
+
 
 sub object_exists
 {
@@ -99,6 +106,8 @@ sub create_object
     my $self = shift;
     my $objclass = shift;
     my $attr = shift;
+
+    $self->ping();
 
     # random string to take md5 as the new object ID
     my $id_seed = scalar(localtime(time())) . rand(1e8);
@@ -151,6 +160,8 @@ sub modify_object
     my $self = shift;
     my $id = shift;
     my $mod_attr = shift;
+
+    $self->ping();
 
     my $attr = $self->_backend->fetch_object($id);
     my $deleted_attr = {};
@@ -248,6 +259,8 @@ sub delete_object
     my $self = shift;
     my $id = shift;
 
+    $self->ping();
+
     if ( not $self->object_exists($id) ) {
         die("Object does not exist: $id");
     }
@@ -305,6 +318,7 @@ sub get_object
     my $self = shift;
     my $id = shift;
 
+    $self->ping();
     my $obj = $self->_backend->fetch_object($id);
     return $self->_retrieve_objrefs($obj->{'spsid.object.class'}, [$obj])->[0];
 }
@@ -315,6 +329,7 @@ sub get_object_log
     my $self = shift;
     my $id = shift;
 
+    $self->ping();
     return $self->_backend->get_object_log($id);
 }
 
@@ -423,6 +438,8 @@ sub search_objects
         die('Odd number of attributes and values in search_objects()');
     }
 
+    $self->ping();
+
     my $results = [];
     if ( scalar(@_) == 0 ) {
         $results = $self->_sort_objects($self->_backend->contained_objects($container, $objclass));
@@ -464,6 +481,7 @@ sub search_prefix
     my $attr_name = shift;
     my $attr_prefix = shift;
 
+    $self->ping();
     my $results = $self->_sort_objects
         ($self->_backend->search_prefix($objclass, $attr_name, $attr_prefix));
     return $self->_retrieve_objrefs($objclass, $results);
@@ -475,6 +493,8 @@ sub search_fulltext
     my $self = shift;
     my $objclass = shift;
     my $search_string = shift;
+
+    $self->ping();
 
     my $attrlist = [];
     my $s = $self->get_schema();
