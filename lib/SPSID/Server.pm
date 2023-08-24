@@ -319,6 +319,9 @@ sub get_object
     my $id = shift;
 
     $self->ping();
+    if( not $self->object_exists($id) ) {
+        return undef;
+    }
     my $obj = $self->_backend->fetch_object($id);
     return $self->_retrieve_objrefs($obj->{'spsid.object.class'}, [$obj])->[0];
 }
