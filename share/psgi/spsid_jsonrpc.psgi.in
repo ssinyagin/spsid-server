@@ -40,14 +40,14 @@ sub create_object
 
     die('objclass required') unless defined $arg{'objclass'};
     die('attr required') unless defined $arg{'attr'};
-    
+
     my $userid = $plack_request->user();
     if( defined($userid) ) {
         $server->user_id($userid);
     }
 
     my $id = $server->create_object($arg{'objclass'}, $arg{'attr'});
-    
+
     $server->clear_user_id;
     return $id;
 }
@@ -66,9 +66,9 @@ sub modify_object
     if( defined($userid) ) {
         $server->user_id($userid);
     }
-    
+
     $server->modify_object($arg{'id'}, $arg{'mod_attr'});
-    
+
     $server->clear_user_id;
     return;
 }
@@ -82,14 +82,14 @@ sub validate_object
 
     my $result = {'status' => 1};
     try {
-        $server->validate_object($arg{'attr'});        
+        $server->validate_object($arg{'attr'});
     } catch {
         $result->{'status'} = 0;
         $result->{'error'} = $_;
     };
     return $result;
 }
-    
+
 
 sub delete_object
 {
@@ -102,9 +102,9 @@ sub delete_object
     if( defined($userid) ) {
         $server->user_id($userid);
     }
-    
+
     $server->delete_object($arg{'id'});
-    
+
     $server->clear_user_id;
     return;
 }
@@ -114,7 +114,7 @@ sub get_object
 {
     my %arg = @_;
     die('id required') unless defined $arg{'id'};
-    return $server->get_object($arg{'id'});    
+    return $server->get_object($arg{'id'});
 }
 
 
@@ -135,14 +135,29 @@ sub get_object_log
 {
     my %arg = @_;
     die('id required') unless defined $arg{'id'};
-    return $server->get_object_log($arg{'id'});    
+    return $server->get_object_log($arg{'id'});
+}
+
+
+sub get_last_change_id
+{
+    return $server->get_last_change_id();
+}
+
+
+sub get_last_changes
+{
+    my %arg = @_;
+    die('start_id required') unless defined $arg{'start_id'};
+    die('max_rows required') unless defined $arg{'max_rows'};
+    return $server->get_last_changes($arg{'start_id'}, $arg{'max_rows'});
 }
 
 
 sub search_objects
 {
     my %arg = @_;
-    
+
     die('container required') unless exists $arg{'container'};
     die('objclass required') unless defined $arg{'objclass'};
 
@@ -150,10 +165,10 @@ sub search_objects
     if( defined($arg{'search_attrs'}) ) {
         die('search_attrs must be ARRAY') unless
             ref($arg{'search_attrs'}) eq 'ARRAY';
-        
+
         @search_attrs = @{$arg{'search_attrs'}};
     }
-        
+
     return $server->search_objects($arg{'container'},
                                   $arg{'objclass'},
                                   @search_attrs);
@@ -163,7 +178,7 @@ sub search_objects
 sub search_prefix
 {
     my %arg = @_;
-    
+
     die('objclass required') unless defined $arg{'objclass'};
     die('attr_name required') unless exists $arg{'attr_name'};
     die('attr_prefix required') unless defined $arg{'attr_prefix'};
@@ -177,7 +192,7 @@ sub search_prefix
 sub search_fulltext
 {
     my %arg = @_;
-    
+
     die('objclass required') unless defined $arg{'objclass'};
     die('search_string required') unless exists $arg{'search_string'};
 
@@ -189,18 +204,18 @@ sub search_fulltext
 sub get_attr_values
 {
     my %arg = @_;
-    
+
     die('objclass required') unless defined $arg{'objclass'};
     die('attr_name required') unless exists $arg{'attr_name'};
-    
+
     return $server->get_attr_values($arg{'objclass'},
                                     $arg{'attr_name'});
 }
 
-    
+
 sub contained_classes
 {
-    my %arg = @_;    
+    my %arg = @_;
     die('container required') unless defined $arg{'container'};
     return $server->contained_classes($arg{'container'});
 }
@@ -219,7 +234,7 @@ sub new_object_default_attrs
     die('container required') unless defined $arg{'container'};
     die('objclass required') unless defined $arg{'objclass'};
     die('templatekeys required') unless defined $arg{'templatekeys'};
-        
+
     return $server->new_object_default_attrs($arg{'container'},
                                              $arg{'objclass'},
                                              $arg{'templatekeys'});
@@ -242,6 +257,8 @@ $rpc->register('delete_object', \&delete_object, { with_plack_request => 1 });
 $rpc->register('get_object', \&get_object);
 $rpc->register('add_application_log', \&add_application_log);
 $rpc->register('get_object_log', \&get_object_log);
+$rpc->register('get_last_change_id', \&get_last_change_id);
+$rpc->register('get_last_changes', \&get_last_changes);
 $rpc->register('search_objects', \&search_objects);
 $rpc->register('search_prefix', \&search_prefix);
 $rpc->register('search_fulltext', \&search_fulltext);
@@ -259,7 +276,7 @@ foreach my $reg (values %{$SPSID::Plugin::rpc})
 {
     &{$reg}($rpc, $server);
 }
-    
+
 $rpc->to_app;
 
 

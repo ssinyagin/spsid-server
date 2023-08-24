@@ -251,10 +251,10 @@ sub log_object
 
     $self->_dbh->do
         ('INSERT INTO SPSID_OBJECT_LOG ' .
-         '  (OBJECT_ID, LOG_TS, APPLICATION, USER_ID, MESSAGE) ' .
-         'VALUES(?,?,?,?,?)',
+         '  (ID, OBJECT_ID, LOG_TS, APPLICATION, USER_ID, MESSAGE) ' .
+         'VALUES(?,?,?,?,?,?)',
          undef,
-         $id, $ts, $app, $user_id, $msg);
+         $self->sequence_next('SPSID_OBJECT_LOG'), $id, $ts, $app, $user_id, $msg);
 
     return;
 }
@@ -282,6 +282,54 @@ sub get_object_log
               'app'  => $r->[1],
               'user' => $r->[2],
               'msg'  => $msg});
+    }
+
+    return $ret;
+}
+
+
+sub get_last_change_id
+{
+    my $self = shift;
+
+    my $sth = $self->_dbh->prepare('SELECT MAX(ID) FROM SPSID_OBJECT_LOG');
+    $sth->execute();
+    my $r = $sth->fetchall_arrayref();
+    if( scalar(@{$r}) > 0 and defined($r->[0][0]) ) {
+        return $r->[0][0];
+    }
+    else {
+        return 0;
+    }
+}
+
+
+sub get_last_changes
+{
+    my $self = shift;
+    my $start_id = shift;
+    my $max_rows = shift;
+
+    my $sth = $self->_dbh->prepare
+        ('SELECT ID, SPSID_OBJECT_LOG.OBJECT_ID, OBJECT_CLASS, LOG_TS, APPLICATION, USER_ID, MESSAGE ' .
+         'FROM SPSID_OBJECT_LOG, SPSID_OBJECTS WHERE SPSID_OBJECT_LOG.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID AND ' .
+         'ID>=? AND ID<? ORDER BY ID');
+    $sth->execute($start_id, $start_id + $max_rows);
+
+    my $ret = [];
+    while ( my $r = $sth->fetchrow_arrayref() ) {
+        my $msg = $r->[6];
+        utf8::decode($msg);
+        push(@{$ret},
+             {
+              'change_id' => $r->[0],
+              'object_id' => $r->[1],
+              'object_class' => $r->[2],
+              'time' => $r->[3],
+              'app'  => $r->[4],
+              'user' => $r->[5],
+              'msg'  => $msg,
+             });
     }
 
     return $ret;

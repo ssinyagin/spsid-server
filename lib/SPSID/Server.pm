@@ -334,6 +334,29 @@ sub get_object_log
 }
 
 
+
+sub get_last_change_id
+{
+    my $self = shift;
+    $self->ping();
+    return $self->_backend->get_last_change_id();
+}
+
+
+sub get_last_changes
+{
+    my $self = shift;
+    my $start_id = shift;
+    my $max_rows = shift;
+
+    $self->ping();
+    return $self->_backend->get_last_changes($start_id, $max_rows);
+}
+
+
+
+
+
 sub _obj_sort_name
 {
     my $self = shift;
