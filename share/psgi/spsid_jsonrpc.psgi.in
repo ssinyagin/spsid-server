@@ -33,6 +33,21 @@ my $server = SPSID::Server->new();
 $server->connect();
 
 
+sub extract_userid
+{
+    my $plack_request = shift;
+    
+    my $userid = $plack_request->user();
+    if( not defined($userid) ) {
+        $userid = $plack_request->headers->header('X-Remote-User');
+    }
+    
+    if( defined($userid) ) {
+        $server->user_id($userid);
+    }
+}
+
+
 sub create_object
 {
     my $plack_request = shift;
@@ -41,13 +56,8 @@ sub create_object
     die('objclass required') unless defined $arg{'objclass'};
     die('attr required') unless defined $arg{'attr'};
 
-    my $userid = $plack_request->user();
-    if( defined($userid) ) {
-        $server->user_id($userid);
-    }
-
+    extract_userid($plack_request);
     my $id = $server->create_object($arg{'objclass'}, $arg{'attr'});
-
     $server->clear_user_id;
     return $id;
 }
@@ -62,13 +72,8 @@ sub modify_object
     die('id required') unless defined $arg{'id'};
     die('mod_attr required') unless defined $arg{'mod_attr'};
 
-    my $userid = $plack_request->user();
-    if( defined($userid) ) {
-        $server->user_id($userid);
-    }
-
+    extract_userid($plack_request);
     $server->modify_object($arg{'id'}, $arg{'mod_attr'});
-
     $server->clear_user_id;
     return;
 }
@@ -98,13 +103,8 @@ sub delete_object
 
     die('id required') unless defined $arg{'id'};
 
-    my $userid = $plack_request->user();
-    if( defined($userid) ) {
-        $server->user_id($userid);
-    }
-
+    extract_userid($plack_request);
     $server->delete_object($arg{'id'});
-
     $server->clear_user_id;
     return;
 }
