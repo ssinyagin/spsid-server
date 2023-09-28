@@ -1,0 +1,44 @@
+#!@PERL@
+
+use strict;
+use warnings;
+use utf8;
+use IO::Handle;
+
+BEGIN {
+    if(defined($ENV{'SPSID_CONFIG'})) {
+        do $ENV{'SPSID_CONFIG'};
+    } else { do '@spsid_config_pl@'; }
+    die($@) if $@;
+}
+
+
+use SPSID::Server::Backend::SQL;
+
+my $db = SPSID::Server::Backend::SQL->new();
+$db->connect();
+
+my $io = IO::Handle->new();
+if( not $io->fdopen(fileno(STDIN),"r") ) {
+    die("cannot open stdin: $!");
+}
+
+while( my $line = $io->getline() ) {
+    $line =~ s/\;\s*$//;
+    my $sth = $db->_dbh->prepare($line);
+    $sth->execute();
+}
+
+$db->_dbh->commit();
+
+
+
+# Local Variables:
+# mode: cperl
+# indent-tabs-mode: nil
+# cperl-indent-level: 4
+# cperl-continued-statement-offset: 4
+# cperl-continued-brace-offset: -4
+# cperl-brace-offset: 0
+# cperl-label-offset: -2
+# End:

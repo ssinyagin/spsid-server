@@ -14,4 +14,7 @@ setup_tools/substvars.sh
 share/conf_defaults/spsid_config.pl
 share/psgi/spsid_jsonrpc.fcgi
 share/psgi/spsid_jsonrpc.psgi
+share/db_utils/spsid_db_dump
+share/db_utils/spsid_db_restore
+share/db_utils/spsid_db_empty
 

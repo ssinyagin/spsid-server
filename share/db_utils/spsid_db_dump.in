@@ -1,0 +1,60 @@
+#!@PERL@
+
+use strict;
+use warnings;
+use utf8;
+
+BEGIN {
+    if(defined($ENV{'SPSID_CONFIG'})) {
+        do $ENV{'SPSID_CONFIG'};
+    } else { do '@spsid_config_pl@'; }
+    die($@) if $@;
+}
+
+
+use SPSID::Server::Backend::SQL;
+
+my @tables =
+    (
+     { name => 'SPSID_OBJECTS',
+       columns => ['OBJECT_ID', 'OBJECT_DELETED', 'OBJECT_CLASS', 'OBJECT_CONTAINER'] },
+     { name => 'SPSID_OBJECT_ATTR',
+       columns => ['OBJECT_ID', 'ATTR_NAME', 'ATTR_VALUE', 'ATTR_LOWER'] },
+     { name => 'SPSID_OBJECT_LOG',
+       columns => ['ID', 'OBJECT_ID', 'LOG_TS', 'APPLICATION', 'USER_ID', 'MESSAGE'] },
+     { name => 'dbix_sequence_state',
+       columns => ['dataset', 'state_id'] },
+     { name => 'dbix_sequence_release',
+       columns => ['dataset', 'released_id'] },
+    );
+
+
+my $db = SPSID::Server::Backend::SQL->new();
+$db->connect();
+
+foreach my $table (@tables) {
+    my $sql = 'SELECT ' . join(',', @{$table->{'columns'}}) . ' FROM ' . $table->{'name'};
+    
+    my $sth = $db->_dbh->prepare($sql);
+    $sth->execute();
+    while(my $row = $sth->fetchrow_arrayref()) {
+        printf("INSERT INTO %s (%s) VALUES (%s);\n",
+               $table->{'name'},
+               join(',', @{$table->{'columns'}}),
+               join(',', map {$db->_dbh->quote($_)} @{$row}));
+    }
+}
+
+               
+
+
+
+# Local Variables:
+# mode: cperl
+# indent-tabs-mode: nil
+# cperl-indent-level: 4
+# cperl-continued-statement-offset: 4
+# cperl-continued-brace-offset: -4
+# cperl-brace-offset: 0
+# cperl-label-offset: -2
+# End:

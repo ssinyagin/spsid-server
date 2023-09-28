@@ -1,0 +1,51 @@
+#!@PERL@
+
+use strict;
+use warnings;
+use utf8;
+
+BEGIN {
+    if(defined($ENV{'SPSID_CONFIG'})) {
+        do $ENV{'SPSID_CONFIG'};
+    } else { do '@spsid_config_pl@'; }
+    die($@) if $@;
+}
+
+
+use SPSID::Server::Backend::SQL;
+
+my @tables =
+    (
+     'SPSID_OBJECTS',
+     'SPSID_OBJECT_ATTR',
+     'SPSID_OBJECT_LOG',
+     'dbix_sequence_state',
+     'dbix_sequence_release',
+    );
+
+
+my $db = SPSID::Server::Backend::SQL->new();
+$db->connect();
+
+foreach my $table (@tables) {
+    my $sql = 'DELETE FROM ' . $table;
+    
+    my $sth = $db->_dbh->prepare($sql);
+    $sth->execute();
+}
+
+$db->_dbh->commit();
+
+print "Emptied the SPSID database\n";
+
+
+
+# Local Variables:
+# mode: cperl
+# indent-tabs-mode: nil
+# cperl-indent-level: 4
+# cperl-continued-statement-offset: 4
+# cperl-continued-brace-offset: -4
+# cperl-brace-offset: 0
+# cperl-label-offset: -2
+# End:

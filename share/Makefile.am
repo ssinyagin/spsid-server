@@ -39,11 +39,21 @@ dist_sql_DATA = \
 	sql/spsid_schema.ansi.sql \
 	sql/spsid_schema.mysql.sql
 
+dbutilsdir = @pkgdatadir@/db_utils
+
+dbutils_SCRIPTS = \
+	db_utils/spsid_db_dump \
+	db_utils/spsid_db_empty \
+	db_utils/spsid_db_restore
+
 
 EXTRA_DIST = \
 	conf_defaults/spsid_config.pl.in \
 	psgi/spsid_jsonrpc.psgi.in \
-	psgi/spsid_jsonrpc.fcgi.in
+	psgi/spsid_jsonrpc.fcgi.in \
+	db_utils/spsid_db_dump.in \
+	db_utils/spsid_db_empty.in \
+	db_utils/spsid_db_restore.in
 
 
 CLEANFILES = $(psgi_DATA) $(psgi_SCRIPTS) $(dist_defaults_DATA)
@@ -58,3 +68,12 @@ psgi/spsid_jsonrpc.psgi: psgi/spsid_jsonrpc.psgi.in
 
 psgi/spsid_jsonrpc.fcgi: psgi/spsid_jsonrpc.fcgi.in
 	$(SUBST) psgi/spsid_jsonrpc.fcgi.in > psgi/spsid_jsonrpc.fcgi
+
+db_utils/spsid_db_dump: db_utils/spsid_db_dump.in
+	$(SUBST) db_utils/spsid_db_dump.in > db_utils/spsid_db_dump
+
+db_utils/spsid_db_empty: db_utils/spsid_db_empty.in
+	$(SUBST) db_utils/spsid_db_empty.in > db_utils/spsid_db_empty
+
+db_utils/spsid_db_restore: db_utils/spsid_db_restore.in
+	$(SUBST) db_utils/spsid_db_restore.in > db_utils/spsid_db_restore
