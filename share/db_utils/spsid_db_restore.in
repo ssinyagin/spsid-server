@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use IO::Handle;
+use JSON;
 
 BEGIN {
     if(defined($ENV{'SPSID_CONFIG'})) {
@@ -24,9 +25,8 @@ if( not $io->fdopen(fileno(STDIN),"r") ) {
 }
 
 while( my $line = $io->getline() ) {
-    $line =~ s/\;\s*$//;
-    my $sth = $db->_dbh->prepare($line);
-    $sth->execute();
+    my $data = decode_json($line);
+    my $sth = $db->_dbh->do($data);
 }
 
 $db->_dbh->commit();

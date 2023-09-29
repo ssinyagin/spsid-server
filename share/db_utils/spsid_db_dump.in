@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use utf8;
+use JSON;
 
 BEGIN {
     if(defined($ENV{'SPSID_CONFIG'})) {
@@ -38,10 +39,11 @@ foreach my $table (@tables) {
     my $sth = $db->_dbh->prepare($sql);
     $sth->execute();
     while(my $row = $sth->fetchrow_arrayref()) {
-        printf("INSERT INTO %s (%s) VALUES (%s);\n",
-               $table->{'name'},
-               join(',', @{$table->{'columns'}}),
-               join(',', map {$db->_dbh->quote($_)} @{$row}));
+        print encode_json( sprintf("INSERT INTO %s (%s) VALUES (%s)",
+                                   $table->{'name'},
+                                   join(',', @{$table->{'columns'}}),
+                                   join(',', map {$db->_dbh->quote($_)} @{$row}))
+                         ), "\n";
     }
 }
 
