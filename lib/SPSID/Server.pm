@@ -140,7 +140,9 @@ sub create_object
 
     eval {
         $self->_backend->create_object($attr);
-        $self->log_object($id, 'create_object', $attr);
+        if( not $cfg->{$objclass}{'nolog'} ) {
+            $self->log_object($id, 'create_object', $attr);
+        }
         $self->_backend->commit();
     };
     if ( $@ ) {
@@ -186,6 +188,10 @@ sub _modify_object_impl
     my $modified_attr = {};
     my $old_attr = {};
 
+    my $cfg = $SPSID::Config::class_attributes;
+    my $objclass = $attr->{'spsid.object.class'};
+    my $nolog = ($cfg->{$objclass}{'nolog'} ? 1:0);
+
     while (my ($name, $value) = each %{$mod_attr}) {
         if ( $name eq 'spsid.object.id' or
              $name eq 'spsid.object.class' ) {
@@ -229,9 +235,11 @@ sub _modify_object_impl
 
         $self->_backend->delete_object_attributes($id, \@del_attrs);
 
-        foreach my $name (@del_attrs) {
-            $self->log_object
-                ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
+        if( not $nolog ) {
+            foreach my $name (@del_attrs) {
+                $self->log_object
+                    ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
+            }
         }
     }
 
@@ -240,9 +248,11 @@ sub _modify_object_impl
 
         $self->_backend->add_object_attributes($id, $added_attr);
 
-        foreach my $name (@add_attrs) {
-            $self->log_object
-                ($id, 'add_attr', {'name' => $name, 'new_val' => $added_attr->{$name}});
+        if( not $nolog ) {
+            foreach my $name (@add_attrs) {
+                $self->log_object
+                    ($id, 'add_attr', {'name' => $name, 'new_val' => $added_attr->{$name}});
+            }
         }
     }
 
@@ -251,10 +261,12 @@ sub _modify_object_impl
 
         $self->_backend->modify_object_attributes($id, $modified_attr);
 
-        foreach my $name (@mod_attrs) {
-            $self->log_object
-                ($id, 'mod_attr', {'name' => $name, 'old_val' => $old_attr->{$name},
-                                   'new_val' => $modified_attr->{$name}});
+        if( not $nolog ) {
+            foreach my $name (@mod_attrs) {
+                $self->log_object
+                    ($id, 'mod_attr', {'name' => $name, 'old_val' => $old_attr->{$name},
+                                       'new_val' => $modified_attr->{$name}});
+            }
         }
     }
 
@@ -328,7 +340,9 @@ sub delete_object
              $cfg->{$thisclass}{'delete_permanently'} ) {
             $self->_backend->delete_object_permanently($id);
         } else {
-            $self->log_object($id, 'delete_object', undef);
+            if( not $cfg->{$thisclass}{'nolog'} ) {
+                $self->log_object($id, 'delete_object', undef);
+            }
             $self->_backend->delete_object($id);
         }
 
