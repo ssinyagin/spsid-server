@@ -162,6 +162,23 @@ sub modify_object
     my $mod_attr = shift;
 
     $self->ping();
+    eval {
+        $self->_modify_object_impl($id, $mod_attr);
+        $self->_backend->commit();
+    };
+    if ( $@ ) {
+        $self->_backend->rollback();
+        die($@);
+    }
+    return;
+}
+
+
+sub _modify_object_impl
+{
+    my $self = shift;
+    my $id = shift;
+    my $mod_attr = shift;
 
     my $attr = $self->_backend->fetch_object($id);
     my $deleted_attr = {};
@@ -207,51 +224,64 @@ sub modify_object
     }
 
     $self->validate_object($attr);
+    my @del_attrs = sort keys %{$deleted_attr};
+    if ( scalar(@del_attrs) > 0 ) {
+
+        $self->_backend->delete_object_attributes($id, \@del_attrs);
+
+        foreach my $name (@del_attrs) {
+            $self->log_object
+                ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
+        }
+    }
+
+    my @add_attrs = sort keys %{$added_attr};
+    if ( scalar(@add_attrs) > 0 ) {
+
+        $self->_backend->add_object_attributes($id, $added_attr);
+
+        foreach my $name (@add_attrs) {
+            $self->log_object
+                ($id, 'add_attr', {'name' => $name, 'new_val' => $added_attr->{$name}});
+        }
+    }
+
+    my @mod_attrs = sort keys %{$modified_attr};
+    if ( scalar(@mod_attrs) > 0 ) {
+
+        $self->_backend->modify_object_attributes($id, $modified_attr);
+
+        foreach my $name (@mod_attrs) {
+            $self->log_object
+                ($id, 'mod_attr', {'name' => $name, 'old_val' => $old_attr->{$name},
+                                   'new_val' => $modified_attr->{$name}});
+        }
+    }
+
+    return;
+}
+
+
+
+sub modify_multiple_objects
+{
+    my $self = shift;
+    my $mod = shift;
+
+    $self->ping();
+
     eval {
-        my @del_attrs = sort keys %{$deleted_attr};
-        if ( scalar(@del_attrs) > 0 ) {
-
-            $self->_backend->delete_object_attributes($id, \@del_attrs);
-
-            foreach my $name (@del_attrs) {
-                $self->log_object
-                    ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
-            }
+        foreach my $id (keys %{$mod}) {
+            $self->_modify_object_impl($id, $mod->{$id});
         }
-
-        my @add_attrs = sort keys %{$added_attr};
-        if ( scalar(@add_attrs) > 0 ) {
-
-            $self->_backend->add_object_attributes($id, $added_attr);
-
-            foreach my $name (@add_attrs) {
-                $self->log_object
-                    ($id, 'add_attr', {'name' => $name, 'new_val' => $added_attr->{$name}});
-            }
-        }
-
-        my @mod_attrs = sort keys %{$modified_attr};
-        if ( scalar(@mod_attrs) > 0 ) {
-
-            $self->_backend->modify_object_attributes($id, $modified_attr);
-
-            foreach my $name (@mod_attrs) {
-                $self->log_object
-                    ($id, 'mod_attr', {'name' => $name, 'old_val' => $old_attr->{$name},
-                                       'new_val' => $modified_attr->{$name}});
-            }
-        }
-
         $self->_backend->commit();
     };
     if ( $@ ) {
         $self->_backend->rollback();
         die($@);
     }
-
     return;
 }
-
 
 
 sub delete_object

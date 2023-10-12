@@ -79,6 +79,20 @@ sub modify_object
 }
 
 
+sub modify_multiple_objects
+{
+    my $plack_request = shift;
+    my %arg = @_;
+
+    die('mod required') unless defined $arg{'mod'};
+
+    extract_userid($plack_request);
+    $server->modify_multiple_objects($arg{'mod'});
+    $server->clear_user_id;
+    return;
+}
+
+
 sub validate_object
 {
     my %arg = @_;
@@ -252,6 +266,7 @@ my $rpc = JSON::RPC::Dispatcher->new;
 
 $rpc->register('create_object', \&create_object, { with_plack_request => 1 });
 $rpc->register('modify_object', \&modify_object, { with_plack_request => 1 });
+$rpc->register('modify_multiple_objects', \&modify_multiple_objects, { with_plack_request => 1 });
 $rpc->register('validate_object', \&validate_object);
 $rpc->register('delete_object', \&delete_object, { with_plack_request => 1 });
 $rpc->register('get_object', \&get_object);

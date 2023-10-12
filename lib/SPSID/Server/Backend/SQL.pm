@@ -48,7 +48,7 @@ has 'tsn_admin_env' =>
     (
      is  => 'ro',
      isa => 'Str',
-     default => $SPSID::Config::Backend::SQL::tsn_admin_env,
+     default => sub { my $v = $SPSID::Config::Backend::SQL::tsn_admin_env; return(defined($v)?$v:''); }
     );
 
 
@@ -74,7 +74,7 @@ sub connect
 {
     my $self = shift;
 
-    if ( defined($self->tsn_admin_env) ) {
+    if ( length($self->tsn_admin_env) > 0 ) {
         $ENV{'TNS_ADMIN'} = $self->tsn_admin_env;
     }
 
@@ -105,7 +105,9 @@ sub connect
 sub DEMOLISH
 {
     my $self = shift;
-    $self->disconnect();
+    if( defined($self->_dbh) ) {
+        $self->disconnect();
+    }
     return;
 }
 
