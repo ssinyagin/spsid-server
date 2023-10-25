@@ -199,16 +199,13 @@ sub _modify_object_impl
             die('SPSID::modify_object cannot modify ' . $name);
         }
 
-        if( not defined($value) and defined($attr->{$name})) {
-
-            $deleted_attr->{$name} = $attr->{$name};
+        if( not defined($value) ) {
+            $deleted_attr->{$name} = defined($attr->{$name}) ? $attr->{$name} : undef;
             delete $attr->{$name};
         } elsif( not defined($attr->{$name}) ) {
-
             $added_attr->{$name} = $value;
             $attr->{$name} = $value;
         } elsif( $value ne $attr->{$name} ) {
-
             $old_attr->{$name} = $attr->{$name};
             $attr->{$name} = $value;
             $modified_attr->{$name} = $value;
@@ -237,8 +234,10 @@ sub _modify_object_impl
 
         if( not $nolog ) {
             foreach my $name (@del_attrs) {
-                $self->log_object
-                    ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
+                if( defined($deleted_attr->{$name}) ) {
+                    $self->log_object
+                        ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
+                }
             }
         }
     }
