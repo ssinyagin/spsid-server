@@ -306,8 +306,8 @@ sub delete_object
         die("Object does not exist: $id");
     }
 
-    # recursively delete all contained objects
     eval {
+        # recursively delete all contained objects
         foreach my $objclass ( @{$self->contained_classes($id)} ) {
             foreach my $obj ( @{$self->search_objects($id, $objclass)} ) {
                 $self->delete_object($obj->{'spsid.object.id'});
@@ -335,8 +335,18 @@ sub delete_object
         }
 
         my $cfg = $SPSID::Config::class_attributes;
-        if( defined($cfg->{$thisclass}) and
-             $cfg->{$thisclass}{'delete_permanently'} ) {
+        if( defined($cfg->{$thisclass}) and $cfg->{$thisclass}{'delete_permanently'} ) {
+            my $obj = $self->_backend->fetch_object($id);
+            my $data = {'spsid.object.class' => $obj->{'spsid.object.class'}};
+            my $attrs = $cfg->{$thisclass}{'attr'};
+            if( defined($attrs) ) {
+                foreach my $name (keys %{$attrs}) {
+                    if( ($cfg->{$name}{'unique'} or $cfg->{$name}{'unique_child'}) and defined($obj->{$name}) ) {
+                        $data->{$name} = $obj->{$name};
+                    }
+                }
+            }
+            $self->log_object($obj->{'spsid.object.container'}, 'delete_child', $data);
             $self->_backend->delete_object_permanently($id);
         } else {
             if( not $cfg->{$thisclass}{'nolog'} ) {
