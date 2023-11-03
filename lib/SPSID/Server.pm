@@ -90,6 +90,35 @@ sub ping
 }
 
 
+sub _fetch_object
+{
+    my $self = shift;
+    my $id = shift;
+
+    my $attr = $self->_backend->fetch_object($id);
+    $self->_utf_tidy([$attr]);
+    return $attr;
+}
+
+
+sub _utf_tidy
+{
+    my $self = shift;
+    my $objects = shift;
+
+    my $s = $self->get_schema();
+    foreach my $attr (@{$objects}) {
+        my $objclass = $attr->{'spsid.object.class'};
+        my $attr_schema = $s->{$objclass}{'attr'};
+        foreach my $name (keys %{$attr}) {
+            if( not($attr_schema->{$name}{'utf8'}) ) {
+                utf8::downgrade($attr->{$name});
+            }
+        }
+    }
+    return $objects;
+}
+
 
 sub object_exists
 {
@@ -182,7 +211,7 @@ sub _modify_object_impl
     my $id = shift;
     my $mod_attr = shift;
 
-    my $attr = $self->_backend->fetch_object($id);
+    my $attr = $self->_fetch_object($id);
     my $deleted_attr = {};
     my $added_attr = {};
     my $modified_attr = {};
@@ -236,7 +265,7 @@ sub _modify_object_impl
             foreach my $name (@del_attrs) {
                 if( defined($deleted_attr->{$name}) ) {
                     $self->log_object
-                        ($id, 'del_attr', {'name' => $name, 'old_val' => $deleted_attr->{$name}});
+                        ($id, 'del_attr', {'name' => $name, 'old_val' => unidecode($deleted_attr->{$name})});
                 }
             }
         }
@@ -250,7 +279,7 @@ sub _modify_object_impl
         if( not $nolog ) {
             foreach my $name (@add_attrs) {
                 $self->log_object
-                    ($id, 'add_attr', {'name' => $name, 'new_val' => $added_attr->{$name}});
+                    ($id, 'add_attr', {'name' => $name, 'new_val' => unidecode($added_attr->{$name})});
             }
         }
     }
@@ -263,8 +292,8 @@ sub _modify_object_impl
         if( not $nolog ) {
             foreach my $name (@mod_attrs) {
                 $self->log_object
-                    ($id, 'mod_attr', {'name' => $name, 'old_val' => $old_attr->{$name},
-                                       'new_val' => $modified_attr->{$name}});
+                    ($id, 'mod_attr', {'name' => $name, 'old_val' => unidecode($old_attr->{$name}),
+                                       'new_val' => unidecode($modified_attr->{$name})});
             }
         }
     }
@@ -336,7 +365,7 @@ sub delete_object
 
         my $cfg = $SPSID::Config::class_attributes;
         if( defined($cfg->{$thisclass}) and $cfg->{$thisclass}{'delete_permanently'} ) {
-            my $obj = $self->_backend->fetch_object($id);
+            my $obj = $self->_fetch_object($id);
             my $data = {'spsid.object.class' => $obj->{'spsid.object.class'}};
             my $attrs = $cfg->{$thisclass}{'attr'};
             if( defined($attrs) ) {
@@ -375,7 +404,7 @@ sub get_object
     if( not $self->object_exists($id) ) {
         return undef;
     }
-    my $obj = $self->_backend->fetch_object($id);
+    my $obj = $self->_fetch_object($id);
     return $self->_retrieve_objrefs($obj->{'spsid.object.class'}, [$obj])->[0];
 }
 
@@ -489,7 +518,7 @@ sub _retrieve_objrefs
             foreach my $name (@objref_attrs) {
                 if( defined($obj->{$name}) ) {
                     if( $obj->{$name} ne 'NIL' ) {
-                        $obj->{$name} = $self->_backend->fetch_object($obj->{$name});
+                        $obj->{$name} = $self->_fetch_object($obj->{$name});
                     }
                     else {
                         $obj->{$name} = {};
@@ -521,7 +550,7 @@ sub search_objects
 
     my $results = [];
     if( scalar(@_) == 0 ) {
-        $results = $self->_sort_objects($self->_backend->contained_objects($container, $objclass));
+        $results = $self->_sort_objects($self->_utf_tidy($self->_backend->contained_objects($container, $objclass)));
     } else {
         my $firstmatch = 1;
         while ( scalar(@_) > 0 ) {
@@ -530,8 +559,8 @@ sub search_objects
 
             if( $firstmatch ) {
                 $results =
-                    $self->_backend->search_objects($container, $objclass,
-                                                    $name, $value);
+                    $self->_utf_tidy($self->_backend->search_objects($container, $objclass,
+                                                                     $name, $value));
                 $firstmatch = 0;
             } elsif( scalar(@{$results}) > 0 ) {
                 my $old_results = $results;
@@ -562,7 +591,7 @@ sub search_prefix
 
     $self->ping();
     my $results = $self->_sort_objects
-        ($self->_backend->search_prefix($objclass, $attr_name, $attr_prefix));
+        ($self->_utf_tidy($self->_backend->search_prefix($objclass, $attr_name, $attr_prefix)));
     return $self->_retrieve_objrefs($objclass, $results);
 }
 
@@ -589,8 +618,8 @@ sub search_fulltext
     }
 
     my $results = $self->_sort_objects
-        ($self->_backend->search_fulltext($objclass,
-                                          $search_string, $attrlist));
+        ($self->_utf_tidy($self->_backend->search_fulltext($objclass,
+                                                           $search_string, $attrlist)));
     return $self->_retrieve_objrefs($objclass, $results);
 }
 
@@ -601,7 +630,16 @@ sub get_attr_values
     my $objclass = shift;
     my $attr_name = shift;
 
-    return [sort @{$self->_backend->get_attr_values($objclass,$attr_name)}];
+    my $values = $self->_backend->get_attr_values($objclass,$attr_name);
+
+    my $s = $self->get_schema();
+    my $attr_schema = $s->{$objclass}{'attr'};
+    if( not($attr_schema->{$attr_name}{'utf8'}) ) {
+        for(my $i = 0; $i < scalar(@{$values}); $i++) {
+            utf8::downgrade($values->[$i]);
+        }
+    }
+    return [sort @{$values}];
 }
 
 

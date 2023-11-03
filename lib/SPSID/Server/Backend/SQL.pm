@@ -298,7 +298,7 @@ sub get_last_change_id
     $sth->execute();
     my $r = $sth->fetchall_arrayref();
     if( scalar(@{$r}) > 0 and defined($r->[0][0]) ) {
-        return $r->[0][0];
+        return int($r->[0][0]);
     }
     else {
         return 0;
@@ -583,7 +583,13 @@ sub get_attr_values
          'SPSID_OBJECT_ATTR.OBJECT_ID=SPSID_OBJECTS.OBJECT_ID');
     $sth->execute($attr_name, $objclass);
     my $r = $sth->fetchall_arrayref();
-    return [map {$_->[0]} @{$r}];
+    my $ret = [];
+    foreach my $row (@{$r}) {
+        my $val = $row->[0];
+        utf8::decode($val);
+        push(@{$ret}, $val);
+    }
+    return $ret;
 }
 
 
