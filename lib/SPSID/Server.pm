@@ -170,7 +170,11 @@ sub create_object
     eval {
         $self->_backend->create_object($attr);
         if( not $cfg->{$objclass}{'nolog'} ) {
-            $self->log_object($id, 'create_object', $attr);
+            my $logattr = {};
+            foreach my $name (keys %{$attr}) {
+                $logattr->{$name} = unidecode($attr->{$name});
+            }
+            $self->log_object($id, 'create_object', $logattr);
         }
         $self->_backend->commit();
     };
