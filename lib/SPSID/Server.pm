@@ -902,8 +902,18 @@ sub _verify_attributes
         }
 
         if( defined($cfg->{$name}{'regexp'}) and defined($value) ) {
-            if( $value !~ $cfg->{$name}{'regexp'} ) {
-                die('Attribute ' . $name . ' in ' . $attr->{'spsid.object.id'} . '(' . $value . ')' .
+            my $value_without_prefix = $value;
+            if( defined($cfg->{$name}{'prefix'}) ) {
+                my $pfx = $cfg->{$name}{'prefix'};
+                my $idx = index($value_without_prefix, $pfx);
+                if( $idx != 0 ) {
+                    die('Attribute ' . $name . ' in ' . $attr->{'spsid.object.id'} . '(' . $value . ')' .
+                        ' does not have the required prefix: ' . $pfx);
+                }
+                $value_without_prefix = substr($value, length($pfx));
+            }
+            if( $value_without_prefix !~ $cfg->{$name}{'regexp'} ) {
+                die('Attribute ' . $name . ' in ' . $attr->{'spsid.object.id'} . '(' . $value_without_prefix . ')' .
                     ' does not match the regexp: ' . $cfg->{$name}{'regexp'});
             }
         }
