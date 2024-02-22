@@ -125,9 +125,10 @@ sub object_exists
     my $self = shift;
     my $id = shift;
 
-    return $self->_backend->object_exists($id);
+    my $ret = $self->_backend->object_exists($id);
+    $self->_backend->commit();
+    return $ret;
 }
-
 
 
 sub create_object
@@ -146,7 +147,7 @@ sub create_object
 
     my $id = md5_hex($id_seed);
 
-    if( $self->object_exists($id) ) {
+    if( $self->_backend->object_exists($id) ) {
         die('Something really wrong happened: object id ' . $id .
             ' already exists in the database');
     }
@@ -335,7 +336,7 @@ sub delete_object
 
     $self->ping();
 
-    if( not $self->object_exists($id) ) {
+    if( not $self->_backend->object_exists($id) ) {
         die("Object does not exist: $id");
     }
 
@@ -405,11 +406,13 @@ sub get_object
     my $id = shift;
 
     $self->ping();
-    if( not $self->object_exists($id) ) {
-        return undef;
+    my $ret = undef;
+    if( $self->_backend->object_exists($id) ) {
+        my $obj = $self->_fetch_object($id);
+        $ret = $self->_retrieve_objrefs($obj->{'spsid.object.class'}, [$obj])->[0];
     }
-    my $obj = $self->_fetch_object($id);
-    return $self->_retrieve_objrefs($obj->{'spsid.object.class'}, [$obj])->[0];
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -419,7 +422,9 @@ sub get_object_log
     my $id = shift;
 
     $self->ping();
-    return $self->_backend->get_object_log($id);
+    my $ret = $self->_backend->get_object_log($id);
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -428,7 +433,9 @@ sub get_last_change_id
 {
     my $self = shift;
     $self->ping();
-    return $self->_backend->get_last_change_id();
+    my $ret = $self->_backend->get_last_change_id();
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -439,7 +446,9 @@ sub get_last_changes
     my $max_rows = shift;
 
     $self->ping();
-    return $self->_backend->get_last_changes($start_id, $max_rows);
+    my $ret = $self->_backend->get_last_changes($start_id, $max_rows);
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -581,7 +590,9 @@ sub search_objects
         $results = $self->_sort_objects($results);
     }
 
-    return $self->_retrieve_objrefs($objclass, $results);
+    my $ret = $self->_retrieve_objrefs($objclass, $results);
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -596,7 +607,9 @@ sub search_prefix
     $self->ping();
     my $results = $self->_sort_objects
         ($self->_utf_tidy($self->_backend->search_prefix($objclass, $attr_name, $attr_prefix)));
-    return $self->_retrieve_objrefs($objclass, $results);
+    my $ret = $self->_retrieve_objrefs($objclass, $results);
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -624,7 +637,9 @@ sub search_fulltext
     my $results = $self->_sort_objects
         ($self->_utf_tidy($self->_backend->search_fulltext($objclass,
                                                            $search_string, $attrlist)));
-    return $self->_retrieve_objrefs($objclass, $results);
+    my $ret = $self->_retrieve_objrefs($objclass, $results);
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -643,7 +658,9 @@ sub get_attr_values
             utf8::downgrade($values->[$i]);
         }
     }
-    return [sort @{$values}];
+    my $ret = [sort @{$values}];
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -665,7 +682,9 @@ sub contained_classes
                     $s->{$b}{'display'}{'sequence'})
                    :
                    ($a cmp $b)} @{$result});
-    return $sorted;
+    my $ret = $sorted;
+    $self->_backend->commit();
+    return $ret;
 }
 
 
@@ -850,6 +869,7 @@ sub validate_object
         }
     }
 
+    $self->_backend->commit();
     return;
 }
 
@@ -968,7 +988,7 @@ sub _verify_attributes
             my $refclass = $cfg->{$name}{'objref'};
 
             if( not $cfg->{$name}{'reserved_refs'}{$value} ) {
-                if( not $self->object_exists($value) ) {
+                if( not $self->_backend->object_exists($value) ) {
                     die('Attribute ' . $name .
                         ' points to a non-existent object ' . $value .
                         ' in ' . $attr->{'spsid.object.id'});
@@ -1045,6 +1065,20 @@ sub log_object
     my $data = shift;
     my $app = shift;
 
+    $self->_log_object($id, $event, $data, $app);
+    $self->_backend->commit();
+    return;
+}
+
+
+sub _log_object
+{
+    my $self = shift;
+    my $id = shift;
+    my $event = shift;
+    my $data = shift;
+    my $app = shift;
+
     my $msg = encode_json({'event' => $event, 'data' => $data});
 
     $self->_backend->log_object($id, $self->user_id, $msg, $app);
@@ -1067,6 +1101,7 @@ sub add_application_log
     my $msg = shift;
 
     $self->_backend->log_object($id, $userid, encode_json({'event' => 'message', 'data' => $msg}), $app);
+    $self->_backend->commit();
 
     my $logger = $self->logger;
     if( defined($logger) ) {
@@ -1089,8 +1124,11 @@ sub sequence_next
 {
     my $self = shift;
     my $realm = shift;
-    return $self->_backend->sequence_next($realm);
+    my $ret = $self->_backend->sequence_next($realm);
+    $self->_backend->commit();
+    return $ret;
 }
+
 
 
 1;
