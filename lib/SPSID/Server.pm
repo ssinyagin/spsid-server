@@ -452,6 +452,13 @@ sub get_last_changes
 }
 
 
+sub trim_log
+{
+    my $self = shift;
+    my $upto_id = shift;
+    $self->_backend->trim_log($upto_id);
+    $self->_backend->commit();
+}
 
 
 
@@ -1110,6 +1117,7 @@ sub add_application_log
 
     return;
 }
+
 
 
 sub clear_user_id

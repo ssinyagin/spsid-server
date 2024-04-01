@@ -168,6 +168,14 @@ sub get_last_changes
 }
 
 
+sub trim_log
+{
+    my %arg = @_;
+    die('upto_id required') unless defined $arg{'upto_id'};
+    return $server->trim_log($arg{'upto_id'});
+}
+
+
 sub search_objects
 {
     my %arg = @_;
@@ -274,6 +282,7 @@ $rpc->register('add_application_log', \&add_application_log);
 $rpc->register('get_object_log', \&get_object_log);
 $rpc->register('get_last_change_id', \&get_last_change_id);
 $rpc->register('get_last_changes', \&get_last_changes);
+$rpc->register('trim_log', \&trim_log);
 $rpc->register('search_objects', \&search_objects);
 $rpc->register('search_prefix', \&search_prefix);
 $rpc->register('search_fulltext', \&search_fulltext);

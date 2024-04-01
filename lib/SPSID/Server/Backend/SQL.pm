@@ -338,6 +338,14 @@ sub get_last_changes
 }
 
 
+sub trim_log
+{
+    my $self = shift;
+    my $upto_id = shift;
+    my $sth = $self->_dbh->prepare('DELETE FROM SPSID_OBJECT_LOG WHERE ID<=?');
+    $sth->execute($upto_id);
+}
+
 
 sub delete_object_attributes
 {
