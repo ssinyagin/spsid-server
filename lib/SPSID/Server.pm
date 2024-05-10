@@ -380,7 +380,9 @@ sub delete_object
                     }
                 }
             }
-            $self->log_object($obj->{'spsid.object.container'}, 'delete_child', $data);
+            if( not $cfg->{$thisclass}{'nolog'} ) {
+                $self->log_object($obj->{'spsid.object.container'}, 'delete_child', $data);
+            }
             $self->_backend->delete_object_permanently($id);
         } else {
             if( not $cfg->{$thisclass}{'nolog'} ) {
