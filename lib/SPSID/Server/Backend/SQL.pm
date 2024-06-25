@@ -76,6 +76,7 @@ sub connect
 
     if ( length($self->tsn_admin_env) > 0 ) {
         $ENV{'TNS_ADMIN'} = $self->tsn_admin_env;
+        $ENV{'NLS_LANG'} = 'American_America.AL32UTF8';
     }
 
     my $dbi_final_attr = {'RaiseError' => 1, 'AutoCommit' => 0};
