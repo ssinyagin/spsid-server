@@ -74,9 +74,11 @@ sub connect
 {
     my $self = shift;
 
+    my $this_is_oracle;
     if ( length($self->tsn_admin_env) > 0 ) {
         $ENV{'TNS_ADMIN'} = $self->tsn_admin_env;
         $ENV{'NLS_LANG'} = 'American_America.AL32UTF8';
+        $this_is_oracle = 1;
     }
 
     my $dbi_final_attr = {'RaiseError' => 1, 'AutoCommit' => 0};
@@ -95,6 +97,10 @@ sub connect
                            $dbi_final_attr);
     if ( not $dbh ) {
         die('Cannot connect to the database: ' . $DBI::errstr);
+    }
+
+    if( $this_is_oracle ) {
+        $dbh->do('ALTER SESSION DISABLE PARALLEL DML');
     }
 
     $self->_dbh($dbh);
