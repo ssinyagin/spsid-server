@@ -36,12 +36,12 @@ $server->connect();
 sub extract_userid
 {
     my $plack_request = shift;
-    
+
     my $userid = $plack_request->user();
     if( not defined($userid) ) {
         $userid = $plack_request->headers->header('X-Remote-User');
     }
-    
+
     if( defined($userid) ) {
         $server->user_id($userid);
     }
@@ -270,6 +270,32 @@ sub recursive_md5
 }
 
 
+sub create_datablob
+{
+    my $plack_request = shift;
+    my %arg = @_;
+    die('data required') unless defined $arg{'data'};
+    my $id = $server->create_datablob($arg{'data'});
+    return $id;
+}
+
+sub get_datablob
+{
+    my %arg = @_;
+    die('id required') unless defined $arg{'id'};
+    return $server->get_datablob($arg{'id'});
+}
+
+sub modify_datablob
+{
+    my %arg = @_;
+    die('id required') unless defined $arg{'id'};
+    die('data required') unless defined $arg{'data'};
+    return $server->modify_datablob($arg{'id'}, $arg{'data'});
+}
+
+
+
 my $rpc = JSON::RPC::Dispatcher->new;
 
 $rpc->register('create_object', \&create_object, { with_plack_request => 1 });
@@ -291,6 +317,9 @@ $rpc->register('contained_classes', \&contained_classes);
 $rpc->register('get_schema', \&get_schema);
 $rpc->register('new_object_default_attrs', \&new_object_default_attrs);
 $rpc->register('recursive_md5', \&recursive_md5);
+$rpc->register('create_datablob', \&create_datablob);
+$rpc->register('get_datablob', \&get_datablob);
+$rpc->register('modify_datablob', \&modify_datablob);
 
 $rpc->register('ping', sub{my %arg = @_; $server->ping(); return \%arg});
 

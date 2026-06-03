@@ -694,6 +694,57 @@ sub sequence_next
 
 
 
+sub create_blob
+{
+    my $self = shift;
+    my $id = shift;
+    my $conteent = shift;
+
+    $self->_dbh->do('INSERT INTO SPSID_BLOBS (BLOB_ID, BLOB_CONTENT) VALUES(?,?)', $id, $conteent);
+    return;
+}
+
+
+sub blob_exists
+{
+    my $self = shift;
+    my $id = shift;
+    my $r = $self->_dbh->selectrow_arrayref('SELECT BLOB_ID FROM SPSID_BLOBS WHERE BLOB_ID=?', undef, $id);
+    if( defined($r) ) {
+        return 1;
+    }
+    return 0;
+}
+
+
+sub get_blob_content
+{
+    my $self = shift;
+    my $id = shift;
+    my $r = $self->_dbh->selectrow_arrayref('SELECT BLOB_CONTENT FROM SPSID_BLOBS WHERE BLOB_ID=?', undef, $id);
+    if( defined($r) ) {
+        return $r->[0];
+    }
+    return undef;
+}
+
+
+sub modify_blob
+{
+    my $self = shift;
+    my $id = shift;
+    my $conteent = shift;
+
+    $self->_dbh->do('UPDATE SPSID_BLOBS SET BLOB_CONTENT=? WHERE BLOB_ID=?', $conteent, $id);
+    return;
+}
+
+
+
+
+
+
+
 
 1;
 

@@ -1017,6 +1017,14 @@ sub _verify_attributes
                 }
             }
         }
+
+        if( defined($cfg->{$name}{'blobref'}) and defined($value) and $value ne 'NIL' ) {
+            if( not $self->_backend->blob_exists($value) ) {
+                die('Attribute ' . $name .
+                    ' points to a non-existent blob ' . $value .
+                    ' in ' . $attr->{'spsid.object.id'});
+            }
+        }
     }
 
     return;
@@ -1139,6 +1147,64 @@ sub sequence_next
     return $ret;
 }
 
+
+sub create_datablob
+{
+    my $self = shift;
+    my $data = shift;
+
+    $self->ping();
+    my $jscontent = encode_json($data);
+
+    # random string to take md5 as the new object ID
+    my $id_seed = scalar(localtime(time())) . rand(1e8);
+    my $id = md5_hex($id_seed . $jscontent);
+
+    eval {
+        $self->_backend->create_blob($id, $jscontent);
+        $self->_backend->commit();
+    };
+    if( $@ ) {
+        $self->_backend->rollback();
+        die($@);
+    }
+
+    return $id;
+}
+
+
+sub get_datablob
+{
+    my $self = shift;
+    my $id = shift;
+
+    $self->ping();
+    my $ret = undef;
+    my $jscontent = $self->_backend->get_blob_content($id);
+    if( defined($jscontent) ) {
+        $ret = decode_json($jscontent);
+    }
+    $self->_backend->commit();
+    return $ret;
+}
+
+
+sub modify_datablob
+{
+    my $self = shift;
+    my $id = shift;
+    my $data = shift;
+
+    $self->ping();
+    if( not $self->_backend->blob_exists($id) ) {
+        die('Blob ' . $id . ' does not exist');
+    }
+
+    my $jscontent = encode_json($data);
+    $self->_backend->modify_blob($id);
+    $self->_backend->commit();
+    return;
+}
 
 
 1;

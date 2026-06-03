@@ -36,6 +36,7 @@ $SPSID::Config::backend = 'SPSID::Server::Backend::SQL';
 #   reserved_refs => {attrval => 1, ...}
 #   regexp => "validation regexp"
 #   sync_ignore => 1|0 [if sync_contained_objects should ignore this attr]
+#   blobref => 1|0 (the value is a blob ID)
 
 # Class properties:
 #   contained_in => {class => 1} [hash of parent classes]
