@@ -411,7 +411,9 @@ sub get_object
     my $ret = undef;
     if( $self->_backend->object_exists($id) ) {
         my $obj = $self->_fetch_object($id);
-        $ret = $self->_retrieve_objrefs($obj->{'spsid.object.class'}, [$obj])->[0];
+        $self->_retrieve_objrefs($obj->{'spsid.object.class'}, [$obj]);
+        $self->_retrieve_blobrefs($obj->{'spsid.object.class'}, [$obj]);
+        $ret = $obj;
     }
     $self->_backend->commit();
     return $ret;
@@ -554,6 +556,44 @@ sub _retrieve_objrefs
 }
 
 
+# if an obect contains blobrefs, retrieve them
+sub _retrieve_blobrefs
+{
+    my $self = shift;
+    my $objclass = shift;
+    my $objects = shift;
+
+    my @blobref_attrs;
+    my $s = $self->get_schema();
+    my $attr_schema = $s->{$objclass}{'attr'};
+    if( defined($attr_schema) ) {
+        foreach my $name (keys %{$attr_schema}) {
+            if( $attr_schema->{$name}{'blobref'} ) {
+                push(@blobref_attrs, $name);
+            }
+        }
+    }
+
+    if( scalar(@blobref_attrs) > 0 ) {
+        foreach my $obj (@{$objects}) {
+            foreach my $name (@blobref_attrs) {
+                if( defined($obj->{$name}) ) {
+                    if( $obj->{$name} ne 'NIL' ) {
+                        my $jscontent = $self->_backend->get_blob_content($obj->{$name});
+                        if( defined($jscontent) ) {
+                            $obj->{$name} = decode_json($jscontent);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $objects;
+}
+
+
+
 
 # input: attribute names and values for AND condition
 # output: arrayref of objects found
@@ -599,9 +639,10 @@ sub search_objects
         $results = $self->_sort_objects($results);
     }
 
-    my $ret = $self->_retrieve_objrefs($objclass, $results);
+    $self->_retrieve_objrefs($objclass, $results);
+    $self->_retrieve_blobrefs($objclass, $results);
     $self->_backend->commit();
-    return $ret;
+    return $results;
 }
 
 
@@ -616,9 +657,10 @@ sub search_prefix
     $self->ping();
     my $results = $self->_sort_objects
         ($self->_utf_tidy($self->_backend->search_prefix($objclass, $attr_name, $attr_prefix)));
-    my $ret = $self->_retrieve_objrefs($objclass, $results);
+    $self->_retrieve_objrefs($objclass, $results);
+    $self->_retrieve_blobrefs($objclass, $results);
     $self->_backend->commit();
-    return $ret;
+    return $results;
 }
 
 
@@ -646,9 +688,10 @@ sub search_fulltext
     my $results = $self->_sort_objects
         ($self->_utf_tidy($self->_backend->search_fulltext($objclass,
                                                            $search_string, $attrlist)));
-    my $ret = $self->_retrieve_objrefs($objclass, $results);
+    $self->_retrieve_objrefs($objclass, $results);
+    $self->_retrieve_blobrefs($objclass, $results);
     $self->_backend->commit();
-    return $ret;
+    return $results;
 }
 
 
@@ -1018,7 +1061,7 @@ sub _verify_attributes
             }
         }
 
-        if( defined($cfg->{$name}{'blobref'}) and defined($value) and $value ne 'NIL' ) {
+        if( $cfg->{$name}{'blobref'} and defined($value) and $value ne 'NIL' ) {
             if( not $self->_backend->blob_exists($value) ) {
                 die('Attribute ' . $name .
                     ' points to a non-existent blob ' . $value .
