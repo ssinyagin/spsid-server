@@ -317,7 +317,7 @@ $rpc->register('contained_classes', \&contained_classes);
 $rpc->register('get_schema', \&get_schema);
 $rpc->register('new_object_default_attrs', \&new_object_default_attrs);
 $rpc->register('recursive_md5', \&recursive_md5);
-$rpc->register('create_datablob', \&create_datablob);
+$rpc->register('create_datablob', \&create_datablob, { with_plack_request => 1 });
 $rpc->register('get_datablob', \&get_datablob);
 $rpc->register('modify_datablob', \&modify_datablob);
 

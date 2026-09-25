@@ -1201,7 +1201,7 @@ sub modify_datablob
     }
 
     my $jscontent = encode_json($data);
-    $self->_backend->modify_blob($id);
+    $self->_backend->modify_blob($id, $jscontent);
     $self->_backend->commit();
     return;
 }

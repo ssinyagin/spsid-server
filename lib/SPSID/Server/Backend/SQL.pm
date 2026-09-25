@@ -99,6 +99,8 @@ sub connect
         die('Cannot connect to the database: ' . $DBI::errstr);
     }
 
+    $dbh->{LongReadLen} = 2*1024*1024; #2 meg
+
     if( $this_is_oracle ) {
         $dbh->do('ALTER SESSION DISABLE PARALLEL DML');
     }
@@ -698,9 +700,12 @@ sub create_blob
 {
     my $self = shift;
     my $id = shift;
-    my $conteent = shift;
+    my $content = shift;
 
-    $self->_dbh->do('INSERT INTO SPSID_BLOBS (BLOB_ID, BLOB_CONTENT) VALUES(?,?)', $id, $conteent);
+    my $sth = $self->_dbh->prepare('INSERT INTO SPSID_BLOBS (BLOB_ID, BLOB_CONTENT) VALUES(?,?)');
+    $sth->bind_param(1, $id,      { TYPE => DBI::SQL_VARCHAR });
+    $sth->bind_param(2, $content, { TYPE => DBI::SQL_BLOB });
+    $sth->execute();
     return;
 }
 
@@ -733,9 +738,12 @@ sub modify_blob
 {
     my $self = shift;
     my $id = shift;
-    my $conteent = shift;
+    my $content = shift;
 
-    $self->_dbh->do('UPDATE SPSID_BLOBS SET BLOB_CONTENT=? WHERE BLOB_ID=?', $conteent, $id);
+    my $sth = $self->_dbh->prepare('UPDATE SPSID_BLOBS SET BLOB_CONTENT=? WHERE BLOB_ID=?');
+    $sth->bind_param(1, $content, { TYPE => DBI::SQL_BLOB });
+    $sth->bind_param(2, $id,      { TYPE => DBI::SQL_VARCHAR });
+    $sth->execute();
     return;
 }
 
